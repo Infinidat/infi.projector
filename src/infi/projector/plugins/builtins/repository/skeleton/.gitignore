@@ -16,6 +16,7 @@
 
 # setuptools
 bin/
+build/
 dist/
 setup.py
 
@@ -46,5 +47,3 @@ parts/*.msi
 src/infi/projector/__version__.py
 .codeintel
 *sublime*
-
-!src/infi/projector/plugins/builtins/build/
