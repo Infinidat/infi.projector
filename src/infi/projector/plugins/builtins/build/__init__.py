@@ -57,7 +57,7 @@ class BuildPlugin(CommandPlugin):
             logger.error("bootsrap.py does not exist")
             raise SystemExit(1)
         if not is_executable_exists(join("bin", "buildout")) or self.arguments.get("--force-bootstrap", False):
-            execute_with_python("bootstrap.py -d -t")
+            execute_with_python("bootstrap.py -d")
 
     def install_sections_by_recipe(self, recipe):
         from infi.projector.helper.utils import open_buildout_configfile, execute_with_buildout
@@ -123,7 +123,7 @@ class BuildPlugin(CommandPlugin):
             if is_buildout_executable_using_isolated_python():
                 with buildout_parameters_context(["buildout:python=buildout"]):
                     # We need to make sure bin/buildout doesn't use the inside isolated python
-                    execute_with_python("bootstrap.py -d -t")
+                    execute_with_python("bootstrap.py -d")
         else:
             with buildout_parameters_context(["buildout:python=buildout"]):
                 # This is because most of our existing projects use python-distribution by default
