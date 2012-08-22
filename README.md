@@ -14,10 +14,13 @@ The easiest way to checkout the code is by using projector itself:
     cd infi.projector
     projector build scripts
 
-If you don't want to install projector, or having trouble with the installation, you can do this:
+There are two alternatives.
 
-    git clone git://github.com/Infinidat/infi.projector.git
-    cd infi.projector
-    git checkout -b develop origin/develop
-    python first_run.py [--use-isolated-python]
+The first one using the environment python and requires you to install dependencies (it'll tell you what the are):
+
+    python src/infi/projector/first_run/with_environment_python.py
+
+The second does not modify the environment python, it uses only the buildout environment, and, it can be used with our isolated python build:
+
+    python src/infi/projector/first_run/without_environment_python.py [--use-isolated-python]
 

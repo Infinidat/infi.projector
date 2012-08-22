@@ -78,6 +78,15 @@ class BuildPlugin(CommandPlugin):
         with buildout_parameters_context(['buildout:develop=']):
             self.install_sections_by_recipe("infi.recipe.template.version")
 
+    def get_isolated_python_section_name(self):
+        from infi.projector.helper.utils import open_buildout_configfile
+        with open_buildout_configfile() as buildout:
+            sections = [section for section in buildout.sections()
+                        if buildout.has_option(section, "recipe") and \
+                        buildout.get(section, "recipe").startswith("infi.recipe.python")\
+                        and not buildout.get(section, "recipe").endswith(":pack")]
+        return sections[0]
+
     def create_scripts(self):
         from infi.projector.helper.utils import open_buildout_configfile, execute_with_buildout
         from infi.projector.helper.utils import buildout_parameters_context
@@ -86,7 +95,7 @@ class BuildPlugin(CommandPlugin):
         python = path.join('parts', 'python', 'bin', 'python')
         if self.arguments.get("--use-isolated-python", False):
             if self.arguments.get("--newest", False) or not is_executable_exists(python):
-                execute_with_buildout("install python-distribution")
+                execute_with_buildout("install {}".format(self.get_isolated_python_section_name()))
         with self.buildout_use_custom_python():
             self.install_sections_by_recipe("infi.vendata.console_scripts")
 
@@ -117,7 +126,7 @@ class BuildPlugin(CommandPlugin):
         from infi.projector.helper.assertions import assert_buildout_executable_exists
         from infi.projector.helper.assertions import is_buildout_executable_using_isolated_python
         if self.arguments.get("--use-isolated-python", False):
-            with buildout_parameters_context(["buildout:python=python-distribution"]):
+            with buildout_parameters_context(["buildout:python={}".format(self.get_isolated_python_section_name())]):
                 yield
             assert_buildout_executable_exists()
             if is_buildout_executable_using_isolated_python():
@@ -126,7 +135,7 @@ class BuildPlugin(CommandPlugin):
                     execute_with_python("bootstrap.py -d")
         else:
             with buildout_parameters_context(["buildout:python=buildout"]):
-                # This is because most of our existing projects use python-distribution by default
+                # This is because most of our existing projects use isolated python default
                 yield
 
     def get_readline_module(self):
@@ -176,7 +185,8 @@ class BuildPlugin(CommandPlugin):
             buildout.set("buildout", "relative-paths", 'true' if relative_paths else 'false')
             relative_python = 'parts/python/bin/python'
             absolute_python = '${buildout:directory}/parts/python/bin/python'
-            buildout.set("python-distribution", "executable", relative_python if relative_paths else absolute_python)
+            isolated_python_section = self.get_isolated_python_section_name()
+            buildout.set(isolated_python_section, "executable", relative_python if relative_paths else absolute_python)
         if self.arguments.get("--commit-changes", False):
             repository = LocalRepository(curdir)
             repository.add("buildout.cfg")
