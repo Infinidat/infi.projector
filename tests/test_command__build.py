@@ -1,4 +1,5 @@
 from .test_case import TestCase
+from unittest import SkipTest
 import sys
 from mock import patch
 from os import path, pardir, curdir
@@ -53,8 +54,12 @@ class BuildTestCase(TestCase):
         execute_assert_success(args)
 
     def test_build_in_virtualenv(self):
+        from infi.execute import ExecutionError
         with self.temporary_directory_context():
-            self.execute_assert_success("virtualenv --distribute virtualenv-python")
+            try:
+                self.execute_assert_success("virtualenv --distribute virtualenv-python")
+            except ExecutionError, error:
+                raise SkipTest("Skipping because virtualenv does not work")
             virtualenv_dir = path.abspath(path.join(curdir, 'virtualenv-python'))
             bin_dir = path.join(virtualenv_dir, 'Scripts' if assertions.is_windows() else 'bin')
             python = path.join(bin_dir, 'python')
