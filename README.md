@@ -16,7 +16,7 @@ The easiest way to checkout the code is by using projector itself:
 
 There are two alternatives.
 
-The first one using the environment python and requires you to install dependencies (it'll tell you what the are):
+The first one using the environment python and requires you to install dependencies (it'll tell you what they are):
 
     python src/infi/projector/first_run/with_environment_python.py
 
