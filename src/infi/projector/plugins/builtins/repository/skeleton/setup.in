@@ -33,25 +33,10 @@ SETUP_INFO = dict(
         gui_scripts = []),
     )
 
-platform_install_requires = {
-    'windows' : ${project:install_requires_windows},
-    'linux' : ${project:install_requires_linux},
-    'macosx' : ${project:install_requires_macosx},
-}
-
-def _get_os_name():
-    import platform
-    system = platform.system().lower().replace('-', '').replace('_', '')
-    if system == 'darwin':
-        return 'macosx'
-    return system
-
-
 def setup():
     from setuptools import setup as _setup
     from setuptools import find_packages
     SETUP_INFO['packages'] = find_packages('src')
-    SETUP_INFO['install_requires'] += platform_install_requires[_get_os_name()]
     _setup(**SETUP_INFO)
 
 if __name__ == '__main__':
