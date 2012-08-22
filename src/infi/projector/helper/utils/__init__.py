@@ -46,10 +46,22 @@ def execute_assert_success(args):
     logger.info("Executing {}".format(' '.join(args)))
     execute.execute_assert_success(args)
 
+def _get_executable_from_shebang_line():
+    # The executable wrapper in distribute dynamically loads Python's DLL, which causes sys.executable to be the wrapper
+    # and not the original python exeuctable. We have to find the real executable as Distribute does.
+    from os import path
+    import sys
+    executable_script_py = sys.executable.replace(".exe", "-script.py")
+    with open(executable_script_py) as fd:
+        shebang_line = fd.readlines()[0].strip()
+    executable_path = path.normpath(shebang_line[3:-1])
+    return (executable_path + '.exe') if not executable_path.endswith('.exe') else executable_path
+
 def execute_with_python(commandline_or_args):
     import sys
+    from ..assertions import is_windows
     args = parse_args(commandline_or_args)
-    executable = [sys.executable]
+    executable = [sys.executable if not is_windows() else _get_executable_from_shebang_line()]
     if not is_running_inside_virtualenv():
         executable.append('-S')
     execute_assert_success(executable + args)
