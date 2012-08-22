@@ -13,7 +13,7 @@ class TestCase(unittest.TestCase):
         tempdir = mkdtemp()
         with chdir(tempdir):
             yield
-        rmtree(tempdir)
+        rmtree(tempdir, ignore_errors=True)
 
     def projector(self, argv):
         from infi.projector.scripts import projector
