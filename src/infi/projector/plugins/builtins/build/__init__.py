@@ -117,7 +117,8 @@ class BuildPlugin(CommandPlugin):
         from infi.projector.helper.assertions import assert_buildout_executable_exists
         from infi.projector.helper.assertions import is_buildout_executable_using_isolated_python
         if self.arguments.get("--use-isolated-python", False):
-            yield
+            with buildout_parameters_context(["buildout:python=python-distribution"]):
+                yield
             assert_buildout_executable_exists()
             if is_buildout_executable_using_isolated_python():
                 with buildout_parameters_context(["buildout:python=buildout"]):
