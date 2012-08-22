@@ -36,9 +36,9 @@ class PluginRepository(object):
         from pkg_resources import iter_entry_points
         for entry_point in iter_entry_points(COMMAND_PLUGIN_ENTRY_POINT):
             try:
-                logger.error("There was a problem loading plugin from entry point {!r}".format(entry_point))
                 yield entry_point.load()
             except:
+                logger.error("There was a problem loading plugin from entry point {!r}".format(entry_point))
                 pass
 
     def get_plugin_clases_from_entry_points(self):
