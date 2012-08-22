@@ -31,7 +31,7 @@ def assert_git_repository():
         raise SystemExit(1)
 
 def assert_isolated_python_exists():
-    if not path.exists(path.join("parts", "python"):
+    if not path.exists(path.join("parts", "python")):
         logger.error("Isolated python is required")
         raise SystemExit(1)
 
