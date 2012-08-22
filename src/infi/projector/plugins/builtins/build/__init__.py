@@ -175,8 +175,8 @@ class BuildPlugin(CommandPlugin):
                 self.create_setup_py()
             if not self.arguments.get("--no-scripts", False):
                 self.create_scripts()
-            if not self.arguments.get("--no-readline", False):
-                self.install_readline()
+                if not self.arguments.get("--no-readline", False):
+                    self.install_readline()
 
     def relocate(self):
         from infi.projector.helper.utils import open_buildout_configfile

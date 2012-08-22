@@ -8,14 +8,14 @@ logger = getLogger(__name__)
 
 USAGE = """
 Usage:
-    projector version release <version> [--no-fetch] [--no-upload | [--distributions=DISTRIBUTIONS] [--pypi-servers=PYPI_SERVERS]]
+    projector version release <version> [--no-fetch] (--no-upload | [--distributions=DISTRIBUTIONS] [--pypi-servers=PYPI_SERVERS])
     projector version upload <version> [--distributions=DISTRIBUTIONS] [--pypi-servers=PYPI_SERVERS]
 
 Options:
     release                         Release a new version, including registering and uploading to pypi
     upload                          Upload an exisiting version to pypi
-    --distributions=DISTRIBUTIONS   Distributions to build. [default: sdist,bdist_egg]
-    --pypi-servers=PYPI             PyPI server for publishing. [default: pypi,]
+    --distributions=DISTRIBUTIONS   Distributions to build [default: sdist,bdist_egg]
+    --pypi-servers=PYPI             PyPI server for publishing [default: pypi,]
     <version>                       x.y.z or major, minor, trivial (release only)
     --no-upload                     Do not upload the package as part of the release process
     --no-fetch                      Do not fetch origin before releasing
@@ -26,7 +26,7 @@ class VersionPlugin(CommandPlugin):
         return USAGE
 
     def get_command_name(self):
-        return 'release'
+        return 'version'
 
     @assertions.requires_built_repository
     def parse_commandline_arguments(self, arguments):
@@ -102,13 +102,13 @@ class VersionPlugin(CommandPlugin):
         from infi.projector.helper.utils import execute_with_buildout, git_checkout
         from infi.projector.plugins.builtins.build import BuildPlugin
         from infi.projector.scripts import projector
+        from gitpy import LocalRepository
+        from os import curdir
         repository = LocalRepository(curdir)
-        for distribution in self.arguments.get("--distributions"):
-            for pypi in self.argument.get("--pypi-server"):
-                with chdir(self.base_path):
-                    git_checkout(version_tag_with_v)
-                    BuildPlugin().create_setup_py()
-                    setup_cmd = "setup . register -r {pypi} {distribution} upload -r {pypi}"
-                    setup_cmd.format(pypi=pypi, distribution=distribution)
-                    execute_with_buildout(setup_cmd)
-
+        for distribution in self.arguments.get("--distributions").split(','):
+            for pypi in self.arguments.get("--pypi-servers").split(','):
+                git_checkout(version_tag_with_v)
+                BuildPlugin().create_setup_py()
+                setup_cmd = "setup . register -r {pypi} {distribution} upload -r {pypi}"
+                setup_cmd = setup_cmd.format(pypi=pypi, distribution=distribution)
+                execute_with_buildout(setup_cmd)

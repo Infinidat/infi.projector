@@ -65,6 +65,17 @@ class VersionTestCase(TestCase):
                         self.projector("version release 1.2.3 --no-upload")
                     self.projector("version release 1.2.3 --no-fetch --no-upload")
 
+    def test_upload(self):
+        from mock import patch
+        with self.temporary_directory_context():
+            self.projector("repository init a.b.c none short long")
+            self.projector("build scripts --no-script")
+            self.projector("version release 1.2.3 --no-fetch --no-upload")
+            with patch("infi.projector.helper.utils.execute_with_buildout") as execute_with_buildout:
+                self.projector("version upload 1.2.3")
+            execute_with_buildout.assert_any_call("setup . register -r pypi sdist upload -r pypi")
+            execute_with_buildout.assert_any_call("setup . register -r pypi bdist_egg upload -r pypi")
+
     @contextmanager
     def mock_build_and_upload_distributions(self):
         from mock import patch

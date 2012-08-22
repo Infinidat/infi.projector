@@ -46,7 +46,7 @@ def execute_assert_success(args):
     logger.info("Executing {}".format(' '.join(args)))
     execute.execute_assert_success(args)
 
-def _get_executable_from_shebang_line():
+def _get_executable_from_shebang_line():  # pragma: no cover
     # The executable wrapper in distribute dynamically loads Python's DLL, which causes sys.executable to be the wrapper
     # and not the original python exeuctable. We have to find the real executable as Distribute does.
     from os import path

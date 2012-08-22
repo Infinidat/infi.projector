@@ -31,14 +31,14 @@ SCRIPT_NAME = "projector"
 
 def indent_usage(string):
     lines = [line.strip() for line in string.splitlines() if line.strip() != '']
-    return '\n'.join(['\t{}'.format(line if line.startswith(SCRIPT_NAME) else "{} {}".format(SCRIPT_NAME, line))
+    return '\n'.join(['    {}'.format(line if line.startswith(SCRIPT_NAME) else "{} {}".format(SCRIPT_NAME, line))
                       for line in lines])
 
 def ident_options(string):
     lines = [line.strip() for line in string.splitlines() if line.strip() != '']
     options_tuple = [(item[0].strip(), item[1].strip()) for item in [line.split('  ', 1) for line in lines]]
     max_option_length = max([len(option_tuple[0]) for option_tuple in options_tuple]) + 4
-    return '\n'.join(['\t{}{}'.format(option_tuple[0].ljust(max_option_length), option_tuple[1])
+    return '\n'.join(['    {}{}'.format(option_tuple[0].ljust(max_option_length), option_tuple[1])
                       for option_tuple in options_tuple])
 
 def get_version():
@@ -67,6 +67,6 @@ def parse_commandline_arguments(argv):
     if arguments.get('-v'):
         print get_version()
         return
-    pluggins = {plugin.get_command_name():plugin for plugin in plugin_repository.get_all_plugins()}
-    [selected_plugin] = [value for key,value in pluggins.items() if arguments.get(key)]
+    plugins = {plugin.get_command_name():plugin for plugin in plugin_repository.get_all_plugins()}
+    [selected_plugin] = [value for key,value in plugins.items() if arguments.get(key)]
     selected_plugin.parse_commandline_arguments(arguments)
