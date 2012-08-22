@@ -1,6 +1,7 @@
 from .test_case import TestCase
 from infi.unittest.parameters import iterate
-class BuildTestCase(TestCase):
+
+class RequirementsTestCase(TestCase):
 
     @iterate("development_flag", [True, False])
     @iterate("package_name", ["distribute", "ipython", "does-not-exist"])
