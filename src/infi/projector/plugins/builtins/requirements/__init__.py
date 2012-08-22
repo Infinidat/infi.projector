@@ -17,7 +17,7 @@ Options:
     --development       Requirement for the development environment only
 """
 
-class PackageSet(object):
+class PackageSet(object): # pragma: no cover
     @classmethod
     def get(cls):
         raise NotImplementedError()

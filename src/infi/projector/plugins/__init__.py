@@ -5,7 +5,7 @@ logger = getLogger(__name__)
 
 COMMAND_PLUGIN_ENTRY_POINT = "projector_command_plugins"
 
-class CommandPlugin(object):
+class CommandPlugin(object):  # pragma: no cover
     def get_docopt_string(self):
         raise NotImplementedError()
 

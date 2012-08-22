@@ -45,7 +45,7 @@ def get_version():
     try:
         from infi.projector.__version__ import __version__
         return __version__
-    except ImportError:
+    except ImportError: # pragma: no cover
         return '<unknown>'
 
 def get_commandline_doc():
