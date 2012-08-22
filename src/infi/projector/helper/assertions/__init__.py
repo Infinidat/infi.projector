@@ -30,6 +30,11 @@ def assert_git_repository():
         logger.error("the current directory is not a home of a git repository")
         raise SystemExit(1)
 
+def assert_isolated_python_exists():
+    if not path.exists(path.join("parts", "python"):
+        logger.error("Isolated python is required")
+        raise SystemExit(1)
+
 def assert_on_branch(branch_name):
     from gitpy import LocalRepository
     repository = LocalRepository(curdir)
