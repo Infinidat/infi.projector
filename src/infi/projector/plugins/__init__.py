@@ -3,6 +3,8 @@ from logging import getLogger
 
 logger = getLogger(__name__)
 
+COMMAND_PLUGIN_ENTRY_POINT = "projector_command_plugins"
+
 class CommandPlugin(object):
     def get_docopt_string(self):
         raise NotImplementedError()
@@ -30,14 +32,19 @@ class PluginRepository(object):
             return False
         return True
 
-    def get_builtin_plugins_classes(self):
-        from .builtins import get_all
-        return get_all()
+    def _iter_plugin_entry_points(self):
+        from pkg_resources import iter_entry_points
+        for entry_point in iter_entry_points(COMMAND_PLUGIN_ENTRY_POINT):
+            try:
+                logger.error("There was a problem loading plugin from entry point {!r}".format(entry_point))
+                yield entry_point.load()
+            except:
+                pass
 
-    def get_external_plugin_classes(self):
-        return []
+    def get_plugin_clases_from_entry_points(self):
+        return list(self._iter_plugin_entry_points())
 
     def get_all_plugin_classes(self):
-        return self.get_builtin_plugins_classes() + self.get_external_plugin_classes()
+        return self.get_plugin_clases_from_entry_points()
 
 plugin_repository = PluginRepository()

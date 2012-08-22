@@ -30,7 +30,8 @@ SETUP_INFO = dict(
 
     entry_points = dict(
         console_scripts = ${project:console_scripts},
-        gui_scripts = []),
+        gui_scripts = [],
+        projector_command_plugins = ${project:command_plugins}),
     )
 
 platform_install_requires = {
