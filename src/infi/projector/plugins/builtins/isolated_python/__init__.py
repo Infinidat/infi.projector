@@ -14,7 +14,7 @@ Usage:
     projector isolated-python python-version set <version> [--commit-changes]
 """
 
-class IsolatedPython(CommandPlugin):
+class IsolatedPythonPlugin(CommandPlugin):
     def get_docopt_string(self):
         return USAGE
 
