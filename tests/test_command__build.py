@@ -20,20 +20,20 @@ class BuildTestCase(TestCase):
     def test_build_after_init(self):
         with self.temporary_directory_context():
             self.projector("repository init a.b.c none short long")
-            self.projector("build scripts --clean")
+            self.projector("build devenv --clean")
             self.assertFalse(path.exists(path.join("parts", "python")))
             self.assert_scripts_were_generated_by_buildout()
             self.assert_shebang_line_in_buildout_script_does_not_use_isolated_python()
-            self.projector("build scripts --newest")
+            self.projector("build devenv --newest")
 
     def test_build_after_init__use_isolated_python(self):
         with self.temporary_directory_context():
             self.projector("repository init a.b.c none short long")
-            self.projector("build scripts --use-isolated-python")
+            self.projector("build devenv --use-isolated-python")
             self.assertTrue(path.exists(path.join("parts", "python")))
             self.assert_scripts_were_generated_by_buildout()
             self.assert_shebang_line_in_buildout_script_does_not_use_isolated_python()
-            self.projector("build scripts --use-isolated-python --newest")
+            self.projector("build devenv --use-isolated-python --newest")
 
     def test_build__absolute_paths(self):
         from infi.projector.helper.assertions import is_windows
@@ -41,7 +41,7 @@ class BuildTestCase(TestCase):
         with self.temporary_directory_context():
             self.projector("repository init a.b.c none short long")
             self.projector("build relocate --absolute --commit-changes")
-            self.projector("build scripts --use-isolated-python --no-readline")
+            self.projector("build devenv --use-isolated-python --no-readline")
             self.assertTrue(path.exists(path.join("parts", "python")))
             with open(path.join("bin", "python-script.py" if is_windows() else "python")) as fd:
                 python_content = fd.read()
