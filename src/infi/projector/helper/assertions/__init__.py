@@ -33,8 +33,10 @@ def assert_git_repository():
 
 def assert_no_uncommitted_changes():
     repository = LocalRepository(curdir)
-    if repository.getChangedFiles() + repository.getStagedFiles():
-        logger.error("There are changes pending commit, cannot continue. please commit or checkout those changes")
+    changes = repository.getChangedFiles() + repository.getStagedFiles()
+    if changes:
+        message = "There are changes pending commit, cannot continue. please commit or checkout those changes:\n"
+        logger.error(message+repr(changes))
         raise SystemExit(1)
 
 def assert_isolated_python_exists():
