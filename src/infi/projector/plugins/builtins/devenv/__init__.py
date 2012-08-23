@@ -17,6 +17,7 @@ Options:
     devenv build            use this command to generate setup.py and the console scripts
     devenv relocate         use this command to switch from relative and absolute paths in the console scripts
     devenv pack             create a package, e.g. deb/rpm/msi
+    devenv pylint           run pylint on the code
     --force-bootstrap       run bootstrap.py even if the buildout script already exists
     --no-submodules         do not clone git sub-modules defined in buildout.cfg
     --no-scripts            do not install the dependent packages, nor create the console scripts. just create setup.py
@@ -209,6 +210,7 @@ class DevEnvPlugin(CommandPlugin):
         with open_buildout_configfile() as buildout:
             name = buildout.get("project", "name")
         argv = [name]
+        # TODO once https://www.logilab.org/ticket/103949 is resolved, just run bin/pylint
         python_command = "from pylint.lint import Run; Run({!r})".format(argv)
         logger.info("Running pylint, please wait...")
         result = execute([python, "-c", python_command])
