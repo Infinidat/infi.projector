@@ -101,7 +101,7 @@ class VersionPlugin(CommandPlugin):
 
     def build_and_upload_distributions(self, version_tag_with_v):
         from infi.projector.helper.utils import execute_with_buildout, git_checkout
-        from infi.projector.plugins.builtins.build import BuildPlugin
+        from infi.projector.plugins.builtins.devenv import DevEnvPlugin
         from infi.projector.scripts import projector
         from gitpy import LocalRepository
         from os import curdir
@@ -109,7 +109,7 @@ class VersionPlugin(CommandPlugin):
         for distribution in self.arguments.get("--distributions").split(','):
             for pypi in self.arguments.get("--pypi-servers").split(','):
                 git_checkout(version_tag_with_v)
-                BuildPlugin().create_setup_py()
+                DevEnvPlugin().create_setup_py()
                 setup_cmd = "setup . register -r {pypi} {distribution} upload -r {pypi}"
                 setup_cmd = setup_cmd.format(pypi=pypi, distribution=distribution)
                 execute_with_buildout(setup_cmd)

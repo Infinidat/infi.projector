@@ -7,7 +7,7 @@ from infi.projector.helper import utils, assertions
 
 PROJECT_ROOT = path.abspath(path.join(path.dirname(__file__), pardir))
 
-class BuildTestCase(TestCase):
+class DevEnvTestCase(TestCase):
     def assert_scripts_were_generated_by_buildout(self):
         self.assertTrue(path.exists("setup.py"))
         self.assertTrue(assertions.is_executable_exists(path.join("bin", "buildout")))
@@ -20,28 +20,28 @@ class BuildTestCase(TestCase):
     def test_build_after_init(self):
         with self.temporary_directory_context():
             self.projector("repository init a.b.c none short long")
-            self.projector("build scripts --clean")
+            self.projector("devenv build --clean")
             self.assertFalse(path.exists(path.join("parts", "python")))
             self.assert_scripts_were_generated_by_buildout()
             self.assert_shebang_line_in_buildout_script_does_not_use_isolated_python()
-            self.projector("build scripts --newest")
+            self.projector("devenv build --newest")
 
     def test_build_after_init__use_isolated_python(self):
         with self.temporary_directory_context():
             self.projector("repository init a.b.c none short long")
-            self.projector("build scripts --use-isolated-python")
+            self.projector("devenv build --use-isolated-python")
             self.assertTrue(path.exists(path.join("parts", "python")))
             self.assert_scripts_were_generated_by_buildout()
             self.assert_shebang_line_in_buildout_script_does_not_use_isolated_python()
-            self.projector("build scripts --use-isolated-python --newest")
+            self.projector("devenv build --use-isolated-python --newest")
 
     def test_build__absolute_paths(self):
         from infi.projector.helper.assertions import is_windows
         from infi.projector.helper.utils import buildout_parameters_context
         with self.temporary_directory_context():
             self.projector("repository init a.b.c none short long")
-            self.projector("build relocate --absolute --commit-changes")
-            self.projector("build scripts --use-isolated-python --no-readline")
+            self.projector("devenv relocate --absolute --commit-changes")
+            self.projector("devenv build --use-isolated-python --no-readline")
             self.assertTrue(path.exists(path.join("parts", "python")))
             with open(path.join("bin", "python-script.py" if is_windows() else "python")) as fd:
                 python_content = fd.read()

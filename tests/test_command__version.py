@@ -12,7 +12,7 @@ class VersionTestCase(TestCase):
         with self.mock_build_and_upload_distributions():
             with self.temporary_directory_context():
                 self.projector("repository init a.b.c none short long")
-                self.projector("build scripts --no-scripts --no-readline")
+                self.projector("devenv build --no-scripts --no-readline")
                 self.projector("version release --no-fetch {}".format(version))
                 self.assert_tag_exists(RELEASE_TAGS.get(version, version))
 
@@ -21,14 +21,14 @@ class VersionTestCase(TestCase):
             with self.temporary_directory_context():
                 mock.side_effect = RuntimeError()
                 self.projector("repository init a.b.c none short long")
-                self.projector("build scripts --no-scripts --no-readline")
+                self.projector("devenv build --no-scripts --no-readline")
                 self.projector("version release 1.2.3 --no-fetch --no-upload")
                 self.assert_tag_exists('v1.2.3')
 
     def test_release__not_on_develop_branch(self):
         with self.temporary_directory_context():
             self.projector("repository init a.b.c none short long")
-            self.projector("build scripts --no-scripts --no-readline")
+            self.projector("devenv build --no-scripts --no-readline")
             repository = LocalRepository(curdir)
             repository.checkout("master")
             with self.assertRaises(SystemExit):
@@ -37,7 +37,7 @@ class VersionTestCase(TestCase):
     def test_release__master_diverged(self):
         with self.temporary_directory_context():
             self.projector("repository init a.b.c none short long")
-            self.projector("build scripts --no-scripts --no-readline")
+            self.projector("devenv build --no-scripts --no-readline")
             repository = LocalRepository(curdir)
             repository.checkout("master")
             repository.commit("empty commit", allowEmpty=True)
@@ -51,12 +51,12 @@ class VersionTestCase(TestCase):
         from infi.projector.helper.utils import chdir
         with self.temporary_directory_context():
             self.projector("repository init a.b.c none short long")
-            self.projector("build scripts --no-scripts --no-readline")
+            self.projector("devenv build --no-scripts --no-readline")
             origin = abspath(curdir)
             with self.temporary_directory_context():
                 self.projector("repository clone {}".format(origin))
                 with chdir(basename(origin)):
-                    self.projector("build scripts --no-scripts --no-readline")
+                    self.projector("devenv build --no-scripts --no-readline")
                     with chdir(origin):
                         repository = LocalRepository(curdir)
                         repository.checkout("master")
@@ -69,7 +69,7 @@ class VersionTestCase(TestCase):
         from mock import patch
         with self.temporary_directory_context():
             self.projector("repository init a.b.c none short long")
-            self.projector("build scripts --no-script")
+            self.projector("devenv build --no-script")
             self.projector("version release 1.2.3 --no-fetch --no-upload")
             with patch("infi.projector.helper.utils.execute_with_buildout") as execute_with_buildout:
                 self.projector("version upload 1.2.3")
@@ -81,7 +81,7 @@ class VersionTestCase(TestCase):
         from os import remove, path
         with self.temporary_directory_context():
             self.projector("repository init a.b.c none short long")
-            self.projector("build scripts --no-script")
+            self.projector("devenv build --no-script")
             remove("buildout.cfg")
             with self.assertRaises(SystemExit):
                 self.projector("version release 1.2.3 --no-fetch --no-upload")

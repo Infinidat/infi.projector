@@ -8,14 +8,14 @@ logger = getLogger(__name__)
 
 USAGE = """
 Usage:
-    projector build scripts [--clean] [--force-bootstrap] [--no-submodules] [--no-scripts] [--no-readline] [--use-isolated-python] [[--newest] | [--offline]]
-    projector build relocate ([--absolute] | [--relative]) [--commit-changes]
-    projector build pack
+    projector devenv build [--clean] [--force-bootstrap] [--no-submodules] [--no-scripts] [--no-readline] [--use-isolated-python] [[--newest] | [--offline]]
+    projector devenv relocate ([--absolute] | [--relative]) [--commit-changes]
+    projector devenv pack
 
 Options:
-    build scripts           use this command to generate setup.py and the console scripts
-    build relocate          use this command to switch from relative and absolute paths in the console scripts
-    build pack              create a package, e.g. deb/rpm/msi
+    devenv build            use this command to generate setup.py and the console scripts
+    devenv relocate         use this command to switch from relative and absolute paths in the console scripts
+    devenv pack             create a package, e.g. deb/rpm/msi
     --force-bootstrap       run bootstrap.py even if the buildout script already exists
     --no-submodules         do not clone git sub-modules defined in buildout.cfg
     --no-scripts            do not install the dependent packages, nor create the console scripts. just create setup.py
@@ -26,16 +26,16 @@ Options:
     --clean                 clean build-related files and directories before building
 """
 
-class BuildPlugin(CommandPlugin):
+class DevEnvPlugin(CommandPlugin):
     def get_docopt_string(self):
         return USAGE
 
     def get_command_name(self):
-        return 'build'
+        return 'devenv'
 
     @assertions.requires_repository
     def parse_commandline_arguments(self, arguments):
-        methods = [self.scripts, self.relocate, self.pack]
+        methods = [self.build, self.relocate, self.pack]
         [method] = [method for method in methods
                     if arguments.get(method.__name__)]
         self.arguments = arguments
@@ -162,7 +162,7 @@ class BuildPlugin(CommandPlugin):
             return
         execute_assert_success("bin/easy_install {}".format(module).split())
 
-    def scripts(self):
+    def build(self):
         from infi.projector.helper.utils import buildout_parameters_context
         if self.arguments.get("--clean", False):
             self.clean_build()
@@ -193,7 +193,7 @@ class BuildPlugin(CommandPlugin):
             repository = LocalRepository(curdir)
             repository.add("buildout.cfg")
             repository.commit("Changing shebang to {} paths".format("relative" if relative_paths else "absolute"))
-        logger.info("Configuration changed. Run `projector build scripts [--use-isolated-python]`.")
+        logger.info("Configuration changed. Run `projector devenv build [--use-isolated-python]`.")
 
     def pack(self):
         from infi.projector.helper.assertions import assert_isolated_python_exists

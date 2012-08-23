@@ -10,7 +10,7 @@ def parse_docopt_string(docopt_string):
         usage = match(usage_and_options_pattern, docopt_string, DOTALL).groupdict()['usage']
         options = match(usage_and_options_pattern, docopt_string, DOTALL).groupdict()['options']
     elif match(only_usage_pattern, docopt_string, DOTALL):
-        usage = match(only_usage_pattern, DOTALL).groupdict()['usage']
+        usage = match(only_usage_pattern, docopt_string, DOTALL).groupdict()['usage']
     return usage, options
 
 def build_usage_and_options():
