@@ -22,8 +22,6 @@ class RequirementsTestCase(TestCase):
     def test_list(self, development_flag):
         from infi.projector.plugins.builtins.requirements import RequirementsPlugin
         from mock import patch, Mock
-        plugin = RequirementsPlugin()
-        plugin.arguments = {'--development': development_flag}
         with patch("pprint.pprint") as pprint, patch.object(RequirementsPlugin, "get_package_set") as get_package_set:
             requirements = set(['distribute'])
             get_package_set.return_value.get.return_value = requirements
