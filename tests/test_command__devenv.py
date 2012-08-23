@@ -2,7 +2,7 @@ from .test_case import TestCase
 from unittest import SkipTest
 import sys
 from mock import patch
-from os import path, pardir, curdir
+from os import path, pardir, curdir, remove
 from infi.projector.helper import utils, assertions
 
 PROJECT_ROOT = path.abspath(path.join(path.dirname(__file__), pardir))
@@ -25,6 +25,16 @@ class DevEnvTestCase(TestCase):
             self.assert_scripts_were_generated_by_buildout()
             self.assert_shebang_line_in_buildout_script_does_not_use_isolated_python()
             self.projector("devenv build --newest")
+            self.projector("devenv build --offline")
+            self.projector("devenv build --use-isolated-python")
+            self.projector("devenv build --pack")
+
+    def test_build__no_bootstrap(self):
+        with self.temporary_directory_context():
+            self.projector("repository init a.b.c none short long")
+            remove("bootstrap.py")
+            with self.assertRaises(SystemExit):
+                self.projector("devenv build --clean")
 
     def test_build_after_init__use_isolated_python(self):
         with self.temporary_directory_context():

@@ -10,7 +10,7 @@ class PackageScriptsTestCase(TestCase):
         with self.temporary_directory_context():
             self.projector("repository init a.b.c none short long")
             self.assertEquals("None", plugin.get_value())
-            self.projector("package-scripts set foo " + script_arg)
+            self.projector("package-scripts set foo " + script_arg + " --commit-changes")
             self.assertEquals("foo", plugin.get_value())
             self.projector("package-scripts set None " + script_arg)
             self.assertEquals("None", plugin.get_value())

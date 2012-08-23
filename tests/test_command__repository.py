@@ -1,5 +1,5 @@
 from .test_case import TestCase
-from os import path, curdir, listdir
+from os import path, curdir, listdir, makedirs
 from infi.projector.helper import utils
 
 class RepositoryTestCase(TestCase):
@@ -23,6 +23,20 @@ class RepositoryTestCase(TestCase):
             self.projector("repository init --mkdir a.b.c none short long")
             with utils.chdir('a.b.c'):
                 self.assert_project_checked_out()
+
+   def test_init__mkdir_already_exists(self):
+        with self.temporary_directory_context():
+            self.assert_is_empty()
+            makdirs('a.b.c')
+            with self.assertRaises(SystemExit):
+                self.projector("repository init --mkdir a.b.c none short long")
+
+   def test_init__dotgit_exists(self):
+        with self.temporary_directory_context():
+            self.assert_is_empty()
+            makdirs(".git")
+            with self.assertRaises(SystemExit):
+                self.projector("repository init a.b.c none short long")
 
     def test_clone(self):
         from os import curdir

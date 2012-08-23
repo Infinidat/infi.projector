@@ -37,7 +37,7 @@ class IsolatedPythonPlugin(CommandPlugin):
             sections = [section for section in buildout.sections()
                         if buildout.has_option(section, "recipe") and \
                         buildout.get(section, "recipe") == "infi.recipe.python"]
-            if not sections:
+            if not sections: # pragma: no cover
                 logger.error("isolated python section not found in buildout.cfg")
                 raise SystemExit(1)
             if self.arguments.get("get"):

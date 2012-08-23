@@ -10,5 +10,5 @@ class SubmoduleTestCase(TestCase):
             with self.temporary_directory_context():
                 self.projector("repository init a.b.c none short long")
                 self.projector("submodule list")
-                self.projector("submodule add foo {} origin/master")
+                self.projector("submodule add foo {} origin/master --look-for-setup-py --commit-changes")
                 self.projector("submodule remove foo ")

@@ -8,9 +8,9 @@ class PackageDataTestCase(TestCase):
         plugin = PackageDataPlugin()
         with self.temporary_directory_context():
             self.projector("repository init a.b.c none short long")
-            self.projector("package-data add {}".format(package_data))
+            self.projector("package-data add {} --commit-changes".format(package_data))
             self.assertTrue(package_data in plugin.get_package_set().get())
-            self.projector("package-data remove {}".format(package_data))
+            self.projector("package-data remove {} --commit-changes".format(package_data))
             self.assertFalse(package_data in plugin.get_package_set().get())
 
     def test_list(self):

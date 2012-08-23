@@ -22,10 +22,10 @@ class BasePackageSet(PackageSetInterface, object):
         with open_buildout_configfile() as buildout_cfg:
             buildout_cfg.set(self.section_name, self.attribute_name, self.to_value(package_set))
 
-    def from_value(self, value):
+    def from_value(self, value): # pragma: no cover
         raise NotImplementedError()
 
-    def to_value(self, package_set):
+    def to_value(self, package_set): # pragma: no cover
         raise NotImplementedError()
 
 class RepresentedListSet(BasePackageSet):

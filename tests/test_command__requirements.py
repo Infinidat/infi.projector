@@ -11,10 +11,10 @@ class RequirementsTestCase(TestCase):
         plugin.arguments = {'--development': development_flag}
         with self.temporary_directory_context():
             self.projector("repository init a.b.c none short long")
-            self.projector("requirements add {} {}".format(package_name,
+            self.projector("requirements add {} {} --commit-changes".format(package_name,
                                                            '--development' if development_flag else ''))
             self.assertTrue(package_name in plugin.get_package_set().get())
-            self.projector("requirements remove {} {}".format(package_name,
+            self.projector("requirements remove {} {} --commit-changes".format(package_name,
                                                            '--development' if development_flag else ''))
             self.assertFalse(package_name in plugin.get_package_set().get())
 

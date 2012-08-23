@@ -98,7 +98,7 @@ def git_checkout(branch_name_or_tag):
     from gitpy import LocalRepository
     try:
         LocalRepository(curdir).checkout(branch_name_or_tag)
-    except Exception:
+    except Exception: # pragma: no cover
         logger.error("failed to checkout {}".format(branch_name_or_tag))
         raise SystemExit(1)
 

@@ -150,7 +150,7 @@ class DevEnvPlugin(CommandPlugin):
         from infi.execute import execute_assert_success, ExecutionError
         try:
             execute_assert_success("bin/python -c import {}".format(module).split())
-        except ExecutionError:
+        except ExecutionError: # pragma: no cover
             return False
         return True
 
@@ -158,7 +158,7 @@ class DevEnvPlugin(CommandPlugin):
         from platform import system
         from infi.execute import execute_assert_success
         module = self.get_readline_module()
-        if not module or self.is_module_installed(module):
+        if not module or self.is_module_installed(module): # pragma: no cover
             return
         execute_assert_success("bin/easy_install {}".format(module).split())
 
@@ -179,7 +179,7 @@ class DevEnvPlugin(CommandPlugin):
                     self.install_readline()
 
     def relocate(self):
-        from infi.projector.helper.utils import open_buildout_configfile, commit_changes_to_buildout_if_requested
+        from infi.projector.helper.utils import open_buildout_configfile, commit_changes_to_buildout
         from os import curdir
         from gitpy import LocalRepository
         relative_paths = self.arguments.get("--relative", False)
