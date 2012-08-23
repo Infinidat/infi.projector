@@ -179,7 +179,7 @@ class DevEnvPlugin(CommandPlugin):
                     self.install_readline()
 
     def relocate(self):
-        from infi.projector.helper.utils import open_buildout_configfile
+        from infi.projector.helper.utils import open_buildout_configfile, commit_changes_to_buildout_if_requested
         from os import curdir
         from gitpy import LocalRepository
         relative_paths = self.arguments.get("--relative", False)
@@ -190,9 +190,8 @@ class DevEnvPlugin(CommandPlugin):
             isolated_python_section = self.get_isolated_python_section_name()
             buildout.set(isolated_python_section, "executable", relative_python if relative_paths else absolute_python)
         if self.arguments.get("--commit-changes", False):
-            repository = LocalRepository(curdir)
-            repository.add("buildout.cfg")
-            repository.commit("Changing shebang to {} paths".format("relative" if relative_paths else "absolute"))
+            commit_message = "Changing shebang to {} paths".format("relative" if relative_paths else "absolute")
+            commit_changes_to_buildout(commit_message)
         logger.info("Configuration changed. Run `projector devenv build [--use-isolated-python]`.")
 
     def pack(self):

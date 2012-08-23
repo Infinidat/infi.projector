@@ -1,7 +1,7 @@
 from contextlib import contextmanager
 from infi.projector.plugins import CommandPlugin
 from infi.projector.helper import assertions
-from infi.projector.helper.utils import open_buildout_configfile
+from infi.projector.helper.utils import open_buildout_configfile, commit_changes_to_buildout
 from infi.projector.helper.utils.package_sets import ConsoleScriptsSet
 from textwrap import dedent
 from logging import getLogger
@@ -11,8 +11,8 @@ logger = getLogger(__name__)
 USAGE = """
 Usage:
     projector console-scripts list
-    projector console-scripts add <script-name> <entry-point>
-    projector console-scripts remove <script-name>
+    projector console-scripts add <script-name> <entry-point> [--commit-changes]
+    projector console-scripts remove <script-name> [--commit-changes]
 """
 
 class ConsoleScriptsPlugin(CommandPlugin):
@@ -44,9 +44,16 @@ class ConsoleScriptsPlugin(CommandPlugin):
         if console_script in consle_scripts.keys():
             consle_scripts.pop(console_script)
             package_set.set(consle_scripts)
+        if self.arguments.get("--commit-changes", False):
+            commit_message = "removing {} from console_scripts".format(console_script)
+            commit_changes_to_buildout(commit_message)
 
     def add(self):
         package_set = self.get_set()
         consle_scripts = package_set.get()
-        consle_scripts[self.arguments.get('<script-name>')] = self.arguments.get('<entry-point>')
+        script_name = self.arguments.get('<script-name>')
+        consle_scripts[script_name] = self.arguments.get('<entry-point>')
         package_set.set(consle_scripts)
+        if self.arguments.get("--commit-changes", False):
+            commit_message = "adding {} to console_scripts".format(script_name)
+            commit_changes_to_buildout(commit_message)

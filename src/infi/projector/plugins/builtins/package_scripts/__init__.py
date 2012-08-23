@@ -1,7 +1,7 @@
 from contextlib import contextmanager
 from infi.projector.plugins import CommandPlugin
 from infi.projector.helper import assertions
-from infi.projector.helper.utils import open_buildout_configfile
+from infi.projector.helper.utils import open_buildout_configfile, commit_changes_to_buildout
 from textwrap import dedent
 from logging import getLogger
 
@@ -10,7 +10,7 @@ logger = getLogger(__name__)
 USAGE = """
 Usage:
     projector package-scripts show (--post-install | --pre-uninstall)
-    projector package-scripts set <value> (--post-install | --pre-uninstall)
+    projector package-scripts set <value> (--post-install | --pre-uninstall) [--commit-changes]
 
 Options:
     <value>     the exectuable basename, under the 'bin' directory (e.g. projector). Set None to disable.
@@ -52,3 +52,6 @@ class PackageScriptsPlugin(CommandPlugin):
     def set(self):
         value = self.arguments.get('<value>')
         self.set_value(value)
+        if self.arguments.get("--commit-changes", False):
+            commit_message = "setting {} to {}".format(self.get_attribute(), value)
+            commit_changes_to_buildout(commit_message)

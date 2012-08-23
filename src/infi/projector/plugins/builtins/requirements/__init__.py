@@ -1,7 +1,7 @@
 from contextlib import contextmanager
 from infi.projector.plugins import CommandPlugin
 from infi.projector.helper import assertions
-from infi.projector.helper.utils import open_buildout_configfile
+from infi.projector.helper.utils import open_buildout_configfile, commit_changes_to_buildout
 from infi.projector.helper.utils.package_sets import InstallRequiresPackageSet, EggsPackageSet
 from textwrap import dedent
 from logging import getLogger
@@ -11,8 +11,8 @@ logger = getLogger(__name__)
 USAGE = """
 Usage:
     projector requirements list [--development]
-    projector requirements add <requirement> [--development]
-    projector requirements remove <requirement> [--development]
+    projector requirements add <requirement> [--development] [--commit-changes]
+    projector requirements remove <requirement> [--development] [--commit-changes]
 
 Options:
     --development       Requirement for the development environment only
@@ -47,6 +47,10 @@ class RequirementsPlugin(CommandPlugin):
         if requirement in requirements:
             requirements.remove(requirement)
             package_set.set(requirements)
+        if self.arguments.get("--commit-changes", False):
+            commit_message = "remove {} from requirements {}".format(requirement,
+                                                                     "(dev)" if self.arguments("--development") else '')
+            commit_changes_to_buildout(commit_message)
 
     def add(self):
         package_set = self.get_package_set()
@@ -55,3 +59,7 @@ class RequirementsPlugin(CommandPlugin):
         if requirement not in requirements:
             requirements.add(requirement)
             package_set.set(requirements)
+        if self.arguments.get("--commit-changes", False):
+            commit_message = "adding {} to requirements {}".format(requirement,
+                                                                   "(dev)" if self.arguments("--development") else '')
+            commit_changes_to_buildout(commit_message)
