@@ -28,6 +28,7 @@ class DevEnvTestCase(TestCase):
             self.projector("devenv build --offline")
             self.projector("devenv build --use-isolated-python")
             self.projector("devenv build --pack")
+            self.projector("devenv pylint")
 
     def test_build__no_bootstrap(self):
         with self.temporary_directory_context():

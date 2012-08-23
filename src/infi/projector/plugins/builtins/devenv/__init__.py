@@ -11,6 +11,7 @@ Usage:
     projector devenv build [--clean] [--force-bootstrap] [--no-submodules] [--no-scripts] [--no-readline] [--use-isolated-python] [[--newest] | [--offline]]
     projector devenv relocate ([--absolute] | [--relative]) [--commit-changes]
     projector devenv pack
+    projector devenv pylint
 
 Options:
     devenv build            use this command to generate setup.py and the console scripts
@@ -35,7 +36,7 @@ class DevEnvPlugin(CommandPlugin):
 
     @assertions.requires_repository
     def parse_commandline_arguments(self, arguments):
-        methods = [self.build, self.relocate, self.pack]
+        methods = [self.build, self.relocate, self.pack, self.pylint]
         [method] = [method for method in methods
                     if arguments.get(method.__name__)]
         self.arguments = arguments
@@ -196,6 +197,20 @@ class DevEnvPlugin(CommandPlugin):
 
     def pack(self):
         from infi.projector.helper.assertions import assert_isolated_python_exists
-        from infi.projector.plugins.builtins import RepositoryPlugin
         assert_isolated_python_exists()
-        RepositoryPlugin().install_sections_by_recipe("infi.vendata.recipe.pack")
+        self.install_sections_by_recipe("infi.vendata.recipe.pack")
+
+    def pylint(self):
+        from infi.projector.helper.utils import open_buildout_configfile
+        from os import name, path
+        from infi.execute import execute
+        from sys import stdout, stderr
+        python = path.join('bin', 'python' if name != 'nt' else 'python.exe')
+        with open_buildout_configfile() as buildout:
+            name = buildout.get("project", "name")
+        argv = [name]
+        python_command = "from pylint.lint import Run; Run({!r})".format(argv)
+        logger.info("Running pylint, please wait...")
+        result = execute([python, "-c", python_command])
+        stdout.write(result.get_stdout())
+        stderr.write(result.get_stderr())
