@@ -41,9 +41,9 @@ class DevEnvTestCase(TestCase):
             if system() == "Darwin":
                 from infi.execute import ExecutionError
                 with self.assertRaises(ExecutionError):
-                    self.projector("devenv build --pack")
+                    self.projector("devenv pack")
             else:
-                self.projector("devenv build --pack")
+                self.projector("devenv pack")
 
     def test_build__no_bootstrap(self):
         with self.temporary_directory_context():
