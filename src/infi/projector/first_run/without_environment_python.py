@@ -12,7 +12,9 @@ COMMANDS = [
 if USE_ISOLATED_PYTHON:
     COMMANDS.insert(2, "{} -s install isolated-python".format(BUILDOUT))
 
-makedirs(path.join(".cache", "dist"))
+CACHE_DIST = path.join(".cache", "dist")
+if not path.exists(CACHE_DIST):
+    makedirs(path.join(".cache", "dist"))
 
 for command in COMMANDS:
     print command
