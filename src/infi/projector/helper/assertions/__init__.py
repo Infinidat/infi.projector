@@ -1,5 +1,6 @@
-from infi.pyutils.decorators import wraps
 from os import path, name, curdir
+from gitpy import LocalRepository
+from infi.pyutils.decorators import wraps
 
 from logging import getLogger
 logger = getLogger(__name__)
@@ -31,8 +32,6 @@ def assert_git_repository():
         raise SystemExit(1)
 
 def assert_no_uncommitted_changes():
-    from gitpy import LocalRepository
-    from os import curdir
     repository = LocalRepository(curdir)
     if repository.getChangedFiles() + repository.getStagedFiles():
         logger.error("There are changes pending commit, cannot continue. please commit or checkout those changes")
@@ -44,7 +43,6 @@ def assert_isolated_python_exists():
         raise SystemExit(1)
 
 def assert_on_branch(branch_name):
-    from gitpy import LocalRepository
     repository = LocalRepository(curdir)
     current_branch = repository.getCurrentBranch()
     if current_branch is None or current_branch.name != branch_name:
@@ -62,23 +60,22 @@ def is_buildout_executable_using_isolated_python():
 
 def requires_repository(func):
     @wraps(func)
-    def callable(*args, **kwargs):
+    def decorator(*args, **kwargs):
         assert_buildout_configfile_exists()
         assert_git_repository()
         return func(*args, **kwargs)
-    return callable
+    return decorator
 
 def requires_built_repository(func):
     @wraps(func)
-    def callable(*args, **kwargs):
+    def decorator(*args, **kwargs):
         assert_buildout_configfile_exists()
         assert_git_repository()
         assert_setup_py_exists()
         return func(*args, **kwargs)
-    return callable
+    return decorator
 
 def is_version_tag_exists(version_tag):
-    from gitpy import LocalRepository
     repository = LocalRepository(curdir)
     version_tag = version_tag if version_tag.startswith('v') else 'v' + version_tag
     return version_tag in [tag.name for tag in repository.getTags()]
@@ -95,9 +92,7 @@ def assert_version_tag_for_upload(version_tag):
         logger.error(msg.format(version_tag))
         raise SystemExit(1)
 
-def assert_local_repository_not_behind_origin_on_develop_and_master_branches():
-    from gitpy import LocalRepository
-    from os import curdir
+def assert_develop_and_master_not_behind_origin():
     repository = LocalRepository(curdir)
     branches = [repository.getBranchByName(branch_name) for branch_name in ['master', 'develop']]
     branches_with_remote = [branch for branch in branches if branch.getRemoteBranch() is not None]
@@ -108,8 +103,6 @@ def assert_local_repository_not_behind_origin_on_develop_and_master_branches():
             raise SystemExit(1)
 
 def assert_develop_branch_on_top_of_master():
-    from gitpy import LocalRepository
-    from os import curdir
     repository = LocalRepository(curdir)
     develop = repository.getBranchByName("develop")
     master = repository.getBranchByName("master")

@@ -27,6 +27,16 @@ class DevEnvTestCase(TestCase):
             self.assert_shebang_line_in_buildout_script_does_not_use_isolated_python()
             self.projector("devenv build --newest")
             self.projector("devenv build --offline")
+
+    def test_pylint(self):
+        with self.temporary_directory_context():
+            self.projector("repository init a.b.c none short long")
+            self.projector("devenv build --clean")
+            self.projector("devenv pylint")
+
+    def test_pack(self):
+        with self.temporary_directory_context():
+            self.projector("repository init a.b.c none short long")
             self.projector("devenv build --use-isolated-python")
             if system() == "Darwin":
                 from infi.execute import ExecutionError
@@ -34,7 +44,6 @@ class DevEnvTestCase(TestCase):
                     self.projector("devenv build --pack")
             else:
                 self.projector("devenv build --pack")
-            self.projector("devenv pylint")
 
     def test_build__no_bootstrap(self):
         with self.temporary_directory_context():

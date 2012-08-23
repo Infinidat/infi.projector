@@ -68,5 +68,5 @@ def parse_commandline_arguments(argv):
         print get_version()
         return
     plugins = {plugin.get_command_name():plugin for plugin in plugin_repository.get_all_plugins()}
-    [selected_plugin] = [value for key,value in plugins.items() if arguments.get(key)]
+    [selected_plugin] = [value for key, value in plugins.items() if arguments.get(key)]
     selected_plugin.parse_commandline_arguments(arguments)

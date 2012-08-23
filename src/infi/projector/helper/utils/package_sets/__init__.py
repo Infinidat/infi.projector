@@ -1,6 +1,8 @@
 from infi.projector.helper import assertions
 from infi.projector.helper.utils import open_buildout_configfile
 
+#pylint: disable=R0923
+
 class PackageSetInterface(object): # pragma: no cover
     def get(self):
         raise NotImplementedError()

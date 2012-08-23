@@ -73,7 +73,7 @@ class VersionPlugin(CommandPlugin):
             self.fetch_origin()
         assertions.assert_version_tag_for_release(version_tag)
         assertions.assert_develop_branch_on_top_of_master()
-        assertions.assert_local_repository_not_behind_origin_on_develop_and_master_branches()
+        assertions.assert_develop_and_master_not_behind_origin()
         version_tag_without_v = version_tag.lstrip('v')
         version_tag_with_v = 'v{}'.format(version_tag_without_v)
         release_version_with_git_flow(version_tag_with_v)

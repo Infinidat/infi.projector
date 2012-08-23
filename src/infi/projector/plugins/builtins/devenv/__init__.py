@@ -108,8 +108,8 @@ class DevEnvPlugin(CommandPlugin):
         from shutil import rmtree
         directories_to_clean = ['bin', 'eggs', 'develop-eggs']
         files_to_clean = ['setup.py']
-        [remove(filename) for filename in files_to_clean if exists(filename)]
-        [rmtree(dirname)  for dirname in directories_to_clean if exists(dirname)]
+        _ = [remove(filename) for filename in files_to_clean if exists(filename)]
+        _ = [rmtree(dirname)  for dirname in directories_to_clean if exists(dirname)]
 
     @contextmanager
     def buildout_newest_or_offline_context(self):

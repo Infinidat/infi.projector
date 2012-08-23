@@ -75,10 +75,10 @@ def execute_with_buildout(commandline_or_args):
 @contextmanager
 def buildout_parameters_context(parameters):
     try:
-        [BUILDOUT_PARAMETERS.append(param) for param in parameters if param not in BUILDOUT_PARAMETERS]
+        _ = [BUILDOUT_PARAMETERS.append(param) for param in parameters if param not in BUILDOUT_PARAMETERS]
         yield
     finally:
-        [BUILDOUT_PARAMETERS.remove(param) for param in parameters if param in BUILDOUT_PARAMETERS]
+        _ = [BUILDOUT_PARAMETERS.remove(param) for param in parameters if param in BUILDOUT_PARAMETERS]
 
 def release_version_with_git_flow(version_tag):
     from os import curdir
