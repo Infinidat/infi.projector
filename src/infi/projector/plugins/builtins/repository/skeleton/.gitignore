@@ -47,3 +47,6 @@ parts/*.msi
 src/infi/projector/__version__.py
 .codeintel
 *sublime*
+
+tmp*
+!tmp*py

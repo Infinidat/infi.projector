@@ -48,3 +48,5 @@ src/infi/projector/__version__.py
 *sublime*
 
 !src/infi/projector/plugins/builtins/build/
+tmp*
+!tmp*py
