@@ -2,6 +2,7 @@ from contextlib import contextmanager
 from infi.projector.plugins import CommandPlugin
 from infi.projector.helper import assertions
 from infi.projector.helper.utils import open_buildout_configfile
+from infi.projector.helper.utils.package_sets import ConsoleScriptsSet
 from textwrap import dedent
 from logging import getLogger
 
@@ -13,20 +14,6 @@ Usage:
     projector console-scripts add <script-name> <entry-point>
     projector console-scripts remove <script-name>
 """
-
-class ConsoleScriptsSet(object):
-    @classmethod
-    def get(cls):
-        with open_buildout_configfile() as buildout_cfg:
-            formatted_entrypoints = (eval(buildout_cfg.get('project', "console_scripts")))
-        return {name.strip():entry_point.strip()
-                for name, entry_point in [item.split('=') for item in formatted_entrypoints]}
-
-    @classmethod
-    def set(cls, console_scripts_dict):
-        formatted_entrypoints = ["{} = {}".format(key, value) for key, value in console_scripts_dict.items()]
-        with open_buildout_configfile() as buildout_cfg:
-            buildout_cfg.set('project', "console_scripts", repr(formatted_entrypoints))
 
 class ConsoleScriptsPlugin(CommandPlugin):
     def get_docopt_string(self):
@@ -44,7 +31,7 @@ class ConsoleScriptsPlugin(CommandPlugin):
         method()
 
     def get_set(self):
-        return ConsoleScriptsSet
+        return ConsoleScriptsSet()
 
     def list(self):
         from pprint import pprint
