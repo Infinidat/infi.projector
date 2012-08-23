@@ -12,12 +12,12 @@ def is_executable_exists(filepath):
 
 def assert_buildout_executable_exists():
     if not is_executable_exists(path.join("bin", "buildout")):
-        logger.error("buildout executable does not exist, run `projector build devenv`")
+        logger.error("buildout executable does not exist, run `projector build scripts`")
         raise SystemExit(1)
 
 def assert_setup_py_exists():
     if not path.exists("setup.py"):
-        logger.error("setup.py does not exist, run `projector build devenv`")
+        logger.error("setup.py does not exist, run `projector build scripts`")
         raise SystemExit(1)
 
 def assert_buildout_configfile_exists():
