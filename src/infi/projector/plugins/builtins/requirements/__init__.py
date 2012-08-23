@@ -48,8 +48,8 @@ class RequirementsPlugin(CommandPlugin):
             requirements.remove(requirement)
             package_set.set(requirements)
         if self.arguments.get("--commit-changes", False):
-            commit_message = "remove {} from requirements {}".format(requirement,
-                                                                     "(dev)" if self.arguments("--development") else '')
+            message = "remove {} from requirements {}"
+            commit_message = message.format(requirement, "(dev)" if self.arguments("--development") else '')
             commit_changes_to_buildout(commit_message)
 
     def add(self):

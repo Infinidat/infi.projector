@@ -27,14 +27,14 @@ class RepositoryTestCase(TestCase):
     def test_init__mkdir_already_exists(self):
         with self.temporary_directory_context():
             self.assert_is_empty()
-            makdirs('a.b.c')
+            makedirs('a.b.c')
             with self.assertRaises(SystemExit):
                 self.projector("repository init --mkdir a.b.c none short long")
 
     def test_init__dotgit_exists(self):
         with self.temporary_directory_context():
             self.assert_is_empty()
-            makdirs(".git")
+            makedirs(".git")
             with self.assertRaises(SystemExit):
                 self.projector("repository init a.b.c none short long")
 
