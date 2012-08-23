@@ -60,6 +60,6 @@ class RequirementsPlugin(CommandPlugin):
             requirements.add(requirement)
             package_set.set(requirements)
         if self.arguments.get("--commit-changes", False):
-            commit_message = "adding {} to requirements {}".format(requirement,
-                                                                   "(dev)" if self.arguments("--development") else '')
+            message = "adding {} to requirements {}"
+            commit_message = message.format(requirement, "(dev)" if self.arguments.get("--development") else '')
             commit_changes_to_buildout(commit_message)
