@@ -4,6 +4,7 @@ import sys
 from mock import patch
 from os import path, pardir, curdir, remove
 from infi.projector.helper import utils, assertions
+from platform import system
 
 PROJECT_ROOT = path.abspath(path.join(path.dirname(__file__), pardir))
 
@@ -27,7 +28,12 @@ class DevEnvTestCase(TestCase):
             self.projector("devenv build --newest")
             self.projector("devenv build --offline")
             self.projector("devenv build --use-isolated-python")
-            self.projector("devenv build --pack")
+            if system() == "Darwin":
+                from infi.execute import ExecutionError
+                with self.assertRaises(ExecutionError):
+                    self.projector("devenv build --pack")
+            else:
+                self.projector("devenv build --pack")
             self.projector("devenv pylint")
 
     def test_build__no_bootstrap(self):
