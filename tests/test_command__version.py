@@ -76,6 +76,17 @@ class VersionTestCase(TestCase):
             execute_with_buildout.assert_any_call("setup . register -r pypi sdist upload -r pypi")
             execute_with_buildout.assert_any_call("setup . register -r pypi bdist_egg upload -r pypi")
 
+    def test_release_with_uncommitted_changes(self):
+        from mock import patch
+        from os import remove, path
+        with self.temporary_directory_context():
+            self.projector("repository init a.b.c none short long")
+            self.projector("build scripts --no-script")
+            remove("buildout.cfg")
+            with self.assertRaises(SystemExit):
+                self.projector("version release 1.2.3 --no-fetch --no-upload")
+            self.assertFalse(path.exists("buildout.cfg"))
+
     @contextmanager
     def mock_build_and_upload_distributions(self):
         from mock import patch

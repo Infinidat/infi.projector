@@ -31,6 +31,7 @@ class VersionPlugin(CommandPlugin):
     @assertions.requires_built_repository
     def parse_commandline_arguments(self, arguments):
         assertions.assert_on_branch("develop")
+        assertions.assert_no_uncommitted_changes()
         methods = [self.release, self.upload]
         [method] = [method for method in methods
                     if arguments.get(method.__name__)]

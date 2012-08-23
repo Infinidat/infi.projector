@@ -30,6 +30,14 @@ def assert_git_repository():
         logger.error("the current directory is not a home of a git repository")
         raise SystemExit(1)
 
+def assert_no_uncommitted_changes():
+    from gitpy import LocalRepository
+    from os import curdir
+    repository = LocalRepository(curdir)
+    if repository.getChangedFiles() + repository.getStagedFiles():
+        logger.error("There are changes pending commit, cannot continue. please commit or checkout those changes")
+        raise SystemExit(1)
+
 def assert_isolated_python_exists():
     if not path.exists(path.join("parts", "python")):
         logger.error("Isolated python is required")
