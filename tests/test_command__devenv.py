@@ -2,7 +2,7 @@ from .test_case import TestCase
 from unittest import SkipTest
 import sys
 from mock import patch
-from os import path, pardir, curdir, remove
+from os import path, pardir, curdir, remove, name
 from infi.projector.helper import utils, assertions
 from platform import system
 
@@ -26,7 +26,8 @@ class DevEnvTestCase(TestCase):
             self.assert_scripts_were_generated_by_buildout()
             self.assert_shebang_line_in_buildout_script_does_not_use_isolated_python()
             self.projector("devenv build --newest")
-            self.projector("devenv build --offline")
+            if name != 'nt':
+                self.projector("devenv build --offline")
 
     def test_pylint(self):
         with self.temporary_directory_context():
