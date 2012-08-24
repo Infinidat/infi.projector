@@ -45,7 +45,7 @@ class SubmodulePlugin(CommandPlugin):
         pprint(self.get_submodule_sections())
 
     def add(self):
-        with open_buildout_configfile() as buildout:
+        with open_buildout_configfile(write_on_exit=True) as buildout:
             name = self.arguments.get("<name>")
             if name  not in self.get_submodule_sections():
                 buildout.add_section(name)
@@ -64,7 +64,7 @@ class SubmodulePlugin(CommandPlugin):
             commit_changes_to_buildout(commit_message)
 
     def remove(self):
-        with open_buildout_configfile() as buildout:
+        with open_buildout_configfile(write_on_exit=True) as buildout:
             name = self.arguments.get("<name>")
             if name in self.get_submodule_sections():
                 buildout.remove_section(name)

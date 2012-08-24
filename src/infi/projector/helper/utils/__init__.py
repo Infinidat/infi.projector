@@ -24,13 +24,15 @@ def chdir(path):
         _chdir_and_log(current_dir)
 
 @contextmanager
-def open_buildout_configfile(filepath="buildout.cfg"):
+def open_buildout_configfile(filepath="buildout.cfg", write_on_exit=False):
     from ConfigParser import ConfigParser
     parser = ConfigParser()
     parser.read(filepath)
     try:
         yield parser
     finally:
+        if not write_on_exit:
+            return
         with open(filepath, 'w') as fd:
             parser.write(fd)
 

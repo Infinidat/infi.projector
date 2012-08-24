@@ -33,7 +33,7 @@ class IsolatedPythonPlugin(CommandPlugin):
         return PackageDataSet()
 
     def python_version(self):
-        with open_buildout_configfile() as buildout:
+        with open_buildout_configfile(write_on_exit=self.arguments.get("set")) as buildout:
             sections = [section for section in buildout.sections()
                         if buildout.has_option(section, "recipe") and \
                         buildout.get(section, "recipe") == "infi.recipe.python"]

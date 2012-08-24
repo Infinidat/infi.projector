@@ -185,7 +185,7 @@ class DevEnvPlugin(CommandPlugin):
         from os import curdir
         from gitpy import LocalRepository
         relative_paths = self.arguments.get("--relative", False)
-        with open_buildout_configfile() as buildout:
+        with open_buildout_configfile(write_on_exit=True) as buildout:
             buildout.set("buildout", "relative-paths", 'true' if relative_paths else 'false')
             relative_python = 'parts/python/bin/python'
             absolute_python = '${buildout:directory}/parts/python/bin/python'

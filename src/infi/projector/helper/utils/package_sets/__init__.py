@@ -21,7 +21,7 @@ class BasePackageSet(PackageSetInterface, object):
             return self.from_value(buildout_cfg.get(self.section_name, self.attribute_name))
 
     def set(self, package_set):
-        with open_buildout_configfile() as buildout_cfg:
+        with open_buildout_configfile(write_on_exit=True) as buildout_cfg:
             buildout_cfg.set(self.section_name, self.attribute_name, self.to_value(package_set))
 
     def from_value(self, value): # pragma: no cover

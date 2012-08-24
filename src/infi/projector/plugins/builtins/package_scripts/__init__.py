@@ -42,7 +42,7 @@ class PackageScriptsPlugin(CommandPlugin):
             return buildout_cfg.get("project", self.get_attribute())
 
     def set_value(self, value):
-        with open_buildout_configfile() as buildout_cfg:
+        with open_buildout_configfile(write_on_exit=True) as buildout_cfg:
             return buildout_cfg.set("project", self.get_attribute(), value)
 
     def show(self):
