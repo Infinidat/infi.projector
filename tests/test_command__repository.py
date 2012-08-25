@@ -24,6 +24,18 @@ class RepositoryTestCase(TestCase):
             with utils.chdir('a.b.c'):
                 self.assert_project_checked_out()
 
+    def test_init__mkdir__name_has_dotgit_in_the_middle(self):
+        with self.temporary_directory_context():
+            self.assert_is_empty()
+            self.projector("repository init --mkdir a.b.gitsomething.foo none short long")
+            self.assertTrue(path.exists("a.b.gitsomething.foo"))
+
+    def test_init__mkdir__name_endswith_dotgit(self):
+        with self.temporary_directory_context():
+            self.assert_is_empty()
+            self.projector("repository init --mkdir a.b.git none short long")
+            self.assertTrue(path.exists("a.b"))
+
     def test_init__mkdir_already_exists(self):
         with self.temporary_directory_context():
             self.assert_is_empty()

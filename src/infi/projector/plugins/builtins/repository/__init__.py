@@ -59,7 +59,7 @@ class RepositoryPlugin(CommandPlugin):
             yield
             return
         dirname = self.arguments.get('<project_name>') or self.arguments.get('<origin>')
-        dirname = dirname.replace('.git', '').split(sep)[-1]
+        dirname = (dirname if not dirname.endswith('.git') else dirname[0:-4]).split(sep)[-1]
         if exists(dirname) and isdir(dirname):
             logger.debug("{} already exists".format(dirname))
             raise SystemExit(1)
