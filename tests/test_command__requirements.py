@@ -7,15 +7,21 @@ class RequirementsTestCase(TestCase):
     @iterate("package_name", ["distribute", "ipython", "does-not-exist"])
     def test_add_and_remove(self, development_flag, package_name):
         from infi.projector.plugins.builtins.requirements import RequirementsPlugin
+        from gitpy import LocalRepository
+        from os import curdir
         plugin = RequirementsPlugin()
         plugin.arguments = {'--development': development_flag}
         with self.temporary_directory_context():
             self.projector("repository init a.b.c none short long")
+            repository = LocalRepository('.')
+            self.assertTrue(repository.isWorkingDirectoryClean())
             self.projector("requirements add {} {} --commit-changes".format(package_name,
                                                            '--development' if development_flag else ''))
+            self.assertTrue(repository.isWorkingDirectoryClean())
             self.assertTrue(package_name in plugin.get_package_set().get())
             self.projector("requirements remove {} {} --commit-changes".format(package_name,
                                                            '--development' if development_flag else ''))
+            self.assertTrue(repository.isWorkingDirectoryClean())
             self.assertFalse(package_name in plugin.get_package_set().get())
 
     @iterate("development_flag", [True, False])

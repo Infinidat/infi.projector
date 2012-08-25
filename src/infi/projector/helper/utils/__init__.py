@@ -108,7 +108,7 @@ def commit_changes_to_buildout(message):
     from os import curdir
     from gitpy import LocalRepository
     repository = LocalRepository(curdir)
-    if "buildout.cfg" not in repository.getChangedFiles():
+    if "buildout.cfg" not in [modified_file.filename for modified_file in repository.getChangedFiles()]:
         return
     repository.add("buildout.cfg")
     repository.commit("buildout.cfg: " + message)
