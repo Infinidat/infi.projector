@@ -9,15 +9,17 @@ USAGE = """
 Usage:
     projector repository init [--mkdir] <project_name> <origin> <short_description> <long_description>
     projector repository clone <origin>
+    projector repository skeleton update [--remove-deprecated-files] [--commit-changes]
 
 Options:
-    repository init         Create a new project/git repository
-    repository clone        Clone an exisiting project/git repository
-    <project_name>          The name of the project in pyhton-module-style (object)
-    <origin>                Remote repository url
-    <short_description>     A one-line description
-    <long_description>      A multi-line description
-    --mkdir                 Init the repository in a new directory instead of the current directory
+    repository init                 Create a new project/git repository
+    repository clone                Clone an exisiting project/git repository
+    repository skeleton update      Update skeleton-related files (e.g bootstrap.py)
+    <project_name>                  The name of the project in pyhton-module-style (object)
+    <origin>                        Remote repository url
+    <short_description>             A one-line description
+    <long_description>              A multi-line description
+    --mkdir                         Init the repository in a new directory instead of the current directory
 """
 
 def get_package_namespace(name):
@@ -41,7 +43,7 @@ class RepositoryPlugin(CommandPlugin):
         return 'repository'
 
     def parse_commandline_arguments(self, arguments):
-        methods = [self.init, self.clone]
+        methods = [self.init, self.clone, self.skeleton]
         [method] = [method for method in methods
                     if arguments.get(method.__name__)]
         self.arguments = arguments
@@ -167,3 +169,54 @@ class RepositoryPlugin(CommandPlugin):
             self.git_clone()
             self.git_checkout_develop()
             self.gitflow_init()
+
+    def overwrite_update_files(self):
+        from os.path import basename
+        from .skeleton import get_files_to_update
+        from shutil import copy
+        from os import curdir
+        from gitpy import LocalRepository
+        repository = LocalRepository(curdir)
+        for src, dst in [(filepath, basename(filepath)) for filepath in get_files_to_update()]:
+            copy(src, dst)
+            logger.info("overwriting {}".format(dst))
+            if self.arguments.get("--commit-changes", False):
+                repository.add(dst)
+
+    def remove_deprecated_files(self):
+        from os import curdir, path, remove
+        from gitpy import LocalRepository
+        repository = LocalRepository(curdir)
+        for filename in [filename for filename in ["buildout-git.cfg", "buildout-version.cfg", "buildout-pack.cfg"]
+                         if path.exists(filename)]:
+            logger.info("removing {}".format(filename))
+            if self.arguments.get("--commit-changes", False):
+                repository.delete(filename, force=True)
+            else:
+                remove(filename)
+
+    def skeleton(self):
+        ATTRIBURES_BY_SECTION = {'project': ['name', 'namespace_packages', 'install_requires', 'version_file',
+                                             'description', 'long_description', 'console_scripts', 'upgrade_code']}
+        from infi.projector.helper.utils import open_buildout_configfile
+        if not self.arguments.get("update"):
+            logger.error("Not implemented")
+            raise SystemExit(1)
+        with open_buildout_configfile() as original:
+            backup = {}
+            for section in ATTRIBURES_BY_SECTION.keys():
+                backup[section] = {key:original.get(section, key) for key in ATTRIBURES_BY_SECTION[section]}
+
+            self.remove_deprecated_files()
+            self.overwrite_update_files()
+            with open_buildout_configfile(write_on_exit=True) as update:
+                for section, attributes in backup.items():
+                    for key, value in attributes.items():
+                        update.set(section, key, value)
+
+        if self.arguments.get("--commit-changes", False):
+            from gitpy import LocalRepository
+            repository = LocalRepository(curdir)
+            repository.add('buidout.cfg')
+            message = "updated project files from skeleton"
+            repository.commit(message)
