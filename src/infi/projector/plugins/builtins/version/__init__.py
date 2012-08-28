@@ -59,7 +59,7 @@ class VersionPlugin(CommandPlugin):
         from os import curdir
         repository = LocalRepository(curdir)
         try:
-            repository.fetch(repository.getRemoteByName("origin"))
+            repository.fetch()
         except (TypeError, GitCommandFailedException), error:
             logger.error("Failed to fetch origin: {}".format(getattr(error, 'msg', error.message)))
             logger.info("Either fix this or run with --no-fetch")
