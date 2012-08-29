@@ -63,7 +63,7 @@ class VersionTestCase(TestCase):
                         repository.commit("empty commit", allowEmpty=True)
                     with self.assertRaises(SystemExit):
                         self.projector("version release 1.2.3 --no-upload")
-                    self.projector("version release 1.2.3 --no-fetch --no-upload")
+                        self.projector("version release 1.2.3 --no-fetch --no-upload")
 
     def test_upload(self):
         from mock import patch
