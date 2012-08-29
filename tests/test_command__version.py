@@ -63,7 +63,24 @@ class VersionTestCase(TestCase):
                         repository.commit("empty commit", allowEmpty=True)
                     with self.assertRaises(SystemExit):
                         self.projector("version release 1.2.3 --no-upload")
-                        self.projector("version release 1.2.3 --no-fetch --no-upload")
+
+    def test_local_behind_origin__no_fetch(self):
+        from os import curdir
+        from os.path import abspath, basename
+        from infi.projector.helper.utils import chdir
+        with self.temporary_directory_context():
+            self.projector("repository init a.b.c none short long")
+            self.projector("devenv build --no-scripts --no-readline")
+            origin = abspath(curdir)
+            with self.temporary_directory_context():
+                self.projector("repository clone {}".format(origin))
+                with chdir(basename(origin)):
+                    self.projector("devenv build --no-scripts --no-readline")
+                    with chdir(origin):
+                        repository = LocalRepository(curdir)
+                        repository.checkout("master")
+                        repository.commit("empty commit", allowEmpty=True)
+                    self.projector("version release 1.2.3 --no-fetch --no-upload")
 
     def test_upload(self):
         from mock import patch

@@ -121,13 +121,18 @@ class DevEnvPlugin(CommandPlugin):
 
     def install_readline(self):
         from platform import system
-        from infi.execute import execute_assert_success
+        from infi.execute import execute_assert_success, ExecutionError
         module = self.get_readline_module()
         if not module or self.is_module_installed(module): # pragma: no cover
             return
-        execute_assert_success("bin/easy_install {}".format(module).split())
+        try:
+            execute_assert_success("bin/easy_install {}".format(module).split())
+        except (OSError, ExecutionError): # pragma: no cover
+            logger.warn("distribute is not a requirements, not installing readline support")
+            pass
 
     def install_isolated_python_if_necessary(self):
+        from infi.execute import execute_assert_success, ExecutionError
         if not self.arguments.get("--use-isolated-python", False):
             return
         if not assertions.is_isolated_python_exists() or self.arguments.get("--newest", False):
