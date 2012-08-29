@@ -10,6 +10,6 @@ parts = production-scripts
 
 [production-scripts]
 dependent-scripts = false
-recipe = infi.vendata.console_scripts
+recipe = infi.recipe.console_scripts
 eggs = {}
 
