@@ -29,12 +29,6 @@ class DevEnvTestCase(TestCase):
             if name != 'nt':
                 self.projector("devenv build --offline")
 
-    def test_pylint(self):
-        with self.temporary_directory_context():
-            self.projector("repository init a.b.c none short long")
-            self.projector("devenv build --clean")
-            self.projector("devenv pylint")
-
     def test_pack(self):
         with self.temporary_directory_context():
             self.projector("repository init a.b.c none short long")

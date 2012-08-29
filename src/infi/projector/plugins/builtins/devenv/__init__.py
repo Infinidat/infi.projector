@@ -11,13 +11,11 @@ Usage:
     projector devenv build [--clean] [--force-bootstrap] [--no-submodules] [--no-scripts] [--no-readline] [--use-isolated-python] [[--newest] | [--offline]]
     projector devenv relocate ([--absolute] | [--relative]) [--commit-changes]
     projector devenv pack
-    projector devenv pylint
 
 Options:
     devenv build            use this command to generate setup.py and the console scripts
     devenv relocate         use this command to switch from relative and absolute paths in the console scripts
     devenv pack             create a package, e.g. deb/rpm/msi
-    devenv pylint           run pylint on the code
     --force-bootstrap       run bootstrap.py even if the buildout script already exists
     --no-submodules         do not clone git sub-modules defined in buildout.cfg
     --no-scripts            do not install the dependent packages, nor create the console scripts. just create setup.py
@@ -37,7 +35,7 @@ class DevEnvPlugin(CommandPlugin):
 
     @assertions.requires_repository
     def parse_commandline_arguments(self, arguments):
-        methods = [self.build, self.relocate, self.pack, self.pylint]
+        methods = [self.build, self.relocate, self.pack]
         [method] = [method for method in methods
                     if arguments.get(method.__name__)]
         self.arguments = arguments
@@ -168,19 +166,3 @@ class DevEnvPlugin(CommandPlugin):
     def pack(self):
         assertions.assert_isolated_python_exists()
         self.install_sections_by_recipe("infi.vendata.recipe.pack")
-
-    def pylint(self):
-        from infi.projector.helper.utils import open_buildout_configfile
-        from os import name, path
-        from infi.execute import execute
-        from sys import stdout, stderr
-        python = path.join('bin', 'python' if name != 'nt' else 'python.exe')
-        with open_buildout_configfile() as buildout:
-            name = buildout.get("project", "name")
-        argv = [name]
-        # TODO once https://www.logilab.org/ticket/103949 is resolved, just run bin/pylint
-        python_command = "from pylint.lint import Run; Run({!r})".format(argv)
-        logger.info("Running pylint, please wait...")
-        result = execute([python, "-c", python_command])
-        stdout.write(result.get_stdout())
-        stderr.write(result.get_stderr())
