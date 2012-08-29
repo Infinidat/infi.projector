@@ -197,7 +197,8 @@ class RepositoryPlugin(CommandPlugin):
 
     def skeleton(self):
         ATTRIBURES_BY_SECTION = {'project': ['name', 'namespace_packages', 'install_requires', 'version_file',
-                                             'description', 'long_description', 'console_scripts', 'upgrade_code']}
+                                             'description', 'long_description', 'console_scripts', 'upgrade_code',
+                                             'package_data']}
         from infi.projector.helper.utils import open_buildout_configfile
         if not self.arguments.get("update"):
             logger.error("Not implemented")
@@ -205,9 +206,10 @@ class RepositoryPlugin(CommandPlugin):
         with open_buildout_configfile() as original:
             backup = {}
             for section in ATTRIBURES_BY_SECTION.keys():
-                backup[section] = {key:original.get(section, key) for key in ATTRIBURES_BY_SECTION[section]}
+                backup[section] = {key:original.get(section, key, None) for key in ATTRIBURES_BY_SECTION[section]}
 
-            self.remove_deprecated_files()
+            if self.arguments.get("--remove-deprecated-files", False):
+                self.remove_deprecated_files()
             self.overwrite_update_files()
             with open_buildout_configfile(write_on_exit=True) as update:
                 for section, attributes in backup.items():
