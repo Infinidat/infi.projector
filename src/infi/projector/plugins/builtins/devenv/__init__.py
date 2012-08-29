@@ -115,7 +115,7 @@ class DevEnvPlugin(CommandPlugin):
         from infi.execute import execute_assert_success, ExecutionError
         try:
             execute_assert_success("bin/python -c import {}".format(module).split())
-        except ExecutionError: # pragma: no cover
+        except (OSError, ExecutionError): # pragma: no cover
             return False
         return True
 
