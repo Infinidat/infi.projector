@@ -170,4 +170,4 @@ class DevEnvPlugin(CommandPlugin):
 
     def pack(self):
         assertions.assert_isolated_python_exists()
-        self.install_sections_by_recipe("infi.vendata.recipe.pack")
+        self.install_sections_by_recipe("infi.recipe.application_packager")
