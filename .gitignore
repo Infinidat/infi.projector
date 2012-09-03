@@ -50,3 +50,4 @@ src/infi/projector/__version__.py
 !src/infi/projector/plugins/builtins/build/
 tmp*
 !tmp*py
+buildout.in

@@ -67,7 +67,7 @@ class EggsPackageSet(MultilineValueSet):
         with open_buildout_configfile() as buildout:
             sections = [section for section in buildout.sections()
                         if buildout.has_option(section, "recipe") and \
-                        buildout.get(section, "recipe") == "infi.vendata.console_scripts"]
+                        buildout.get(section, "recipe") == "infi.recipe.console_scripts"]
             return sections[0]
 
 class ConsoleScriptsSet(EntryPointSet):

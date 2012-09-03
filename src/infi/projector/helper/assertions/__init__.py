@@ -39,8 +39,12 @@ def assert_no_uncommitted_changes():
         logger.error(message+repr(changes))
         raise SystemExit(1)
 
+def is_isolated_python_exists():
+    return path.exists(path.join("parts", "python", "bin",
+                                 "python{}".format('.exe' if is_windows() else '')))
+
 def assert_isolated_python_exists():
-    if not path.exists(path.join("parts", "python")):
+    if not is_isolated_python_exists():
         logger.error("Isolated python is required")
         raise SystemExit(1)
 
@@ -56,7 +60,7 @@ def is_buildout_executable_using_isolated_python():
         content = fd.read()
     python_abspath = "{}/parts/python/bin/python".format(path.abspath(curdir))
     python_relpath = "parts/python/bin/python"
-    shebang_lines = ["#!" + '"{}"'.format(python) if is_windows() else '#!' + python
+    shebang_lines = ["#!" + '"{}"'.format(python) if is_windows() else '#!' + python + '-S'
                      for python in [python_relpath, python_abspath]]
     return any([content.startswith(shebang_line) for shebang_line in shebang_lines])
 

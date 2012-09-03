@@ -1,6 +1,6 @@
 from contextlib import contextmanager
 from infi.projector.plugins import CommandPlugin
-from infi.projector.helper import assertions
+from infi.projector.helper import assertions, utils
 from textwrap import dedent
 from logging import getLogger
 
@@ -11,13 +11,11 @@ Usage:
     projector devenv build [--clean] [--force-bootstrap] [--no-submodules] [--no-scripts] [--no-readline] [--use-isolated-python] [[--newest] | [--offline]]
     projector devenv relocate ([--absolute] | [--relative]) [--commit-changes]
     projector devenv pack
-    projector devenv pylint
 
 Options:
     devenv build            use this command to generate setup.py and the console scripts
     devenv relocate         use this command to switch from relative and absolute paths in the console scripts
     devenv pack             create a package, e.g. deb/rpm/msi
-    devenv pylint           run pylint on the code
     --force-bootstrap       run bootstrap.py even if the buildout script already exists
     --no-submodules         do not clone git sub-modules defined in buildout.cfg
     --no-scripts            do not install the dependent packages, nor create the console scripts. just create setup.py
@@ -37,17 +35,16 @@ class DevEnvPlugin(CommandPlugin):
 
     @assertions.requires_repository
     def parse_commandline_arguments(self, arguments):
-        methods = [self.build, self.relocate, self.pack, self.pylint]
+        methods = [self.build, self.relocate, self.pack]
         [method] = [method for method in methods
                     if arguments.get(method.__name__)]
         self.arguments = arguments
         method()
 
     def create_cache_directories(self):
-        from infi.projector.helper.utils import open_buildout_configfile
         from os import makedirs
         from os.path import join, exists
-        with open_buildout_configfile() as buildout:
+        with utils.open_buildout_configfile() as buildout:
             cachedir = buildout.get("buildout", "download-cache")
         cache_dist = join(cachedir, "dist")
         if not exists(cache_dist):
@@ -55,36 +52,31 @@ class DevEnvPlugin(CommandPlugin):
 
     def bootstrap_if_necessary(self):
         from os.path import exists, join
-        from infi.projector.helper.utils import execute_with_python
-        from infi.projector.helper.assertions import is_executable_exists
         if not exists("bootstrap.py"):
             logger.error("bootsrap.py does not exist")
             raise SystemExit(1)
-        if not is_executable_exists(join("bin", "buildout")) or self.arguments.get("--force-bootstrap", False):
-            execute_with_python("bootstrap.py -d")
+        buildout_executable_exists = assertions.is_executable_exists(join("bin", "buildout"))
+        if not buildout_executable_exists or self.arguments.get("--force-bootstrap", False):
+            utils.execute_with_python("bootstrap.py -d")
 
     def install_sections_by_recipe(self, recipe):
-        from infi.projector.helper.utils import open_buildout_configfile, execute_with_buildout
-        with open_buildout_configfile() as buildout:
+        with utils.open_buildout_configfile() as buildout:
             sections_to_install = [section for section in buildout.sections()
                                    if buildout.has_option(section, "recipe") and \
                                       buildout.get(section, "recipe") == recipe]
         if sections_to_install:
-            execute_with_buildout("install {}".format(' '.join(sections_to_install)))
+            utils.execute_with_buildout("install {}".format(' '.join(sections_to_install)))
 
     def submodule_update(self):
-        from infi.projector.helper.utils import buildout_parameters_context
-        with buildout_parameters_context(['buildout:develop=']):
+        with utils.buildout_parameters_context(['buildout:develop=']):
             self.install_sections_by_recipe("zerokspot.recipe.git")
 
     def create_setup_py(self):
-        from infi.projector.helper.utils import buildout_parameters_context
-        with buildout_parameters_context(['buildout:develop=']):
+        with utils.buildout_parameters_context(['buildout:develop=']):
             self.install_sections_by_recipe("infi.recipe.template.version")
 
     def get_isolated_python_section_name(self):
-        from infi.projector.helper.utils import open_buildout_configfile
-        with open_buildout_configfile() as buildout:
+        with utils.open_buildout_configfile() as buildout:
             sections = [section for section in buildout.sections()
                         if buildout.has_option(section, "recipe") and \
                         buildout.get(section, "recipe").startswith("infi.recipe.python")\
@@ -92,16 +84,7 @@ class DevEnvPlugin(CommandPlugin):
         return sections[0]
 
     def create_scripts(self):
-        from infi.projector.helper.utils import open_buildout_configfile, execute_with_buildout
-        from infi.projector.helper.utils import buildout_parameters_context
-        from infi.projector.helper.assertions import is_executable_exists
-        from os import path
-        python = path.join('parts', 'python', 'bin', 'python')
-        if self.arguments.get("--use-isolated-python", False):
-            if self.arguments.get("--newest", False) or not is_executable_exists(python):
-                execute_with_buildout("install {}".format(self.get_isolated_python_section_name()))
-        with self.buildout_use_custom_python():
-            self.install_sections_by_recipe("infi.vendata.console_scripts")
+        self.install_sections_by_recipe("infi.recipe.console_scripts")
 
     def clean_build(self):
         from os.path import exists
@@ -114,33 +97,13 @@ class DevEnvPlugin(CommandPlugin):
 
     @contextmanager
     def buildout_newest_or_offline_context(self):
-        from infi.projector.helper.utils import buildout_parameters_context
         parameters = []
         if self.arguments.get('--newest'):
             parameters.append('-n')
         if self.arguments.get('--offline'):
             parameters.append('-o')
-        with buildout_parameters_context(parameters):
+        with utils.buildout_parameters_context(parameters):
             yield
-
-    @contextmanager
-    def buildout_use_custom_python(self):
-        from infi.projector.helper.utils import execute_with_buildout, execute_with_python
-        from infi.projector.helper.utils import buildout_parameters_context
-        from infi.projector.helper.assertions import assert_buildout_executable_exists
-        from infi.projector.helper.assertions import is_buildout_executable_using_isolated_python
-        if self.arguments.get("--use-isolated-python", False):
-            with buildout_parameters_context(["buildout:python={}".format(self.get_isolated_python_section_name())]):
-                yield
-            assert_buildout_executable_exists()
-            if is_buildout_executable_using_isolated_python():
-                with buildout_parameters_context(["buildout:python=buildout"]):
-                    # We need to make sure bin/buildout doesn't use the inside isolated python
-                    execute_with_python("bootstrap.py -d")
-        else:
-            with buildout_parameters_context(["buildout:python=buildout"]):
-                # This is because most of our existing projects use isolated python default
-                yield
 
     def get_readline_module(self):
         from platform import system
@@ -152,25 +115,39 @@ class DevEnvPlugin(CommandPlugin):
         from infi.execute import execute_assert_success, ExecutionError
         try:
             execute_assert_success("bin/python -c import {}".format(module).split())
-        except ExecutionError: # pragma: no cover
+        except (OSError, ExecutionError): # pragma: no cover
             return False
         return True
 
     def install_readline(self):
         from platform import system
-        from infi.execute import execute_assert_success
+        from infi.execute import execute_assert_success, ExecutionError
         module = self.get_readline_module()
         if not module or self.is_module_installed(module): # pragma: no cover
             return
-        execute_assert_success("bin/easy_install {}".format(module).split())
+        try:
+            execute_assert_success("bin/easy_install {}".format(module).split())
+        except (OSError, ExecutionError): # pragma: no cover
+            logger.warn("distribute is not a requirements, not installing readline support")
+            pass
+
+    def install_isolated_python_if_necessary(self):
+        from infi.execute import execute_assert_success, ExecutionError
+        if not self.arguments.get("--use-isolated-python", False):
+            return
+        if not assertions.is_isolated_python_exists() or self.arguments.get("--newest", False):
+            with utils.buildout_parameters_context(['buildout:develop=']):
+                utils.execute_with_buildout("install {}".format(self.get_isolated_python_section_name()))
+            self.arguments["--force-bootstrap"] =  True
+            utils.execute_with_isolated_python("bootstrap.py -d")
 
     def build(self):
-        from infi.projector.helper.utils import buildout_parameters_context
         if self.arguments.get("--clean", False):
             self.clean_build()
         self.create_cache_directories()
         self.bootstrap_if_necessary()
         with self.buildout_newest_or_offline_context():
+            self.install_isolated_python_if_necessary()
             if not self.arguments.get("--no-submodules", False):
                 self.submodule_update()
             if not self.arguments.get("--no-setup-py", False):
@@ -181,38 +158,16 @@ class DevEnvPlugin(CommandPlugin):
                     self.install_readline()
 
     def relocate(self):
-        from infi.projector.helper.utils import open_buildout_configfile, commit_changes_to_buildout
         from os import curdir
         from gitpy import LocalRepository
         relative_paths = self.arguments.get("--relative", False)
-        with open_buildout_configfile(write_on_exit=True) as buildout:
+        with utils.open_buildout_configfile(write_on_exit=True) as buildout:
             buildout.set("buildout", "relative-paths", 'true' if relative_paths else 'false')
-            relative_python = 'parts/python/bin/python'
-            absolute_python = '${buildout:directory}/parts/python/bin/python'
-            isolated_python_section = self.get_isolated_python_section_name()
-            buildout.set(isolated_python_section, "executable", relative_python if relative_paths else absolute_python)
         if self.arguments.get("--commit-changes", False):
             commit_message = "Changing shebang to {} paths".format("relative" if relative_paths else "absolute")
-            commit_changes_to_buildout(commit_message)
+            utils.commit_changes_to_buildout(commit_message)
         logger.info("Configuration changed. Run `projector devenv build [--use-isolated-python]`.")
 
     def pack(self):
-        from infi.projector.helper.assertions import assert_isolated_python_exists
-        assert_isolated_python_exists()
-        self.install_sections_by_recipe("infi.vendata.recipe.pack")
-
-    def pylint(self):
-        from infi.projector.helper.utils import open_buildout_configfile
-        from os import name, path
-        from infi.execute import execute
-        from sys import stdout, stderr
-        python = path.join('bin', 'python' if name != 'nt' else 'python.exe')
-        with open_buildout_configfile() as buildout:
-            name = buildout.get("project", "name")
-        argv = [name]
-        # TODO once https://www.logilab.org/ticket/103949 is resolved, just run bin/pylint
-        python_command = "from pylint.lint import Run; Run({!r})".format(argv)
-        logger.info("Running pylint, please wait...")
-        result = execute([python, "-c", python_command])
-        stdout.write(result.get_stdout())
-        stderr.write(result.get_stderr())
+        assertions.assert_isolated_python_exists()
+        self.install_sections_by_recipe("infi.recipe.application_packager")
