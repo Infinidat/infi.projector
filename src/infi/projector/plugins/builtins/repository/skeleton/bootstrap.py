@@ -18,7 +18,7 @@ The script accepts buildout command-line options, so you can
 use the -c option to specify an alternate configuration file.
 """
 
-import os, shutil, sys, tempfile, urllib, urllib2, subprocess
+import os, shutil, sys, tempfile, textwrap, urllib, urllib2, subprocess
 from optparse import OptionParser
 
 if sys.platform == 'win32':
@@ -51,7 +51,8 @@ if not has_broken_dash_S and 'site' in sys.modules:
     args = sys.argv[:]
     args[0:0] = [sys.executable, '-S']
     args = map(quote, args)
-    os.execv(sys.executable, args)
+    subprocess.Popen([sys.executable, ] + args,
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE).wait()
 # Now we are running with -S.  We'll get the clean sys.path, import site
 # because distutils will do it later, and then reset the path and clean
 # out any namespace packages from site-packages that might have been
