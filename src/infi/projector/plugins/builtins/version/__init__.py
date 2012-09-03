@@ -89,7 +89,7 @@ class VersionPlugin(CommandPlugin):
         version_tag = self.arguments['<version>']
         assert_version_tag_for_upload(version_tag)
         version_tag_without_v = version_tag.lstrip('v')
-        version_tag_with_v = 'v{}'.format(version_tag)
+        version_tag_with_v = 'v{}'.format(version_tag_without_v)
         self.build_and_upload_distributions(version_tag_with_v)
         git_checkout("develop")
 
