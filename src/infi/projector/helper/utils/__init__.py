@@ -65,6 +65,7 @@ def _get_executable_from_shebang_line():  # pragma: no cover
 def execute_with_python(commandline_or_args):
     import sys
     from ..assertions import is_windows
+    from infi.execute import ExecutionError
     args = parse_args(commandline_or_args)
     executable = [sys.executable if not is_windows() else _get_executable_from_shebang_line()]
     if not is_running_inside_virtualenv():
