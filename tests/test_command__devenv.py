@@ -30,6 +30,7 @@ class DevEnvTestCase(TestCase):
                 self.projector("devenv build --offline")
 
     def test_pack(self):
+        raise SkipTest("pack recipe is in progress")
         with self.temporary_directory_context():
             self.projector("repository init a.b.c none short long")
             self.projector("devenv build --use-isolated-python")

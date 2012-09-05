@@ -35,6 +35,13 @@ def generate_package_code():
 def indent(text):
     return '\n'.join(['\t{}'.format(line) for line in text.splitlines()]).strip()
 
+def get(original, section, key, default=None):
+    from ConfigParser import NoOptionError
+    try:
+        return original.get(section, key)
+    except NoOptionError:
+        return default
+
 class RepositoryPlugin(CommandPlugin):
     def get_docopt_string(self):
         return USAGE
@@ -199,26 +206,33 @@ class RepositoryPlugin(CommandPlugin):
         ATTRIBURES_BY_SECTION = {'project': ['name', 'namespace_packages', 'install_requires', 'version_file',
                                              'description', 'long_description', 'console_scripts', 'upgrade_code',
                                              'package_data']}
+        DEFAULTS = {'namespace_packages': [], 'install_requires': [], 'console_scripts': [], 'package_data': []}
         from infi.projector.helper.utils import open_buildout_configfile
         if not self.arguments.get("update"):
             logger.error("Not implemented")
             raise SystemExit(1)
+        logger.info("Starting skeleton update")
         with open_buildout_configfile() as original:
             backup = {}
+            logger.info("Backing up buildout sections")
             for section in ATTRIBURES_BY_SECTION.keys():
-                backup[section] = {key:original.get(section, key, None) for key in ATTRIBURES_BY_SECTION[section]}
-
+                backup[section] = {key:get(original, section, key, DEFAULTS.get(key, None))
+                                   for key in ATTRIBURES_BY_SECTION[section]}
             if self.arguments.get("--remove-deprecated-files", False):
+                logger.info("Removing deprecated files")
                 self.remove_deprecated_files()
+            logger.info("Writing skeleton files")
             self.overwrite_update_files()
             with open_buildout_configfile(write_on_exit=True) as update:
+                logger.info("Writing buildout.cfg")
                 for section, attributes in backup.items():
                     for key, value in attributes.items():
                         update.set(section, key, value)
 
         if self.arguments.get("--commit-changes", False):
+            logger.info("Committing changes")
             from gitpy import LocalRepository
+            from os import curdir
             repository = LocalRepository(curdir)
-            repository.add('buidout.cfg')
             message = "updated project files from skeleton"
-            repository.commit(message)
+            repository.commit(message, commitAll=True)

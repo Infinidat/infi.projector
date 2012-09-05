@@ -54,9 +54,12 @@ def _get_executable_from_shebang_line():  # pragma: no cover
     from os import path
     import sys
     executable_script_py = sys.executable.replace(".exe", "-script.py")
+    if not path.exists(executable_script_py):
+        # using original Python executable
+        return sys.executable
     with open(executable_script_py) as fd:
         shebang_line = fd.readlines()[0].strip()
-    executable_path = path.normpath(shebang_line[3:-1])
+    executable_path = path.normpath(shebang_line[2:])
     return (executable_path + '.exe') if not executable_path.endswith('.exe') else executable_path
 
 def execute_with_python(commandline_or_args):
@@ -66,7 +69,12 @@ def execute_with_python(commandline_or_args):
     executable = [sys.executable if not is_windows() else _get_executable_from_shebang_line()]
     if not is_running_inside_virtualenv():
         executable.append('-S')
-    execute_assert_success(executable + args)
+    try:
+        execute_assert_success(executable + args)
+    except ExecutionError:
+        logger.warning("Command falied with -S, trying without")
+        executable.remove('-S')
+        execute_assert_success(executable + args)
 
 def execute_with_isolated_python(commandline_or_args):
     import sys
