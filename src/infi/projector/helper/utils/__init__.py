@@ -69,7 +69,12 @@ def execute_with_python(commandline_or_args):
     executable = [sys.executable if not is_windows() else _get_executable_from_shebang_line()]
     if not is_running_inside_virtualenv():
         executable.append('-S')
-    execute_assert_success(executable + args)
+    try:
+        execute_assert_success(executable + args)
+    except ExecutionError:
+        logger.warning("Command falied with -S, trying without")
+        executable.remove('-S')
+        execute_assert_success(executable + args)
 
 def execute_with_isolated_python(commandline_or_args):
     import sys
