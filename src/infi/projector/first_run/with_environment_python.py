@@ -21,6 +21,7 @@ def is_dependency_installed(dependency):
     for sep in separators:
         if sep in dependency:
             module_name = dependency.split(sep)[0]
+            break
     try:
         __import__(PACKAGE_QUICKS.get(module_name, module_name))
     except ImportError:
@@ -37,7 +38,7 @@ def check_for_dependencies():
 def build_scripts():
     import sys
     from infi.projector.scripts import projector
-    projector(' '.join(['build', 'scripts'] + sys.argv[1:]))
+    projector(' '.join(['devenv', 'build'] + sys.argv[1:]))
 
 def main():
     append_src_to_python_path()
