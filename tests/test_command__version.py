@@ -1,8 +1,11 @@
+from unittest import SkipTest
 from .test_case import TestCase
 from infi.unittest.parameters import iterate
 from infi.pyutils.contexts import contextmanager
 from gitpy import LocalRepository
-from os import curdir
+from os import curdir, name
+
+is_windows = name == "nt"
 
 RELEASE_TAGS = dict(major='1.0', minor='v0.1', trivial='0.0.1')
 
@@ -49,6 +52,8 @@ class VersionTestCase(TestCase):
         from os import curdir
         from os.path import abspath, basename
         from infi.projector.helper.utils import chdir
+        if is_windows:
+            raise SkipTest("skipping test on windows")
         with self.temporary_directory_context():
             self.projector("repository init a.b.c none short long")
             self.projector("devenv build --no-scripts --no-readline")
