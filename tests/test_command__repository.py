@@ -1,6 +1,9 @@
+from unittest import SkipTest
 from .test_case import TestCase
-from os import path, curdir, listdir, makedirs
+from os import path, curdir, listdir, makedirs, name
 from infi.projector.helper import utils
+
+is_windows = name == "nt"
 
 class RepositoryTestCase(TestCase):
     def assert_is_empty(self):
@@ -51,8 +54,10 @@ class RepositoryTestCase(TestCase):
                 self.projector("repository init a.b.c none short long")
 
     def test_clone(self):
-        from os import curdir
+        from os import curdir, name
         from os.path import abspath
+        if is_windows:
+            raise SkipTest("skipping test on windows")
         with self.temporary_directory_context():
             self.projector("repository init --mkdir a.b.c none short long")
             origin = abspath(path.join(curdir, 'a.b.c'))
