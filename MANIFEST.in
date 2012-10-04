@@ -1,0 +1,1 @@
+recursive-include src setup.in bootstrap.py .gitignore buildout.cfg README.md
