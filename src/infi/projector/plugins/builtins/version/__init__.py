@@ -85,12 +85,17 @@ class VersionPlugin(CommandPlugin):
 
     def upload(self):
         from infi.projector.helper.assertions import assert_version_tag_for_upload
-        from infi.projector.helper.utils import release_version_with_git_flow, git_checkout
+        from infi.projector.helper.utils import release_version_with_git_flow, git_checkout, get_latest_version
         version_tag = self.arguments['<version>']
         assert_version_tag_for_upload(version_tag)
-        version_tag_without_v = version_tag.lstrip('v')
-        version_tag_with_v = 'v{}'.format(version_tag_without_v)
-        self.build_and_upload_distributions(version_tag_with_v)
+        if version_tag == 'current':
+            version_to_upload = 'HEAD'
+        elif version_tag == 'latest':
+            version_to_upload = get_latest_version()
+        else:
+            version_tag_without_v = version_tag.lstrip('v')
+            version_to_upload = 'v{}'.format(version_tag_without_v)
+        self.build_and_upload_distributions(version_to_upload)
         git_checkout("develop")
 
     def get_current_version_from_git_describe(self):

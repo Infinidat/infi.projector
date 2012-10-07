@@ -93,7 +93,7 @@ def assert_version_tag_for_release(version_tag):
         raise SystemExit(1)
 
 def assert_version_tag_for_upload(version_tag):
-    if not is_version_tag_exists(version_tag):
+    if all([not is_version_tag_exists(version_tag), version_tag not in ['current', 'latest']]):
         msg = "Version tag {} doesn't exist, cannot upload it."
         logger.error(msg.format(version_tag))
         raise SystemExit(1)
