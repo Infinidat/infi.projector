@@ -140,7 +140,5 @@ def get_latest_version():
     repository = LocalRepository(curdir)
     version_tags = [tag.name for tag in repository.getTags()
                     if tag.name.startswith('v') and not tag.name.endswith('-develop')]
-    versions = {parse_version(tag):tag for tag in version_tags}
-    version_keys_sorted_from_oldest_to_latest = versions.keys()
-    latest_version_key = version_keys_sorted_from_oldest_to_latest[-1]
-    return versions[latest_version_key]
+    version_tags.sort(key=lambda ver: parse_version(ver))
+    return version_tags[-1]
