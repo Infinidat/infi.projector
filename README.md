@@ -129,7 +129,7 @@ Based on the plaform you're running on, this command will generate a package und
 ### Project/User defaults
 
 In some cases, you'd want to always use a set of command-line arguments for a specific project, or maybe some user will want to use the same arguments for all their projects.
-You can do so by writing the following configuration file to `./.infiproject` (per-project) or `~/.infiproject` (per-user):
+You can do so by writing the following configuration file to `./.projector` (per-project) or `~/.projector` (per-user):
 
     [commandline-arguments]
     --use-isolated-python = True

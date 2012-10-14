@@ -10,7 +10,7 @@ class TestParser(TestCase):
         self.projector("-v")
 
 def expanduser(*args, **kwargs):
-    return '.infiproject'
+    return '.projector'
 
 class ConfigFileParserTests(TestCase):
     def test_configfile_does_not_exist(self):
@@ -23,7 +23,7 @@ class ConfigFileParserTests(TestCase):
 
     def test_configfile_no_commanline_section(self):
         with self.temporary_directory_context():
-            with open(".infiproject", 'w') as fd:
+            with open(".projector", 'w') as fd:
                 fd.write("[invalid-section]\n")
             with patch("os.path.expanduser", new=expanduser):
                 from infi.projector.commandline_parser import append_default_arguments_from_configuration_files
@@ -33,7 +33,7 @@ class ConfigFileParserTests(TestCase):
 
     def test_configfile_some_commandline_arguments(self):
         with self.temporary_directory_context():
-            with open(".infiproject", 'w') as fd:
+            with open(".projector", 'w') as fd:
                 fd.write("[commandline-arguments]\n--use-isolated-python = True\n--pypi-servers=pypi,local\n")
             with patch("os.path.expanduser", new=expanduser):
                 from infi.projector.commandline_parser import append_default_arguments_from_configuration_files

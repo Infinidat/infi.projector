@@ -97,8 +97,8 @@ def merge_commandline_arguments_from_configfile(arguments, configfile_path):
 
 def append_default_arguments_from_configuration_files(arguments):
     from os import curdir, path
-    CONFIGURATION_FILES = [path.expanduser(path.join("~", ".infiproject")),
-                           path.join(curdir, ".infiproject")]
+    CONFIGURATION_FILES = [path.expanduser(path.join("~", ".projector")),
+                           path.join(curdir, ".projector")]
     for configfile_path in CONFIGURATION_FILES:
         merge_commandline_arguments_from_configfile(arguments, configfile_path)
 
