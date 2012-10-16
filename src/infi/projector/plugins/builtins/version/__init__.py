@@ -78,12 +78,12 @@ class VersionPlugin(CommandPlugin):
         version_tag_with_v = 'v{}'.format(version_tag_without_v)
         release_version_with_git_flow(version_tag_with_v)
         self.arguments['<version>'] = version_tag
+        if self.arguments.get("--push-changes", False):
+            self.push_commits_and_tags()
         if self.arguments.get('--no-upload', False):
             git_checkout("develop")
         else:
             self.upload()
-        if self.arguments.get("--push-changes", False):
-            self.push_commits_and_tags()
 
     def upload(self):
         from infi.projector.helper.assertions import assert_version_tag_for_upload
