@@ -129,7 +129,8 @@ class VersionTestCase(TestCase):
                 self.projector("repository init a.b.c none short long")
                 self.projector("devenv build --no-scripts --no-readline")
                 self.projector("version release minor --no-fetch --pypi-servers=")
-                LocalRepository(curdir)._executeGitCommandAssertSuccess("git config --local receive.denyCurrentBranch ignore")
+                git_config = path.join(".git", "config")
+                LocalRepository(curdir)._executeGitCommandAssertSuccess("git config -f {} receive.denyCurrentBranch ignore".format(git_config))
                 with self.temporary_directory_context():
                     self.projector("repository clone {}".format(origin_location))
                     with chdir(path.basename(origin_location)):
