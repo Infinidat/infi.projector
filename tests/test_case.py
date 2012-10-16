@@ -12,7 +12,7 @@ class TestCase(unittest.TestCase):
         from infi.projector.helper.utils import chdir
         tempdir = mkdtemp()
         with chdir(tempdir):
-            yield
+            yield tempdir
         rmtree(tempdir, ignore_errors=True)
 
     def projector(self, argv):

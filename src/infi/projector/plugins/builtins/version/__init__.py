@@ -8,7 +8,7 @@ logger = getLogger(__name__)
 
 USAGE = """
 Usage:
-    projector version release <version> [--no-fetch] (--no-upload | [--distributions=DISTRIBUTIONS] [--pypi-servers=PYPI_SERVERS])
+    projector version release <version> [--no-fetch] (--no-upload | [--distributions=DISTRIBUTIONS] [--pypi-servers=PYPI_SERVERS]) [--push-changes]
     projector version upload <version> [--distributions=DISTRIBUTIONS] [--pypi-servers=PYPI_SERVERS]
 
 Options:
@@ -82,6 +82,8 @@ class VersionPlugin(CommandPlugin):
             git_checkout("develop")
         else:
             self.upload()
+        if self.arguments.get("--push-changes", False):
+            self.push_commits_and_tags()
 
     def upload(self):
         from infi.projector.helper.assertions import assert_version_tag_for_upload
@@ -98,11 +100,18 @@ class VersionPlugin(CommandPlugin):
         self.build_and_upload_distributions(version_to_upload)
         git_checkout("develop")
 
-    def get_current_version_from_git_describe(self):
+    def get_repository(self):
         from gitpy import LocalRepository
         from os import curdir
-        repository = LocalRepository(curdir)
-        return repository._executeGitCommand("git describe --tags").stdout.read().splitlines()[0]
+        return LocalRepository(curdir)
+
+    def push_commits_and_tags(self):
+        repository = self.get_repository()
+        repository._executeGitCommandAssertSuccess("git push")
+        repository._executeGitCommandAssertSuccess("git push --tags")
+
+    def get_current_version_from_git_describe(self):
+        return self.get_repository()._executeGitCommand("git describe --tags").stdout.read().splitlines()[0]
 
     def build_and_upload_distributions(self, version_tag_with_v):
         from infi.projector.helper.utils import execute_with_buildout, git_checkout
