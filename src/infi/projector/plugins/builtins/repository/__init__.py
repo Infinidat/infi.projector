@@ -168,7 +168,9 @@ class RepositoryPlugin(CommandPlugin):
         from os import curdir
         from gitpy import LocalRepository
         repository = LocalRepository(curdir)
-        repository.clone(self.arguments.get("<origin>"))
+        origin = self.arguments.get("<origin>")
+        logger.debug("Cloning {}".format(origin))
+        repository.clone(origin)
 
     def clone(self):
         self.arguments['--mkdir'] = True

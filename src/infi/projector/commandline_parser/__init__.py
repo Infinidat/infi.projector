@@ -1,4 +1,8 @@
 from textwrap import dedent
+from infi.exceptools import chain, InfiException
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 def parse_docopt_string(docopt_string):
     """returns a 2-tuple (usage, options)"""
@@ -59,14 +63,54 @@ def get_commandline_doc():
                       options=ident_options(all_options),
                       version=__version__)
 
+class ParseException(InfiException):
+    pass
+
+def parse_configfile(configfile_path):
+    from ConfigParser import ConfigParser
+    try:
+        parser = ConfigParser()
+        parser.read(configfile_path)
+    except:
+        raise chain(InfiException())
+    return parser
+
+def parse_configfile_value(value):
+    try:
+        return eval(value)
+    except:
+        return value
+
+def merge_commandline_arguments_from_configfile(arguments, configfile_path):
+    try:
+        configuration = parse_configfile(configfile_path)
+        logger.debug("Failed to parse {}".format(configfile_path))
+    except ParseException:
+        return
+    if not configuration.has_section("commandline-arguments"):
+        logger.debug("File {} has no commandline-arguments".format(configfile_path))
+        return
+    for name, value in configuration.items("commandline-arguments"):
+        if arguments.get('name') in [None, False, list()]:
+            logger.debug("Setting commandline-argument {} to {}".format(name, value))
+            arguments[name] = parse_configfile_value(value)
+
+def append_default_arguments_from_configuration_files(arguments):
+    from os import curdir, path
+    CONFIGURATION_FILES = [path.expanduser(path.join("~", ".projector")),
+                           path.join(curdir, ".projector")]
+    for configfile_path in CONFIGURATION_FILES:
+        merge_commandline_arguments_from_configfile(arguments, configfile_path)
+
 def parse_commandline_arguments(argv):
     from infi.projector.plugins import plugin_repository
     from docopt import docopt
     doc = get_commandline_doc()
-    arguments = docopt(doc, argv=argv, version=get_version())
+    arguments = dict(docopt(doc, argv=argv, version=get_version()))
     if arguments.get('-v'):
         print get_version()
         return
     plugins = {plugin.get_command_name():plugin for plugin in plugin_repository.get_all_plugins()}
     [selected_plugin] = [value for key, value in plugins.items() if arguments.get(key)]
+    append_default_arguments_from_configuration_files(arguments)
     selected_plugin.parse_commandline_arguments(arguments)

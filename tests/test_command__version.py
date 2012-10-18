@@ -119,3 +119,21 @@ class VersionTestCase(TestCase):
     def assert_tag_exists(self, tag):
         from infi.projector.helper.assertions import is_version_tag_exists
         self.assertTrue(is_version_tag_exists(tag))
+
+    def test_release_with_push(self):
+        from infi.projector.helper.utils import chdir
+        from os import path, curdir
+        from gitpy import LocalRepository
+        with self.mock_build_and_upload_distributions():
+            with self.temporary_directory_context() as origin_location:
+                self.projector("repository init a.b.c none short long")
+                self.projector("devenv build --no-scripts --no-readline")
+                self.projector("version release minor --no-fetch --pypi-servers=")
+                git_config = path.join(".git", "config")
+                LocalRepository(curdir)._executeGitCommandAssertSuccess("git config -f {} receive.denyCurrentBranch ignore".format(git_config))
+                with self.temporary_directory_context():
+                    self.projector("repository clone {}".format(origin_location))
+                    with chdir(path.basename(origin_location)):
+                        self.projector("devenv build --no-scripts --no-readline")
+                        self.projector("version release minor --pypi-servers= --push-changes")
+
