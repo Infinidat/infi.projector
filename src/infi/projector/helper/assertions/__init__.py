@@ -35,7 +35,7 @@ def assert_no_uncommitted_changes():
     repository = LocalRepository(curdir)
     changes = repository.getChangedFiles() + repository.getStagedFiles()
     if changes:
-        message = "There are changes pending commit, cannot continue. please commit or checkout those changes:\n"
+        message = "There are changes pending commit, cannot continue. please commit or stash them:\n"
         logger.error(message+repr(changes))
         raise SystemExit(1)
 
