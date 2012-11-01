@@ -96,10 +96,11 @@ As we mentioned earlier, we use gitflow's branching model and versioning scheme.
 * You need to find out the lastest version number, and advance on top of it
 * You need to bump the version-related files in the source
 * You need to upload the version to PyPI
+* You need to push the commit and tags to origin
 
 `projector` solves all of these problems with the following command-line options:
 
-    projector version release <version> [--no-fetch] (--no-upload | [--distributions=DISTRIBUTIONS] [--pypi-servers=PYPI_SERVERS])
+    projector version release <version> [--no-fetch] (--no-upload | [--distributions=DISTRIBUTIONS] [--pypi-servers=PYPI_SERVERS]) [--push-changes]
     projector version upload <version> [--distributions=DISTRIBUTIONS] [--pypi-servers=PYPI_SERVERS]
 
 Where the options are:
@@ -108,9 +109,10 @@ Where the options are:
 * `upload`. Upload an exisiting version to pypi
 * `--distributions=DISTRIBUTIONS`. Distributions to build [default: sdist,bdist_egg]
 * `--pypi-servers=PYPI`. PyPI server for publishing [default: pypi,]
-* `<version>`. x.y.z or major, minor, trivial (release only)
+* `<version>`. x.y.z or major, minor, trivial (release only) or current, latest (upload only)
 * `--no-upload`. Do not upload the package as part of the release process
 * `--no-fetch`. Do not fetch origin before releasing
+* `--push-changes`. We often forget to push the commits and tags to origin. This option does it for you
 
 ### Packaging applications (not just modules)
 
