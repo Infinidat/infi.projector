@@ -12,7 +12,7 @@ def append_src_to_python_path():
 def get_dependencies():
     from infi.projector.helper.utils import open_buildout_configfile
     with open_buildout_configfile() as buildout:
-        exec 'dependencies = {}'.format(buildout.get("project", "install_requires"))
+        exec 'dependencies = {0}'.format(buildout.get("project", "install_requires"))
     return dependencies
 
 def is_dependency_installed(dependency):
@@ -32,7 +32,7 @@ def check_for_dependencies():
     missing_dependencies = [dependency for dependency in get_dependencies()
                             if not is_dependency_installed(dependency)]
     if missing_dependencies:
-        print 'Please install the following dependencies: {}'.format(' '.join(missing_dependencies))
+        print 'Please install the following dependencies: {0}'.format(' '.join(missing_dependencies))
         raise SystemExit(1)
 
 def build_scripts():
