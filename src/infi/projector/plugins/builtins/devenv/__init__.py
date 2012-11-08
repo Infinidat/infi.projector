@@ -58,6 +58,10 @@ class DevEnvPlugin(CommandPlugin):
         buildout_executable_exists = assertions.is_executable_exists(join("bin", "buildout"))
         if not buildout_executable_exists or self.arguments.get("--force-bootstrap", False):
             utils.execute_with_python("bootstrap.py -d")
+            return
+        if not self.arguments.get("--use-isolated-python", False) and self.arguments.get("--newest", False):
+            utils.execute_with_python("bootstrap.py -d")
+            return
 
     def install_sections_by_recipe(self, recipe):
         with utils.open_buildout_configfile() as buildout:

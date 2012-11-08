@@ -55,7 +55,6 @@ class DevEnvTestCase(TestCase):
             self.assertTrue(path.exists(path.join("parts", "python")))
             self.assert_scripts_were_generated_by_buildout()
             self.assert_shebang_line_in_buildout_script_does_not_use_isolated_python()
-            self.projector("devenv build --use-isolated-python --newest")
 
     def test_build__absolute_paths(self):
         from infi.projector.helper.assertions import is_windows
@@ -90,3 +89,16 @@ class DevEnvTestCase(TestCase):
             with patch.object(sys, "executable", new=python+'.exe' if assertions.is_windows() else python):
                 with patch.object(sys, "real_prefix", new=True, create=True):
                     self.test_build_after_init()
+
+    def test_build_newest_isolated_pytohn_after_build(self):
+        with self.temporary_directory_context():
+            self.projector("repository init a.b.c none short long")
+            self.projector("devenv build --use-isolated-python")
+            self.assertTrue(path.exists(path.join("parts", "python")))
+            self.assert_scripts_were_generated_by_buildout()
+            self.assert_shebang_line_in_buildout_script_does_not_use_isolated_python()
+            self.projector("devenv build --use-isolated-python --newest")
+            self.assertTrue(path.exists(path.join("parts", "python")))
+            self.assert_scripts_were_generated_by_buildout()
+            self.assert_shebang_line_in_buildout_script_does_not_use_isolated_python()
+
