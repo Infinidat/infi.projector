@@ -142,3 +142,92 @@ def get_latest_version():
                     if tag.name.startswith('v') and not tag.name.endswith('-develop')]
     version_tags.sort(key=lambda ver: parse_version(ver))
     return version_tags[-1]
+
+@contextmanager
+def open_tempfile():
+    from tempfile import mkstemp
+    from os import close, remove
+    fd, path = mkstemp()
+    close(fd)
+    try:
+        yield path
+    finally:
+        try:
+            remove(path)
+        except:
+            pass
+
+def set_freezed_versions_in_install_requires(buildout_cfg, versions_cfg):
+    from .package_sets import InstallRequiresPackageSet, VersionSectionSet, from_dict, to_dict
+    install_requires = to_dict(InstallRequiresPackageSet.from_value(buildout_cfg.get("project", "install_requires")))
+    versions = to_dict(VersionSectionSet.from_value(versions_cfg))
+    for key, value in versions.items():
+        if install_requires.has_key(key):
+            install_requires[key] = value
+    install_requires = from_dict(install_requires)
+    install_requires = set([item.replace('==', ">=") for item in install_requires])
+    buildout_cfg.set("project", "install_requires", InstallRequiresPackageSet.to_value(install_requires))
+
+def freeze_versions(versions_file, change_install_requires):
+    from os import curdir, path
+    with open_buildout_configfile(write_on_exit=True) as buildout_cfg:
+        buildout_cfg.set("buildout", "extensions",  "buildout-versions")
+        buildout_cfg.set("buildout", "versions", "versions")
+        with open_buildout_configfile(versions_file) as versions_cfg:
+            if not buildout_cfg.has_section("versions"):
+                buildout_cfg.add_section("versions")
+            for option in buildout_cfg.options("versions"):
+                buildout_cfg.remove_option("versions", option)
+            for option in versions_cfg.options("versions"):
+                buildout_cfg.set("versions", option, versions_cfg.get("versions", option))
+        if change_install_requires:
+                set_freezed_versions_in_install_requires(buildout_cfg, versions_cfg)
+
+def unset_freezed_versions_in_install_requires(buildout_cfg):
+    from .package_sets import InstallRequiresPackageSet, to_dict, from_dict
+    install_requires = InstallRequiresPackageSet.from_value(buildout.get("project", "install_requires"))
+    install_requires_dict = to_dict(install_requires)
+    install_requires_dict.update({key:[] for key, specs in install_requires_dict
+                                  if specs and specs[0] == '>='})
+    install_requires = from_dict(install_requires_dict)
+    buildout_cfg.set("project", "install_requires", InstallRequiresPackageSet.to_value(install_requires))
+
+def unfreeze_versions(change_install_requires):
+    with open_buildout_configfile(write_on_exit=True) as buildout_cfg:
+        buildout_cfg.remove_option("buildout", "extensions")
+        buildout_cfg.remove_option("buildout", "buildout_versions_file")
+        buildout_cfg.remove_option("buildout", "extends")
+        buildout_cfg.remove_option("buildout", "versions")
+        if change_install_requires:
+            unset_freezed_versions_in_install_requires(buildout_cfg)
+
+@contextmanager
+def revert_if_failed(keep_leftovers):
+    from gitpy import LocalRepository
+    from os import curdir
+    repository = LocalRepository(curdir)
+    get_tags = lambda: {tag.name:tag for tag in repository.getTags()}
+    get_branches = lambda: {branch.name:branch for branch in repository.getBranches()}
+    get_head = lambda branch_name: repository.getBranchByName(branch_name).getHead()
+    get_status = lambda: dict(develop=get_head("develop"), master=get_head("master"), tags=get_tags())
+    before = get_status()
+    try:
+        yield
+    except:
+        if keep_leftovers:
+            raise
+        now = get_status()
+        for tag in set(after['tags']).difference(set(before['tags'])):
+            repository.delete(after[tag])
+        for branch in set(after['branches']).difference(set(before['branches'])):
+            repository.delete(after[branch])
+        for branch_name in ['master', 'develop']:
+            repository.resetHard()
+            branch = repository.getBranchByName(branch_name)
+            repository.checkout(branch)
+            repository.resetHard(before[branch_name])
+        raise
+
+def release_version_with_git_flow(version_tag, keep_leftovers=True):
+    with revert_if_failed(keep_leftovers):
+        _release_version_with_git_flow(version_tag)
