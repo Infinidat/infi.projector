@@ -89,6 +89,7 @@ class DevEnvPlugin(CommandPlugin):
 
     def create_scripts(self):
         self.install_sections_by_recipe("infi.recipe.console_scripts")
+        self.install_sections_by_recipe("infi.recipe.console_scripts:gui_scripts")
 
     def clean_build(self):
         from os.path import exists

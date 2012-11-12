@@ -30,7 +30,8 @@ SETUP_INFO = dict(
 
     entry_points = dict(
         console_scripts = ${project:console_scripts},
-        gui_scripts = []),
+        gui_scripts = ${project:gui_scripts},
+        ),
 )
 
 if SETUP_INFO['url'] is None:
