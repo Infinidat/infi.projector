@@ -102,7 +102,7 @@ def buildout_parameters_context(parameters):
     finally:
         _ = [BUILDOUT_PARAMETERS.remove(param) for param in parameters if param in BUILDOUT_PARAMETERS]
 
-def release_version_with_git_flow(version_tag):
+def _release_version_with_git_flow(version_tag):
     from os import curdir
     from gitflow.core import GitFlow
     from gitpy import LocalRepository
