@@ -54,9 +54,8 @@ def parse_args(commandline_or_args):
 def execute_assert_success(args):
     from infi import execute
     logger.info("Executing {}".format(' '.join(args)))
-    try:
-        result = execute.execute(args)
-        if result.returncode is not None and result.returncode != 0:
+    result = execute.execute(args)
+    if result.returncode is not None and result.returncode != 0:
         raise PrettyExecutionError(result)
 
 def _get_executable_from_shebang_line():  # pragma: no cover
