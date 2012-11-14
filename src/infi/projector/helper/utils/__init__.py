@@ -55,7 +55,7 @@ def execute_assert_success(args):
     from infi import execute
     logger.info("Executing {}".format(' '.join(args)))
     result = execute.execute(args)
-    if result.returncode is not None and result.returncode != 0:
+    if result.get_returncode() is not None and result.get_returncode() != 0:
         raise PrettyExecutionError(result)
 
 def _get_executable_from_shebang_line():  # pragma: no cover
