@@ -172,12 +172,24 @@ class RepositoryPlugin(CommandPlugin):
         logger.debug("Cloning {}".format(origin))
         repository.clone(origin)
 
+    def origin_has_develop_branch(self):
+        from os import curdir
+        from gitpy import LocalRepository
+        from gitpy.exceptions import NonexistentRefException
+        repository = LocalRepository(curdir)
+        try:
+            repository.getRemoteByName("origin").getBranchByName("develop")
+            return True
+        except NonexistentRefException:
+            return False
+
     def clone(self):
         self.arguments['--mkdir'] = True
         with self._create_subdir_if_necessary():
             self.git_clone()
-            self.git_checkout_develop()
-            self.gitflow_init()
+            if self.origin_has_develop_branch():
+                self.git_checkout_develop()
+                self.gitflow_init()
 
     def overwrite_update_files(self):
         from os.path import basename
