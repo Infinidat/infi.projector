@@ -1,10 +1,18 @@
 
 from contextlib import contextmanager
 from logging import getLogger
-
 logger = getLogger(__name__)
 
 BUILDOUT_PARAMETERS = ['-s']
+
+class PrettyExecutionError(Exception):
+    # infi.execute.ExecutionError does print stdout and stderr well, and this is a must when running buildout
+    def __init__(self, result):
+        super(PrettyExecutionError, self).__init__("Execution of %r failed!\nresult=%s\nstdout=%s\nstderr=%s" % (result._command,
+                                                                                                                 result.get_returncode(),
+                                                                                                                 result.get_stdout(),
+                                                                                                                 result.get_stderr()))
+        self.result = result
 
 def _chdir_and_log(path):
     from os import chdir
@@ -46,7 +54,10 @@ def parse_args(commandline_or_args):
 def execute_assert_success(args):
     from infi import execute
     logger.info("Executing {}".format(' '.join(args)))
-    execute.execute_assert_success(args)
+    try:
+        result = execute.execute(args)
+        if result.returncode is not None and result.returncode != 0:
+        raise PrettyExecutionError(result)
 
 def _get_executable_from_shebang_line():  # pragma: no cover
     # The executable wrapper in distribute dynamically loads Python's DLL, which causes sys.executable to be the wrapper
@@ -65,14 +76,13 @@ def _get_executable_from_shebang_line():  # pragma: no cover
 def execute_with_python(commandline_or_args):
     import sys
     from ..assertions import is_windows
-    from infi.execute import ExecutionError
     args = parse_args(commandline_or_args)
     executable = [sys.executable if not is_windows() else _get_executable_from_shebang_line()]
     if not is_running_inside_virtualenv():
         executable.append('-S')
     try:
         execute_assert_success(executable + args)
-    except ExecutionError:
+    except PrettyExecutionError:
         logger.warning("Command falied with -S, trying without")
         executable.remove('-S')
         execute_assert_success(executable + args)
