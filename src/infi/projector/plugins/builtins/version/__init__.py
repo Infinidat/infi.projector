@@ -112,7 +112,7 @@ class VersionPlugin(CommandPlugin):
     def push_commits_and_tags(self):
         repository = self.get_repository()
         logger.debug("Pushing changes to origin")
-        repository._executeGitCommandAssertSuccess("git push")
+        repository._executeGitCommandAssertSuccess("git push --all")
         repository._executeGitCommandAssertSuccess("git push --tags")
 
     def get_current_version_from_git_describe(self):
