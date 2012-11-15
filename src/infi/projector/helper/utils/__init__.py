@@ -194,10 +194,10 @@ def freeze_versions(versions_file, change_install_requires):
 
 def unset_freezed_versions_in_install_requires(buildout_cfg):
     from .package_sets import InstallRequiresPackageSet, to_dict, from_dict
-    install_requires = InstallRequiresPackageSet.from_value(buildout.get("project", "install_requires"))
+    install_requires = InstallRequiresPackageSet.from_value(buildout_cfg.get("project", "install_requires"))
     install_requires_dict = to_dict(install_requires)
-    install_requires_dict.update({key:[] for key, specs in install_requires_dict
-                                  if specs and specs[0] == '>='})
+    install_requires_dict.update({key:[] for key, specs in install_requires_dict.items()
+                                  if specs and specs[-1][0] == '>='})
     install_requires = from_dict(install_requires_dict)
     buildout_cfg.set("project", "install_requires", InstallRequiresPackageSet.to_value(install_requires))
 
@@ -207,6 +207,7 @@ def unfreeze_versions(change_install_requires):
         buildout_cfg.remove_option("buildout", "buildout_versions_file")
         buildout_cfg.remove_option("buildout", "extends")
         buildout_cfg.remove_option("buildout", "versions")
+        buildout_cfg.remove_section("versions")
         if change_install_requires:
             unset_freezed_versions_in_install_requires(buildout_cfg)
 
