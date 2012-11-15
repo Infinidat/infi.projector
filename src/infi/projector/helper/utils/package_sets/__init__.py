@@ -3,6 +3,16 @@ from infi.projector.helper.utils import open_buildout_configfile
 
 #pylint: disable=R0923
 
+def to_dict(iterable):
+    from pkg_resources import parse_requirements
+    return {item.project_name: item.specs for item in parse_requirements('\n'.join(iterable))}
+
+def specs_to_string(value):
+    return ''.join(value[0]) if value else ''
+
+def from_dict(dict_object):
+    return set(['{}{}'.format(key, specs_to_string(value)) for key, value in dict_object.items()])
+
 class PackageSetInterface(object): # pragma: no cover
     def get(self):
         raise NotImplementedError()
@@ -24,34 +34,42 @@ class BasePackageSet(PackageSetInterface, object):
         with open_buildout_configfile(write_on_exit=True) as buildout_cfg:
             buildout_cfg.set(self.section_name, self.attribute_name, self.to_value(package_set))
 
-    def from_value(self, value): # pragma: no cover
+    @classmethod
+    def from_value(cls, value): # pragma: no cover
         raise NotImplementedError()
 
-    def to_value(self, package_set): # pragma: no cover
+    @classmethod
+    def to_value(cls, package_set): # pragma: no cover
         raise NotImplementedError()
 
 class RepresentedListSet(BasePackageSet):
-    def from_value(self, value):
-        return set(eval(value))
+    @classmethod
+    def from_value(cls, value):
+        return set([item.replace(' ', '') for item in set(eval(value))])
 
-    def to_value(self, package_set):
-        return repr(list(set(package_set)))
+    @classmethod
+    def to_value(cls, package_set):
+        return repr(list([item.replace(' ', '') for item in set(package_set)]))
 
 class MultilineValueSet(BasePackageSet):
-    def from_value(self, value):
+    @classmethod
+    def from_value(cls, value):
         return set(value.splitlines())
 
-    def to_value(self, package_set):
+    @classmethod
+    def to_value(cls, package_set):
         newline = '\r\n' if assertions.is_windows() else '\n'
         return newline.join(list(set(package_set)))
 
 class EntryPointSet(BasePackageSet):
-    def from_value(self, value):
+    @classmethod
+    def from_value(cls, value):
         formatted_entrypoints = eval(value)
         return {name.strip():entry_point.strip()
                 for name, entry_point in [item.split('=') for item in formatted_entrypoints]}
 
-    def to_value(self, package_set):
+    @classmethod
+    def to_value(cls, package_set):
         return ["{} = {}".format(key, value) for key, value in package_set.items()]
 
 class InstallRequiresPackageSet(RepresentedListSet):
@@ -77,3 +95,30 @@ class ConsoleScriptsSet(EntryPointSet):
 class PackageDataSet(RepresentedListSet):
     def __init__(self):
         super(PackageDataSet, self).__init__('project', 'package_data')
+
+class VersionSectionSet(PackageSetInterface, object):
+    def __init__(self, filepath="versions.cfg", section_name="versions"):
+        super(VersionSectionSet, self).__init__()
+        self.filepath = filepath
+        self.section_name = section_name
+
+    def get(self):
+        with open_buildout_configfile(self.filepath) as cfg:
+            return self.from_value(cfg)
+
+    def set(self, package_set):
+        raise NotImplementedError()
+
+    @classmethod
+    def from_value(cls, cfg): # pragma: no cover
+        names = set()
+        items = set()
+        for option in cfg.options("versions"):
+            if option in names:
+                continue
+            items.add("{}=={}".format(option, cfg.get("versions", option)))
+        return items
+
+    @classmethod
+    def to_value(cls, package_set): # pragma: no cover
+        raise NotImplementedError()

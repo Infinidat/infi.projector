@@ -16,7 +16,7 @@ class VersionTestCase(TestCase):
             with self.temporary_directory_context():
                 self.projector("repository init a.b.c none short long")
                 self.projector("devenv build --no-scripts --no-readline")
-                self.projector("version release --no-fetch {}".format(version))
+                self.projector("version release --no-fetch {} --no-push-changes".format(version))
                 self.assert_tag_exists(RELEASE_TAGS.get(version, version))
 
     def test_release__without_upload(self):
@@ -25,7 +25,7 @@ class VersionTestCase(TestCase):
                 mock.side_effect = RuntimeError()
                 self.projector("repository init a.b.c none short long")
                 self.projector("devenv build --no-scripts --no-readline")
-                self.projector("version release 1.2.3 --no-fetch --no-upload")
+                self.projector("version release 1.2.3 --no-fetch --no-upload --no-push-changes")
                 self.assert_tag_exists('v1.2.3')
 
     def test_release__not_on_develop_branch(self):
@@ -35,7 +35,7 @@ class VersionTestCase(TestCase):
             repository = LocalRepository(curdir)
             repository.checkout("master")
             with self.assertRaises(SystemExit):
-                self.projector("version release 1.2.3 --no-fetch --no-upload")
+                self.projector("version release 1.2.3 --no-fetch --no-upload --no-push-changes")
 
     def test_release__master_diverged(self):
         with self.temporary_directory_context():
@@ -46,7 +46,7 @@ class VersionTestCase(TestCase):
             repository.commit("empty commit", allowEmpty=True)
             repository.checkout("develop")
             with self.assertRaises(SystemExit):
-                self.projector("version release 1.2.3 --no-fetch --no-upload")
+                self.projector("version release 1.2.3 --no-fetch --no-upload --no-push-changes")
 
     def test_local_behind_origin(self):
         from os import curdir
@@ -67,7 +67,7 @@ class VersionTestCase(TestCase):
                         repository.checkout("master")
                         repository.commit("empty commit", allowEmpty=True)
                     with self.assertRaises(SystemExit):
-                        self.projector("version release 1.2.3 --no-upload")
+                        self.projector("version release 1.2.3 --no-upload --no-push-changes")
 
     def test_local_behind_origin__no_fetch(self):
         from os import curdir
@@ -85,14 +85,14 @@ class VersionTestCase(TestCase):
                         repository = LocalRepository(curdir)
                         repository.checkout("master")
                         repository.commit("empty commit", allowEmpty=True)
-                    self.projector("version release 1.2.3 --no-fetch --no-upload")
+                    self.projector("version release 1.2.3 --no-fetch --no-upload  --no-push-changes")
 
     def test_upload(self):
         from mock import patch
         with self.temporary_directory_context():
             self.projector("repository init a.b.c none short long")
             self.projector("devenv build --no-script")
-            self.projector("version release 1.2.3 --no-fetch --no-upload")
+            self.projector("version release 1.2.3 --no-fetch --no-upload --no-push-changes")
             with patch("infi.projector.helper.utils.execute_with_buildout") as execute_with_buildout:
                 self.projector("version upload 1.2.3")
             execute_with_buildout.assert_any_call("setup . register -r pypi sdist upload -r pypi")
@@ -106,7 +106,7 @@ class VersionTestCase(TestCase):
             self.projector("devenv build --no-script")
             remove("buildout.cfg")
             with self.assertRaises(SystemExit):
-                self.projector("version release 1.2.3 --no-fetch --no-upload")
+                self.projector("version release 1.2.3 --no-fetch --no-upload --no-push-changes")
             self.assertFalse(path.exists("buildout.cfg"))
 
     @contextmanager
@@ -128,12 +128,11 @@ class VersionTestCase(TestCase):
             with self.temporary_directory_context() as origin_location:
                 self.projector("repository init a.b.c none short long")
                 self.projector("devenv build --no-scripts --no-readline")
-                self.projector("version release minor --no-fetch --pypi-servers=")
+                self.projector("version release minor --no-fetch --pypi-servers= --no-push-changes")
                 git_config = path.join(".git", "config")
                 LocalRepository(curdir)._executeGitCommandAssertSuccess("git config -f {} receive.denyCurrentBranch ignore".format(git_config))
                 with self.temporary_directory_context():
                     self.projector("repository clone {}".format(origin_location))
                     with chdir(path.basename(origin_location)):
                         self.projector("devenv build --no-scripts --no-readline")
-                        self.projector("version release minor --pypi-servers= --push-changes")
-
+                        self.projector("version release minor --pypi-servers=")

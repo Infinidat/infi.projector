@@ -66,11 +66,22 @@ Projects handled by `projector` have two types of dependencies:
 * `production` dependencies. written to setup.py, honored by `pip`/`easy_install`
 * `development` dependencies. written to buildout.cfg, affects only the development environment.
 
-Handaling both types of dependencies/requirements is easy:
+Handling both types of dependencies/requirements is easy:
 
     projector requirements list [--development]
     projector requirements add <requirement> [--development] [--commit-changes]
     projector requirements remove <requirement> [--development] [--commit-changes]
+
+#### Freezing versions
+
+You can `freeze` the development environment by using the following commands:
+
+    projector requirements freeze [--with-install-requires] [--commit-changes] [--newest]
+    projector requirements unfreeze [--with-install-requires] [--commit-changes]
+
+What this does is adds the versions of the downloaded dependencies to `buildout.cfg`, so that you'll always get the same set of dependencies when you run `devenv build`.
+
+If you pass the `--with-install-requires` flag, this will also update the dependencies in `install_requires` with a `>=` requirement to the locally installed version.
 
 ### Console scripts
 
