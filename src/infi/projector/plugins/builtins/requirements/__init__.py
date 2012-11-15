@@ -80,7 +80,7 @@ class RequirementsPlugin(CommandPlugin):
         with open_tempfile() as tempfile:
             with buildout_parameters_context(["buildout:extensions=buildout-versions",
                                               "buildout:buildout_versions_file={0}".format(tempfile),
-                                              "buidlout:versions="]):
+                                              "buildout:versions="]):
                 plugin.build()
             with open(tempfile) as fd:
                 content = fd.read()
