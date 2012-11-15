@@ -5,7 +5,7 @@ SETUP_INFO = dict(
     author = '${infi.recipe.template.version:author}',
     author_email = '${infi.recipe.template.version:author_email}',
 
-    url = 'http://www.infinidat.com',
+    url = ${infi.recipe.template.version:homepage},
     license = 'PSF',
     description = """${project:description}""",
     long_description = """${project:long_description}""",
