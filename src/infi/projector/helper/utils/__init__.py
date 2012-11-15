@@ -226,10 +226,10 @@ def revert_if_failed(keep_leftovers):
         if keep_leftovers:
             raise
         now = get_status()
-        for tag in set(after['tags']).difference(set(before['tags'])):
-            repository.delete(after[tag])
-        for branch in set(after['branches']).difference(set(before['branches'])):
-            repository.delete(after[branch])
+        for tag in set(now['tags']).difference(set(before['tags'])):
+            repository.delete(now[tag])
+        for branch in set(now['branches']).difference(set(before['branches'])):
+            repository.delete(now[branch])
         for branch_name in ['master', 'develop']:
             repository.resetHard()
             branch = repository.getBranchByName(branch_name)
