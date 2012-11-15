@@ -22,7 +22,7 @@ Options:
     unfreeze                        Deletes the versions.cfg file, if it exists
     --development                   Requirement for the development environment only
     --with-install-requires         Set >= requireements in the install_requires section
-    --no-push-changes               Do no push freeze commits
+    --push-changes                  Push freeze commits
 """
 
 class RequirementsPlugin(CommandPlugin):
