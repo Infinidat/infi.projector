@@ -23,7 +23,7 @@ def assert_setup_py_exists():
 
 def assert_buildout_configfile_exists():
     if not path.exists("buildout.cfg"):
-        logger.error("buidlout.cfg does not exist, the current directory is not a home of a project")
+        logger.error("buildout.cfg does not exist, the current directory is not a home of a project")
         raise SystemExit(1)
 
 def assert_git_repository():
