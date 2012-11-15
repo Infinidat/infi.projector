@@ -219,7 +219,8 @@ def revert_if_failed(keep_leftovers):
     get_tags = lambda: {tag.name:tag for tag in repository.getTags()}
     get_branches = lambda: {branch.name:branch for branch in repository.getBranches()}
     get_head = lambda branch_name: repository.getBranchByName(branch_name).getHead()
-    get_status = lambda: dict(develop=get_head("develop"), master=get_head("master"), tags=get_tags())
+    get_status = lambda: dict(develop=get_head("develop"), master=get_head("master"), tags=get_tags(),
+                              branches=get_branches())
     before = get_status()
     try:
         yield
