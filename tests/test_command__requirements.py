@@ -1,5 +1,6 @@
 from .test_case import TestCase
 from infi.unittest.parameters import iterate
+from infi.pyutils.contexts import contextmanager
 
 class RequirementsTestCase(TestCase):
 
@@ -39,3 +40,23 @@ class RequirementsTestCase(TestCase):
                 self.projector("repository init a.b.c none short long")
                 self.projector("requirements list {}".format('--development' if development_flag else ''))
                 self.assertTrue(pprint.called)
+
+    @contextmanager
+    def assert_new_commit(self):
+        from gitpy import LocalRepository
+        from os import curdir
+        repository = LocalRepository(curdir)
+        head = repository.getHead().hash
+        yield
+        self.assertNotEquals(head, repository.getHead().hash)
+
+    def test_freeze_unfreeze(self):
+        from os import path
+        with self.temporary_directory_context():
+            self.projector("repository init a.b.c none short long")
+            self.projector("devenv build --no-readline")
+            self.projector("requirements add infi.execute<=0.0.7 --commit-changes")
+            with self.assert_new_commit():
+                self.projector("requirements freeze --with-install-requires --newest --commit-changes")
+            with self.assert_new_commit():
+                self.projector("requirements unfreeze --commit-changes")

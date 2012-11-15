@@ -13,9 +13,15 @@ Usage:
     projector requirements list [--development]
     projector requirements add <requirement> [--development] [--commit-changes]
     projector requirements remove <requirement> [--development] [--commit-changes]
+    projector requirements freeze [--with-install-requires] [--newest] [--commit-changes]
+    projector requirements unfreeze [--with-install-requires] [--commit-changes]
+
 
 Options:
-    --development       Requirement for the development environment only
+    freeze                          Creates a versions.cfg file, telling buildout to use specific versions
+    unfreeze                        Deletes the versions.cfg file, if it exists
+    --development                   Requirement for the development environment only
+    --with-install-requires         Set >= requireements in the install_requires section
 """
 
 class RequirementsPlugin(CommandPlugin):
@@ -27,7 +33,7 @@ class RequirementsPlugin(CommandPlugin):
 
     @assertions.requires_repository
     def parse_commandline_arguments(self, arguments):
-        methods = [self.list, self.add, self.remove]
+        methods = [self.list, self.add, self.remove, self.freeze, self.unfreeze]
         [method] = [method for method in methods
                     if arguments.get(method.__name__)]
         self.arguments = arguments
@@ -63,3 +69,35 @@ class RequirementsPlugin(CommandPlugin):
             message = "adding {} to requirements {}"
             commit_message = message.format(requirement, "(dev)" if self.arguments.get("--development") else '')
             commit_changes_to_buildout(commit_message)
+
+    def freeze(self):
+        from infi.projector.helper.utils import freeze_versions, buildout_parameters_context, open_tempfile
+        from infi.projector.plugins.builtins.devenv import DevEnvPlugin
+        from gitpy import LocalRepository
+        from os import curdir
+        plugin = DevEnvPlugin()
+        plugin.arguments = {'--newest': self.arguments.get("--newest", False)}
+        with open_tempfile() as tempfile:
+            with buildout_parameters_context(["buildout:extensions=buildout-versions",
+                                              "buildout:buildout_versions_file={0}".format(tempfile),
+                                              "buidlout:versions="]):
+                plugin.build()
+            with open(tempfile) as fd:
+                content = fd.read()
+            with open(tempfile, 'w') as fd:
+                fd.write("[versions]\n" + content)
+            versions = freeze_versions(tempfile, self.arguments.get("--with-install-requires", False))
+        if self.arguments.get("--commit-changes", False):
+            repository = LocalRepository(curdir)
+            repository.add("buildout.cfg")
+            repository.commit("Freezing dependencies")
+
+    def unfreeze(self):
+        from infi.projector.helper.utils import unfreeze_versions
+        from gitpy import LocalRepository
+        from os import curdir
+        versions = unfreeze_versions(self.arguments.get("--with-install-requires", False))
+        if self.arguments.get("--commit-changes", False):
+            repository = LocalRepository(curdir)
+            repository.add("buildout.cfg")
+            repository.commit("Unfreezing dependencies")

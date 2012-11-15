@@ -8,17 +8,20 @@ logger = getLogger(__name__)
 
 USAGE = """
 Usage:
-    projector version release <version> [--no-fetch] (--no-upload | [--distributions=DISTRIBUTIONS] [--pypi-servers=PYPI_SERVERS]) [--push-changes]
+    projector version release <version> [--no-fetch] (--no-upload | [--distributions=DISTRIBUTIONS] [--pypi-servers=PYPI_SERVERS]) [--no-push-changes] [--keep-leftovers]
     projector version upload <version> [--distributions=DISTRIBUTIONS] [--pypi-servers=PYPI_SERVERS]
 
 Options:
     release                         Release a new version, including registering and uploading to pypi
     upload                          Upload an exisiting version to pypi
+
     --distributions=DISTRIBUTIONS   Distributions to build [default: sdist,bdist_egg]
     --pypi-servers=PYPI             PyPI server for publishing [default: pypi,]
     <version>                       x.y.z or major, minor, trivial (release only)
     --no-upload                     Do not upload the package as part of the release process
     --no-fetch                      Do not fetch origin before releasing
+    --keep-leftovers                If something fails during release, don't
+    --no-push-changes               Do no push release commits and tags to origin
 """
 
 class VersionPlugin(CommandPlugin):
@@ -76,9 +79,10 @@ class VersionPlugin(CommandPlugin):
         assertions.assert_develop_and_master_not_behind_origin()
         version_tag_without_v = version_tag.lstrip('v')
         version_tag_with_v = 'v{}'.format(version_tag_without_v)
-        release_version_with_git_flow(version_tag_with_v)
+        release_version_with_git_flow(version_tag_with_v, self.arguments.get("--keep-leftovers", False))
         self.arguments['<version>'] = version_tag
-        if self.arguments.get("--push-changes", False):
+        push_changes = not self.arguments.get("--no-push-changes", False)
+        if push_changes:
             self.push_commits_and_tags()
         if self.arguments.get('--no-upload', False):
             git_checkout("develop")
@@ -107,6 +111,7 @@ class VersionPlugin(CommandPlugin):
 
     def push_commits_and_tags(self):
         repository = self.get_repository()
+        logger.debug("Pushing changes to origin")
         repository._executeGitCommandAssertSuccess("git push")
         repository._executeGitCommandAssertSuccess("git push --tags")
 

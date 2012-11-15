@@ -10,17 +10,17 @@ logger = getLogger(__name__)
 
 USAGE = """
 Usage:
-    projector console-scripts list
-    projector console-scripts add <script-name> <entry-point> [--commit-changes]
-    projector console-scripts remove <script-name> [--commit-changes]
+    projector gui-scripts list
+    projector gui-scripts add <script-name> <entry-point> [--commit-changes]
+    projector gui-scripts remove <script-name> [--commit-changes]
 """
 
-class ConsoleScriptsPlugin(CommandPlugin):
+class GuiScriptsPlugin(CommandPlugin):
     def get_docopt_string(self):
         return USAGE
 
     def get_command_name(self):
-        return 'console-scripts'
+        return 'gui-scripts'
 
     @assertions.requires_repository
     def parse_commandline_arguments(self, arguments):
@@ -39,21 +39,21 @@ class ConsoleScriptsPlugin(CommandPlugin):
 
     def remove(self):
         package_set = self.get_set()
-        console_scripts = package_set.get()
-        console_script = self.arguments.get('<script-name>')
-        if console_script in console_scripts.keys():
-            console_scripts.pop(console_script)
-            package_set.set(console_scripts)
+        gui_scripts = package_set.get()
+        gui_script = self.arguments.get('<script-name>')
+        if gui_script in gui_scripts.keys():
+            gui_scripts.pop(gui_script)
+            package_set.set(gui_scripts)
         if self.arguments.get("--commit-changes", False):
-            commit_message = "removing {} from console_scripts".format(console_script)
+            commit_message = "removing {} from gui_scripts".format(gui_script)
             commit_changes_to_buildout(commit_message)
 
     def add(self):
         package_set = self.get_set()
-        console_scripts = package_set.get()
+        gui_scripts = package_set.get()
         script_name = self.arguments.get('<script-name>')
-        console_scripts[script_name] = self.arguments.get('<entry-point>')
-        package_set.set(console_scripts)
+        gui_scripts[script_name] = self.arguments.get('<entry-point>')
+        package_set.set(gui_scripts)
         if self.arguments.get("--commit-changes", False):
-            commit_message = "adding {} to console_scripts".format(script_name)
+            commit_message = "adding {} to gui_scripts".format(script_name)
             commit_changes_to_buildout(commit_message)
