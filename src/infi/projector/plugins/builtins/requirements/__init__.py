@@ -79,7 +79,8 @@ class RequirementsPlugin(CommandPlugin):
         plugin.arguments = {'--newest': self.arguments.get("--newest", False)}
         with open_tempfile() as tempfile:
             with buildout_parameters_context(["buildout:extensions=buildout-versions",
-                                              "buildout:buildout_versions_file={0}".format(tempfile)]):
+                                              "buildout:buildout_versions_file={0}".format(tempfile),
+                                              "buidlout:versions="]):
                 plugin.build()
             with open(tempfile) as fd:
                 content = fd.read()
