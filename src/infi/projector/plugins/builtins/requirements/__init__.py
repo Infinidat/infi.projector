@@ -13,8 +13,8 @@ Usage:
     projector requirements list [--development]
     projector requirements add <requirement> [--development] [--commit-changes]
     projector requirements remove <requirement> [--development] [--commit-changes]
-    projector requirements freeze [--with-install-requires] [--newest] [--commit-changes]
-    projector requirements unfreeze [--with-install-requires] [--commit-changes]
+    projector requirements freeze [--with-install-requires] [--newest] [--commit-changes] [--no-push-changes]
+    projector requirements unfreeze [--with-install-requires] [--commit-changes] [--push-changes]
 
 
 Options:
@@ -22,6 +22,7 @@ Options:
     unfreeze                        Deletes the versions.cfg file, if it exists
     --development                   Requirement for the development environment only
     --with-install-requires         Set >= requireements in the install_requires section
+    --no-push-changes               Do no push freeze commits
 """
 
 class RequirementsPlugin(CommandPlugin):
@@ -91,6 +92,9 @@ class RequirementsPlugin(CommandPlugin):
             repository = LocalRepository(curdir)
             repository.add("buildout.cfg")
             repository.commit("Freezing dependencies")
+        push_changes = self.arguments.get("--push-changes", False)
+        if push_changes:
+            repository._executeGitCommandAssertSuccess("git push")
 
     def unfreeze(self):
         from infi.projector.helper.utils import unfreeze_versions
@@ -101,3 +105,6 @@ class RequirementsPlugin(CommandPlugin):
             repository = LocalRepository(curdir)
             repository.add("buildout.cfg")
             repository.commit("Unfreezing dependencies")
+        push_changes = self.arguments.get("--push-changes", False)
+        if push_changes:
+            repository._executeGitCommandAssertSuccess("git push")
