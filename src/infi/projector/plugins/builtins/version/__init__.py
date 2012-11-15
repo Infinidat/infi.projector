@@ -81,7 +81,8 @@ class VersionPlugin(CommandPlugin):
         version_tag_with_v = 'v{}'.format(version_tag_without_v)
         release_version_with_git_flow(version_tag_with_v, self.arguments.get("--keep-leftovers", False))
         self.arguments['<version>'] = version_tag
-        if self.arguments.get("--push-changes", False):
+        push_changes = not self.arguments.get("--no-push-changes", False)
+        if push_changes:
             self.push_commits_and_tags()
         if self.arguments.get('--no-upload', False):
             git_checkout("develop")
