@@ -13,7 +13,7 @@ Usage:
     projector requirements list [--development]
     projector requirements add <requirement> [--development] [--commit-changes]
     projector requirements remove <requirement> [--development] [--commit-changes]
-    projector requirements freeze [--with-install-requires] [--newest] [--commit-changes] [--no-push-changes]
+    projector requirements freeze [--with-install-requires] [--newest] [--commit-changes] [--push-changes]
     projector requirements unfreeze [--with-install-requires] [--commit-changes] [--push-changes]
 
 
