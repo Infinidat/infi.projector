@@ -227,11 +227,12 @@ def revert_if_failed(keep_leftovers):
     except:
         if keep_leftovers:
             raise
+        repository.checkout('develop')
         now = get_status()
         for tag in set(now['tags']).difference(set(before['tags'])):
-            repository.delete(now['tags'][tag])
+            repository._executeGitCommandAssertSuccess("git tag -d {0}".format(now['tags'][tag].name))
         for branch in set(now['branches']).difference(set(before['branches'])):
-            repository.delete(now['branches'][branch])
+            repository._executeGitCommandAssertSuccess("git branch -D {0}".format(now['branches'][branch].name))
         for branch_name in ['master', 'develop']:
             repository.resetHard()
             branch = repository.getBranchByName(branch_name)
