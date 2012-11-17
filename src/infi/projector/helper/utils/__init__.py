@@ -171,7 +171,9 @@ def set_freezed_versions_in_install_requires(buildout_cfg, versions_cfg):
     install_requires = to_dict(InstallRequiresPackageSet.from_value(buildout_cfg.get("project", "install_requires")))
     versions = to_dict(VersionSectionSet.from_value(versions_cfg))
     for key, value in versions.items():
-        if install_requires.has_key(key):
+        if not install_requires.has_key(key):
+            continue
+        if not install_requires[key]: # empty list
             install_requires[key] = value
     install_requires = from_dict(install_requires)
     install_requires = set([item.replace('==', ">=") for item in install_requires])
