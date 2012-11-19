@@ -1,3 +1,4 @@
+from unittest import SkipTest
 from .test_case import TestCase
 
 class UtilsTestCase(TestCase):
@@ -7,6 +8,8 @@ class UtilsTestCase(TestCase):
             execute_with_buildout(["install", "non-existing-section"])
         except PrettyExecutionError, err:
             self.assertFalse(r"\n" in str(err))
+        except OSError:
+            raise SkipTest("bin/buildout not found")
 
     def test_revert_if_failed(self):
         from infi.projector.helper.utils import revert_if_failed
