@@ -35,6 +35,7 @@ def chdir(path):
 def open_buildout_configfile(filepath="buildout.cfg", write_on_exit=False):
     from ConfigParser import ConfigParser
     parser = ConfigParser()
+    parser.optionxform = str    # make options case-sensitive
     parser.read(filepath)
     try:
         yield parser
