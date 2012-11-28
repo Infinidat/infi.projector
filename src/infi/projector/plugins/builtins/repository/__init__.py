@@ -208,7 +208,11 @@ class RepositoryPlugin(CommandPlugin):
         from os import curdir, path, remove
         from gitpy import LocalRepository
         repository = LocalRepository(curdir)
-        for filename in [filename for filename in ["buildout-git.cfg", "buildout-version.cfg", "buildout-pack.cfg", "buildout.in"]
+        for filename in [filename for filename in ["buildout-git.cfg",
+                                                   "buildout-version.cfg",
+                                                   "buildout-pack.cfg",
+                                                   "buildout-dist.cfg",
+                                                   "buildout.in"]
                          if path.exists(filename)]:
             logger.info("removing {}".format(filename))
             if self.arguments.get("--commit-changes", False):
