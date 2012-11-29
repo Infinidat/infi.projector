@@ -20,6 +20,7 @@ Options:
     <short_description>             A one-line description
     <long_description>              A multi-line description
     --mkdir                         Init the repository in a new directory instead of the current directory
+    --remove-deprecated-files       remove files that were in use in previous versions of projector but are no longer necessary
 """
 
 def get_package_namespace(name):
@@ -208,7 +209,11 @@ class RepositoryPlugin(CommandPlugin):
         from os import curdir, path, remove
         from gitpy import LocalRepository
         repository = LocalRepository(curdir)
-        for filename in [filename for filename in ["buildout-git.cfg", "buildout-version.cfg", "buildout-pack.cfg", "buildout.in"]
+        for filename in [filename for filename in ["buildout-git.cfg",
+                                                   "buildout-version.cfg",
+                                                   "buildout-pack.cfg",
+                                                   "buildout-dist.cfg",
+                                                   "buildout.in"]
                          if path.exists(filename)]:
             logger.info("removing {}".format(filename))
             if self.arguments.get("--commit-changes", False):

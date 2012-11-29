@@ -11,11 +11,13 @@ logger = getLogger(__name__)
 USAGE = """
 Usage:
     projector submodule list
-    projector submodule add <name> <repository> <rev> [--commit-changes] [--look-for-setup-py]
+    projector submodule add <name> <repository> <rev> [--commit-changes] [--use-setup-py]
     projector submodule remove <name> [--commit-changes]
 
 Options:
-    rev             remote branch name (must start with origin) or commit hash, e.g. origin/master
+    <name>                  name of submodule to add/remove
+    <rev>                   remote branch name (must start with origin) or commit hash, e.g. origin/master
+    --use-setup-py          add the setup.py of the submodule to the buildout environment
 """
 
 class SubmodulePlugin(CommandPlugin):
@@ -55,7 +57,7 @@ class SubmodulePlugin(CommandPlugin):
             buildout.set(name, "repository", repository)
             buildout.set(name, "rev", rev)
             buildout.set(name, "newest", "true")
-            if self.arguments.get("look-for-setup-py"):
+            if self.arguments.get("use-setup-py"):
                 where_to_look_for_setup_py = set(buildout.get("buildout", "develop").split())
                 where_to_look_for_setup_py.add(name)
                 buildout.set("buildout", "develop", ' '.join(where_to_look_for_setup_py))

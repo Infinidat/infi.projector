@@ -13,7 +13,9 @@ Usage:
     projector package-data list
     projector package-data add <filename> [--commit-changes]
     projector package-data remove <filename> [--commit-changes]
-
+    
+Options:
+    <filename>              file to add
 """
 
 class PackageDataPlugin(CommandPlugin):

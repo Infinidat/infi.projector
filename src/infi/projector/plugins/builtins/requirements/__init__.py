@@ -18,8 +18,12 @@ Usage:
 
 
 Options:
-    freeze                          Creates a versions.cfg file, telling buildout to use specific versions
-    unfreeze                        Deletes the versions.cfg file, if it exists
+    requirements list               Show all requirements
+    requirements add                add a package to the list of project requirements
+    requirements remove             remove a package from project requirement list
+    requirements freeze             Creates a versions.cfg file, telling buildout to use specific versions
+    requirements unfreeze           Deletes the versions.cfg file, if it exists
+    <requirement>                   requirement to add/remove
     --development                   Requirement for the development environment only
     --with-install-requires         Set >= requireements in the install_requires section
     --push-changes                  Push freeze commits

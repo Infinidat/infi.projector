@@ -35,6 +35,7 @@ def chdir(path):
 def open_buildout_configfile(filepath="buildout.cfg", write_on_exit=False):
     from ConfigParser import ConfigParser
     parser = ConfigParser()
+    parser.optionxform = str    # make options case-sensitive
     parser.read(filepath)
     try:
         yield parser
@@ -171,7 +172,9 @@ def set_freezed_versions_in_install_requires(buildout_cfg, versions_cfg):
     install_requires = to_dict(InstallRequiresPackageSet.from_value(buildout_cfg.get("project", "install_requires")))
     versions = to_dict(VersionSectionSet.from_value(versions_cfg))
     for key, value in versions.items():
-        if install_requires.has_key(key):
+        if not install_requires.has_key(key):
+            continue
+        if not install_requires[key]: # empty list
             install_requires[key] = value
     install_requires = from_dict(install_requires)
     install_requires = set([item.replace('==', ">=") for item in install_requires])
@@ -211,32 +214,58 @@ def unfreeze_versions(change_install_requires):
         if change_install_requires:
             unset_freezed_versions_in_install_requires(buildout_cfg)
 
+class RevertIfFailedOperations(object):
+    def __init__(self, repository):
+        super(RevertIfFailedOperations, self).__init__()
+        self.repository = repository
+
+    def get_tags(self):
+        return {tag.name:tag for tag in self.repository.getTags()}
+
+    def get_branches(self):
+        return {branch.name:branch for branch in self.repository.getBranches()}
+
+    def get_head(self, branch_name):
+        return self.repository.getBranchByName(branch_name).getHead()
+
+    def get_status(self):
+        return dict(develop=self.get_head("develop"), master=self.get_head("master"),
+                    tags=self.get_tags(), branches=self.get_branches())
+
+    def delete_new_tags(self, before, now):
+        for tag in set(now['tags']).difference(set(before['tags'])):
+            cmd = "git tag -d {0}".format(now['tags'][tag].name)
+            self.repository._executeGitCommandAssertSuccess(cmd)
+
+    def delete_new_branches(self, before, now):
+        for branch in set(now['branches']).difference(set(before['branches'])):
+            cmd = "git branch -D {0}".format(now['branches'][branch].name)
+            self.repository._executeGitCommandAssertSuccess(cmd)
+
+    def reset_master_and_develop(self, before, now):
+        for branch_name in ['master', 'develop']:
+            self.repository.resetHard()
+            branch = self.repository.getBranchByName(branch_name)
+            self.repository.checkout(branch)
+            self.repository.resetHard(before[branch_name])
+
 @contextmanager
 def revert_if_failed(keep_leftovers):
     from gitpy import LocalRepository
     from os import curdir
     repository = LocalRepository(curdir)
-    get_tags = lambda: {tag.name:tag for tag in repository.getTags()}
-    get_branches = lambda: {branch.name:branch for branch in repository.getBranches()}
-    get_head = lambda branch_name: repository.getBranchByName(branch_name).getHead()
-    get_status = lambda: dict(develop=get_head("develop"), master=get_head("master"), tags=get_tags(),
-                              branches=get_branches())
-    before = get_status()
+    ops = RevertIfFailedOperations(repository)
+    before = ops.get_status()
     try:
         yield
     except:
         if keep_leftovers:
             raise
-        now = get_status()
-        for tag in set(now['tags']).difference(set(before['tags'])):
-            repository.delete(now['tags'][tag])
-        for branch in set(now['branches']).difference(set(before['branches'])):
-            repository.delete(now['branches'][branch])
-        for branch_name in ['master', 'develop']:
-            repository.resetHard()
-            branch = repository.getBranchByName(branch_name)
-            repository.checkout(branch)
-            repository.resetHard(before[branch_name])
+        repository.checkout('develop')
+        now = ops.get_status()
+        ops.delete_new_tags(before, now)
+        ops.delete_new_branches(before, now)
+        ops.reset_master_and_develop(before, now)
         raise
 
 def release_version_with_git_flow(version_tag, keep_leftovers=True):
