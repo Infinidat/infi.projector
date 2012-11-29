@@ -20,6 +20,7 @@ Options:
     <short_description>             A one-line description
     <long_description>              A multi-line description
     --mkdir                         Init the repository in a new directory instead of the current directory
+    --remove-deprecated-files       remove files that were in use in previous versions of projector but are no longer necessary
 """
 
 def get_package_namespace(name):

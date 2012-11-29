@@ -13,6 +13,11 @@ Usage:
     projector console-scripts list
     projector console-scripts add <script-name> <entry-point> [--commit-changes]
     projector console-scripts remove <script-name> [--commit-changes]
+    
+Options:
+    <script-name>           name of console script
+    <entry-point>           path to Python entry point for the console script
+    --commit-changes        create a git commit with the changes
 """
 
 class ConsoleScriptsPlugin(CommandPlugin):

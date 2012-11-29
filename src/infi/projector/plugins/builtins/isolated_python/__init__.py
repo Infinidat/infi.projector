@@ -12,6 +12,9 @@ USAGE = """
 Usage:
     projector isolated-python python-version get
     projector isolated-python python-version set <version> [--commit-changes]
+    
+Options:
+    <version>               Python version to set
 """
 
 class IsolatedPythonPlugin(CommandPlugin):

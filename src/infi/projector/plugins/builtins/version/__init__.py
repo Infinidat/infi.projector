@@ -12,16 +12,15 @@ Usage:
     projector version upload <version> [--distributions=DISTRIBUTIONS] [--pypi-servers=PYPI_SERVERS]
 
 Options:
-    release                         Release a new version, including registering and uploading to pypi
-    upload                          Upload an exisiting version to pypi
-
-    --distributions=DISTRIBUTIONS   Distributions to build [default: sdist,bdist_egg]
-    --pypi-servers=PYPI             PyPI server for publishing [default: pypi,]
+    version release                 Release a new version, including registering and uploading to pypi
+    version upload                  Upload an exisiting version to pypi
     <version>                       x.y.z or major, minor, trivial (release only)
     --no-upload                     Do not upload the package as part of the release process
     --no-fetch                      Do not fetch origin before releasing
-    --keep-leftovers                If something fails during release, don't
+    --distributions=DISTRIBUTIONS   Distributions to build [default: sdist,bdist_egg]
+    --pypi-servers=PYPI             PyPI server for publishing [default: pypi,]
     --no-push-changes               Do no push release commits and tags to origin
+    --keep-leftovers                If something fails during release, don't
 """
 
 class VersionPlugin(CommandPlugin):

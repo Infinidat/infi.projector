@@ -13,7 +13,9 @@ Usage:
     projector package-scripts set <value> (--post-install | --pre-uninstall) [--commit-changes]
 
 Options:
-    <value>     the exectuable basename, under the 'bin' directory (e.g. projector). Set None to disable.
+    <value>                 the exectuable basename, under the 'bin' directory (e.g. projector). Set None to disable.
+    --post-install          perform the action for the post install script
+    --pre-uninstall         perform the action for the pre uninstall script
 """
 
 class PackageScriptsPlugin(CommandPlugin):

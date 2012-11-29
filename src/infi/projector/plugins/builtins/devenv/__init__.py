@@ -16,14 +16,16 @@ Options:
     devenv build            use this command to generate setup.py and the console scripts
     devenv relocate         use this command to switch from relative and absolute paths in the console scripts
     devenv pack             create a package, e.g. deb/rpm/msi
+    --clean                 clean build-related files and directories before building
     --force-bootstrap       run bootstrap.py even if the buildout script already exists
     --no-submodules         do not clone git sub-modules defined in buildout.cfg
     --no-scripts            do not install the dependent packages, nor create the console scripts. just create setup.py
     --no-readline           do not install [py]readline support (where applicable)
     --use-isolated-python   do not use global system python in console scripts, use Infinidat's isolated python builds
-    --newest                always check for new package verson on PyPI
+    --newest                always check for new package version on PyPI
     --offline               install packages only from download cache (no internet connection)
-    --clean                 clean build-related files and directories before building
+    --absolute              change the paths in the development environment to absolute paths
+    --relative              change the paths in the development environment to relative paths
 """
 
 class DevEnvPlugin(CommandPlugin):
