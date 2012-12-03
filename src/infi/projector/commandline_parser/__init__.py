@@ -17,6 +17,16 @@ def parse_docopt_string(docopt_string):
         usage = match(only_usage_pattern, docopt_string, DOTALL).groupdict()['usage']
     return usage, options
 
+def sort_options(options):
+    def key_cmp(key):
+        key = key.strip()
+        if key.startswith("<"):
+            return 1
+        if key.startswith("-"):
+            return 2
+        return 0
+    return '\n'.join(sorted(options.split("\n"), key=key_cmp))
+
 def build_usage_and_options():
     from infi.projector.plugins import plugin_repository
     usage = ''
@@ -26,6 +36,7 @@ def build_usage_and_options():
         plugin_usage, plugin_options = parse_docopt_string(docopt_string)
         usage = '\n'.join([usage, plugin_usage])
         options = '\n'.join([options, plugin_options])
+    options = sort_options(options)
     return usage, options
 
 DEFAULT_USAGE = dedent("-h | --help\n-v | --version")
