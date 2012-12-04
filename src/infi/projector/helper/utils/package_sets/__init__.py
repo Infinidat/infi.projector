@@ -92,6 +92,10 @@ class ConsoleScriptsSet(EntryPointSet):
     def __init__(self):
         super(ConsoleScriptsSet, self).__init__('project', 'console_scripts')
 
+class GuiScriptsSet(EntryPointSet):
+    def __init__(self):
+        super(GuiScriptsSet, self).__init__('project', 'gui_scripts')
+
 class PackageDataSet(RepresentedListSet):
     def __init__(self):
         super(PackageDataSet, self).__init__('project', 'package_data')
