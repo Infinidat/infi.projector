@@ -55,14 +55,19 @@ def assert_on_branch(branch_name):
         logger.error("not currently on branch {}".format(branch_name))
         raise SystemExit(1)
 
-def is_buildout_executable_using_isolated_python():
-    with open(path.join("bin", "buildout-script.py" if is_windows() else "buildout")) as fd:
+def is_executable_using_isolated_python(executable_name):
+    filepath = path.join("bin", "{}-script.py".format(executable_name) if is_windows() else executable_name)
+    with open(filepath) as fd:
         content = fd.read()
+    logger.debug("{}:\n{}".format(filepath, content))
     python_abspath = "{}/parts/python/bin/python".format(path.abspath(curdir))
     python_relpath = "parts/python/bin/python"
-    shebang_lines = ["#!" + '"{}"'.format(python) if is_windows() else '#!' + python + '-S'
+    shebang_lines = ["#!" + '"{}"'.format(python) if is_windows() else '#!' + python
                      for python in [python_relpath, python_abspath]]
     return any([content.startswith(shebang_line) for shebang_line in shebang_lines])
+
+def is_buildout_executable_using_isolated_python():
+    return is_executable_using_isolated_python("buildout")
 
 def requires_repository(func):
     @wraps(func)
