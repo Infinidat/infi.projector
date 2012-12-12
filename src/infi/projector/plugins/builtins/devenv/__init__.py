@@ -58,10 +58,7 @@ class DevEnvPlugin(CommandPlugin):
             logger.error("bootsrap.py does not exist")
             raise SystemExit(1)
         buildout_executable_exists = assertions.is_executable_exists(join("bin", "buildout"))
-        if not buildout_executable_exists or self.arguments.get("--force-bootstrap", False):
-            utils.execute_with_python("bootstrap.py -d")
-            return
-        if not self.arguments.get("--use-isolated-python", False) and self.arguments.get("--newest", False):
+        if not buildout_executable_exists or self.arguments.get("--force-bootstrap", False) or self.arguments.get("--newest", False):
             utils.execute_with_python("bootstrap.py -d")
             return
 
