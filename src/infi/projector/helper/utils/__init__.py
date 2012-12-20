@@ -170,14 +170,13 @@ def open_tempfile():
 def set_freezed_versions_in_install_requires(buildout_cfg, versions_cfg):
     from .package_sets import InstallRequiresPackageSet, VersionSectionSet, from_dict, to_dict
     install_requires = to_dict(InstallRequiresPackageSet.from_value(buildout_cfg.get("project", "install_requires")))
-    versions = to_dict(VersionSectionSet.from_value(versions_cfg))
+    versions = to_dict(set([item.replace('==', ">=") for item in VersionSectionSet.from_value(versions_cfg)]))
     for key, value in versions.items():
         if not install_requires.has_key(key):
             continue
         if not install_requires[key]: # empty list
             install_requires[key] = value
     install_requires = from_dict(install_requires)
-    install_requires = set([item.replace('==', ">=") for item in install_requires])
     buildout_cfg.set("project", "install_requires", InstallRequiresPackageSet.to_value(install_requires))
 
 def freeze_versions(versions_file, change_install_requires):
