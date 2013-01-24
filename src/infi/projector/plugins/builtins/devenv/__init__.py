@@ -59,7 +59,7 @@ class DevEnvPlugin(CommandPlugin):
             raise SystemExit(1)
         buildout_executable_exists = assertions.is_executable_exists(join("bin", "buildout"))
         if not buildout_executable_exists or self.arguments.get("--force-bootstrap", False) or self.arguments.get("--newest", False):
-            utils.execute_with_python("bootstrap.py -d")
+            utils.execute_with_python("bootstrap.py -d -v 1.6.3")
             return
 
     def install_sections_by_recipe(self, recipe):
@@ -143,7 +143,7 @@ class DevEnvPlugin(CommandPlugin):
             with utils.buildout_parameters_context(['buildout:develop=']):
                 utils.execute_with_buildout("install {}".format(self.get_isolated_python_section_name()))
             self.arguments["--force-bootstrap"] =  True
-            utils.execute_with_isolated_python("bootstrap.py -d")
+            utils.execute_with_isolated_python("bootstrap.py -d -v 1.6.3")
 
     def build(self):
         if self.arguments.get("--clean", False):
