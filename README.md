@@ -129,7 +129,12 @@ Where the options are:
 
 If you're developing a complete application, and not just a python package, you probably want to generate a sysadmin-friendly package of your app, bundled with its own iterpreter.
 
-`projector` can build this for you. just run:
+First, you'll need to build the development environment with the isolated python included:
+
+    projector devenv build --isolated-python
+
+
+Then, you can use `projector` can build stand-alone, isolated, packages. just run:
 
     projector devenv pack
 
