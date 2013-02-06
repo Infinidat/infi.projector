@@ -52,15 +52,27 @@ class DevEnvPlugin(CommandPlugin):
         if not exists(cache_dist):
             makedirs(cache_dist)
 
-    def bootstrap_if_necessary(self):
-        from os.path import exists, join
+    def _get_bootstrap_command(self):
+        from os.path import exists
+        from os import environ
         if not exists("bootstrap.py"):
             logger.error("bootsrap.py does not exist")
             raise SystemExit(1)
+        
+        cmd = "bootstrap.py -d -v 1.6.3"
+        additional_optional_args = {"PROJECTOR_BOOTSTRAP_DOWNLOAD_BASE": "--download-base",
+                                    "PROJECTOR_BOOTSTRAP_SETUP_SOURCE": "--setup-source"}
+        for key, cmd_option in additional_optional_args.items():
+            option_value = environ.get(key, None)
+            if option_value:
+                cmd += ' {}={}'.format(cmd_option, option_value)
+        return cmd
+
+    def bootstrap_if_necessary(self):
+        from os.path import join
         buildout_executable_exists = assertions.is_executable_exists(join("bin", "buildout"))
         if not buildout_executable_exists or self.arguments.get("--force-bootstrap", False) or self.arguments.get("--newest", False):
-            utils.execute_with_python("bootstrap.py -d -v 1.6.3")
-            return
+            utils.execute_with_python(self._get_bootstrap_command())
 
     def install_sections_by_recipe(self, recipe):
         with utils.open_buildout_configfile() as buildout:
@@ -143,7 +155,7 @@ class DevEnvPlugin(CommandPlugin):
             with utils.buildout_parameters_context(['buildout:develop=']):
                 utils.execute_with_buildout("install {}".format(self.get_isolated_python_section_name()))
             self.arguments["--force-bootstrap"] =  True
-            utils.execute_with_isolated_python("bootstrap.py -d -v 1.6.3")
+            utils.execute_with_isolated_python(self._get_bootstrap_command())
 
     def build(self):
         if self.arguments.get("--clean", False):
