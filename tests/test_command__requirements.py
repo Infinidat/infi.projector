@@ -56,15 +56,15 @@ class RequirementsTestCase(TestCase):
             self.projector("repository init a.b.c none short long")
             self.projector("devenv build --no-readline")
             self.projector("requirements add infi.execute<=0.0.7 --commit-changes")
-            self.projector("requirements add infi.pyutils==0.0.27 --commit-changes")
+            self.projector("requirements add infi.pyutils==0.0.30 --commit-changes")
             with self.assert_new_commit():
                 self.projector("requirements freeze --with-install-requires --newest --commit-changes")
             self.assertIn("[versions]", open("buildout.cfg").read())
             self.assertIn("infi.execute<=0.0.7", open("buildout.cfg").read())
-            self.assertIn("infi.pyutils==0.0.27", open("buildout.cfg").read())
+            self.assertIn("infi.pyutils==0.0.30", open("buildout.cfg").read())
             self.assertIn("distribute", open("buildout.cfg").read())
             with self.assert_new_commit():
                 self.projector("requirements unfreeze --commit-changes --with-install-requires")
             self.assertNotIn("[versions]", open("buildout.cfg").read())
             self.assertIn("infi.execute<=0.0.7", open("buildout.cfg").read())
-            self.assertIn("infi.pyutils==0.0.27", open("buildout.cfg").read())
+            self.assertIn("infi.pyutils==0.0.30", open("buildout.cfg").read())
