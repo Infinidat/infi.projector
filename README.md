@@ -59,6 +59,9 @@ This will download the plaform-specific build from our servers, and use that.
 
 There are other flags for this command, you can read about them by passing `--help`.
 
+Some environment variables may change the behavior of the build process. Specifically, `PROJECTOR_BOOTSTRAP_DOWNLOAD_BASE` and `PROJECTOR_BOOTSTRAP_SETUP_SOURCE` change
+the command-line parameters passed to `bootstrap.py` (`--download-base` and `--setup-source`, respectively).
+
 ### Adding dependencies
 
 Projects handled by `projector` have two types of dependencies:
@@ -129,7 +132,12 @@ Where the options are:
 
 If you're developing a complete application, and not just a python package, you probably want to generate a sysadmin-friendly package of your app, bundled with its own iterpreter.
 
-`projector` can build this for you. just run:
+First, you'll need to build the development environment with the isolated python included:
+
+    projector devenv build --isolated-python
+
+
+Then, you can use `projector` can build stand-alone, isolated, packages. just run:
 
     projector devenv pack
 

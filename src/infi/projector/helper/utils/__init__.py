@@ -83,6 +83,8 @@ def execute_with_python(commandline_or_args):
     try:
         execute_assert_success(executable + args)
     except PrettyExecutionError:
+        if '-S' not in executable:
+            raise
         logger.warning("Command falied with -S, trying without")
         executable.remove('-S')
         execute_assert_success(executable + args)
