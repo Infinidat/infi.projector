@@ -64,11 +64,13 @@ class RepositoryPlugin(CommandPlugin):
     def _create_subdir_if_necessary(self):
         from infi.projector.helper.utils import chdir
         from os.path import exists, isdir, sep
-        from os import makedirs
+        from os import makedirs, name
         if not self.arguments.get('--mkdir'):
             yield
             return
         dirname = self.arguments.get('<project_name>') or self.arguments.get('<origin>')
+        if name == 'nt':
+            dirname = dirname.replace(sep, '/')
         dirname = (dirname if not dirname.endswith('.git') else dirname[0:-4]).split('/')[-1]
         if exists(dirname) and isdir(dirname):
             logger.debug("{} already exists".format(dirname))
