@@ -47,7 +47,7 @@ class VersionPlugin(CommandPlugin):
         placeholder = placeholders.get(version_tag)
         if placeholder is None:
             return version_tag
-        current_version = self.get_current_version_from_git_describe().strip('v')
+        current_version = self.get_git_describe().lstrip('v')
         version_numbers = current_version.split('-')[0].split('.')
         version_numbers = [int(item) for item in version_numbers]
         while len(version_numbers) < 3:
@@ -114,8 +114,15 @@ class VersionPlugin(CommandPlugin):
         repository._executeGitCommandAssertSuccess("git push --all")
         repository._executeGitCommandAssertSuccess("git push --tags")
 
-    def get_current_version_from_git_describe(self):
+    def get_git_describe(self):
         return self.get_repository()._executeGitCommand("git describe --tags").stdout.read().splitlines()[0]
+
+    def get_current_version_from_git_describe(self):
+        returned = self.get_git_describe()
+        all_tags = set(tag.name for tag in self.get_repository().getTags())
+        if returned not in all_tags:
+            returned = "{}.post{}.{}".format(*returned.rsplit("-", 2))
+        return returned
 
     def build_and_upload_distributions(self, version_tag_with_v):
         from infi.projector.helper.utils import execute_with_buildout, git_checkout

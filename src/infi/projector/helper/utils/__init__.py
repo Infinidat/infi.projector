@@ -125,7 +125,6 @@ def _release_version_with_git_flow(version_tag):
     repository = LocalRepository(curdir)
     repository.checkout("develop")
     repository.commit("empty commit after version {}".format(version_tag), allowEmpty=True)
-    repository.createTag("{}-develop".format(version_tag))
 
 def git_checkout(branch_name_or_tag):
     from os import curdir

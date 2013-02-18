@@ -30,4 +30,4 @@ class UtilsTestCase(TestCase):
                     mess_things_up_and_raise()
             repository = LocalRepository('.')
             self.assertEquals(2, len(repository.getBranches()))
-            self.assertEquals(2, len(repository.getTags()), repository.getTags())
+            self.assertEquals(1, len(repository.getTags()), repository.getTags())
