@@ -123,8 +123,6 @@ def _release_version_with_git_flow(version_tag):
     gitflow.finish("release", version_tag, fetch=False, rebase=False, keep=False, force_delete=True,
                    tagging_info=dict(sign=False, message=version_tag))
     repository = LocalRepository(curdir)
-    repository.checkout("develop")
-    repository.commit("empty commit after version {}".format(version_tag), allowEmpty=True)
 
 def git_checkout(branch_name_or_tag):
     from os import curdir
