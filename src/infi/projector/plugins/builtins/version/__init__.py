@@ -42,8 +42,12 @@ class VersionPlugin(CommandPlugin):
 
     def replace_version_tag(self):
         """find the next major/minor/trivial version number if applicable"""
-        placeholders = dict(major=0, minor=1, trivial=2)
         version_tag = self.arguments.get('<version>')
+        special_keywords = ['current', 'latest']
+        if version_tag in special_keywords:
+            logger.error("releasing version '{}' is disallowed. Did you mean 'version upload'?".format(version_tag))
+            raise SystemExit(1)
+        placeholders = dict(major=0, minor=1, trivial=2)
         placeholder = placeholders.get(version_tag)
         if placeholder is None:
             return version_tag
