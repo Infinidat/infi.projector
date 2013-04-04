@@ -14,7 +14,7 @@ Usage:
 Options:
     version release                 Release a new version, including registering and uploading to pypi
     version upload                  Upload an exisiting version to pypi
-    <version>                       x.y.z or major, minor, trivial (release only)
+    <version>                       x.y.z, or the keywords: trivial, minor, major ('release' only); current, latest ('upload' only)
     --no-upload                     Do not upload the package as part of the release process
     --no-fetch                      Do not fetch origin before releasing
     --distributions=DISTRIBUTIONS   Distributions to build [default: sdist,bdist_egg]
