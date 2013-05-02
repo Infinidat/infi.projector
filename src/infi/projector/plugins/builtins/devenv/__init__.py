@@ -59,7 +59,7 @@ class DevEnvPlugin(CommandPlugin):
             logger.error("bootsrap.py does not exist")
             raise SystemExit(1)
         
-        cmd = "bootstrap.py -d -v 1.6.3"
+        cmd = "bootstrap.py -d"
         additional_optional_args = {"PROJECTOR_BOOTSTRAP_DOWNLOAD_BASE": "--download-base",
                                     "PROJECTOR_BOOTSTRAP_SETUP_SOURCE": "--setup-source"}
         for key, cmd_option in additional_optional_args.items():

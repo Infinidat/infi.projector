@@ -3,7 +3,7 @@ from contextlib import contextmanager
 from logging import getLogger
 logger = getLogger(__name__)
 
-BUILDOUT_PARAMETERS = ['-s']
+BUILDOUT_PARAMETERS = []
 
 class PrettyExecutionError(Exception):
     # infi.execute.ExecutionError does print stdout and stderr well, and this is a must when running buildout
