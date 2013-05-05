@@ -1,7 +1,8 @@
 from contextlib import contextmanager
 from infi.projector.plugins import CommandPlugin
 from infi.projector.helper import assertions
-from infi.projector.helper.utils import open_buildout_configfile, commit_changes_to_buildout
+from infi.projector.helper.utils import open_buildout_configfile
+from infi.projector.helper.utils import commit_changes_to_buildout, commit_changes_to_manifest_in
 from infi.projector.helper.utils.package_sets import PackageDataSet
 from textwrap import dedent
 from logging import getLogger
@@ -55,6 +56,7 @@ class PackageDataPlugin(CommandPlugin):
         if self.arguments.get("--commit-changes", False):
             commit_message = "removing {} from package data".format(filename)
             commit_changes_to_buildout(commit_message)
+            commit_changes_to_manifest_in(commit_message)
 
     def add(self):
         package_set = self.get_package_set()
@@ -67,3 +69,4 @@ class PackageDataPlugin(CommandPlugin):
         if self.arguments.get("--commit-changes", False):
             commit_message = "adding {} to package data".format(filename)
             commit_changes_to_buildout(commit_message)
+            commit_changes_to_manifest_in(commit_message)

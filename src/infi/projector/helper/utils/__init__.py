@@ -142,6 +142,13 @@ def commit_changes_to_buildout(message):
     repository.add("buildout.cfg")
     repository.commit("buildout.cfg: " + message)
 
+def commit_changes_to_manifest_in(message):
+    from os import curdir
+    from gitpy import LocalRepository
+    repository = LocalRepository(curdir)
+    repository.add("MANIFEST.in")
+    repository.commit("MANIFEST.in: " + message)
+
 def get_latest_version():
     from os import curdir
     from gitpy import LocalRepository
