@@ -1,7 +1,7 @@
 Overview
 ========
 
-Projector helps you set up isolated envrionments for developing Python projects, and pack these environment into isolated packages that you can later install on production.
+Projector helps you set up isolated environments for developing Python projects, and pack these environment into isolated packages that you can later install on production.
 
 At Infinidat, we build software for system administrators, that expect a complete, packaged product, and not just a bunch of Python scripts. Since Python (at least until Python 3.2) does not provide a decent mechanism for building Python applications (with a bundled interpreter), we started building our own solution, and this is what we came up with.
 
@@ -25,7 +25,7 @@ Projector is available on `pypi.python.org`, as `infi.projector`. To install jus
 Walkthrough
 -----------
 
-We will explain the bits and bolts about using project by a straight-forward walkthough.
+We will explain the bits and bolts about using project by a straight-forward walkthrough.
 
 
 ### Creating a new project
@@ -41,7 +41,7 @@ This creates a new skeleton for the project, under a new directory, called infi.
 * `buildout.in`.  Yet another configuration file, used in production environments.
 * `setup.in`.     A template file for setup.py. Modify when necessary.
 
-Also, you'll notice that the checked out branch is `develop`. That is because we use `gitflow`'s branching model. That means that `master` holds merges for final releases only, and that the devleopment is on `develop` or separate feature branches.
+Also, you'll notice that the checked out branch is `develop`. That is because we use `gitflow`'s branching model. That means that `master` holds merges for final releases only, and that the development is on `develop` or separate feature branches.
 
 ### Building the development environment
 
@@ -55,7 +55,7 @@ If you want to use our isolated python builds in our development environment, an
 
     projector devenv build --isolated-python
 
-This will download the plaform-specific build from our servers, and use that.
+This will download the platform-specific build from our servers, and use that.
 
 There are other flags for this command, you can read about them by passing `--help`.
 
@@ -107,7 +107,7 @@ If you wish to include additional (non-Python-source) files in your python packa
 
 As we mentioned earlier, we use gitflow's branching model and versioning scheme. However, there's a little for to in releasing versions than just running one `git-flow` command:
 
-* You need to find out the lastest version number, and advance on top of it
+* You need to find out the latest version number, and advance on top of it
 * You need to bump the version-related files in the source
 * You need to upload the version to PyPI
 * You need to push the commit and tags to origin
@@ -120,7 +120,7 @@ As we mentioned earlier, we use gitflow's branching model and versioning scheme.
 Where the options are:
 
 * `release`. Release a new version, including registering and uploading to pypi
-* `upload`. Upload an exisiting version to pypi
+* `upload`. Upload an existing version to pypi
 * `--distributions=DISTRIBUTIONS`. Distributions to build [default: sdist,bdist_egg]
 * `--pypi-servers=PYPI`. PyPI server for publishing [default: pypi,]
 * `<version>`. x.y.z or major, minor, trivial (release only) or current, latest (upload only)
@@ -141,7 +141,7 @@ Then, you can use `projector` can build stand-alone, isolated, packages. just ru
 
     projector devenv pack
 
-Based on the plaform you're running on, this command will generate a package under the `parts` directory:
+Based on the platform you're running on, this command will generate a package under the `parts` directory:
 
 * MSI on Windows platform, arhicture matches the OS (x86 for 32bit, x64 for 64bit)
 * DEB on ubuntu
@@ -156,7 +156,7 @@ You can do so by writing the following configuration file to `./.projector` (per
     --use-isolated-python = True
     --pypi-servers=pypi,local
 
-This is just an example ofcourse.
+This is just an example of course.
 
 Developing projector
 ====================
