@@ -12,7 +12,7 @@ USAGE = """
 Usage:
     projector isolated-python python-version get
     projector isolated-python python-version set <version> [--commit-changes]
-    
+
 Options:
     <version>               Python version to set
 """
@@ -47,7 +47,9 @@ class IsolatedPythonPlugin(CommandPlugin):
                 print buildout.get(sections[0], "version")
             elif self.arguments.get("set"):
                 version = self.arguments.get("<version>")
+                if not version.startswith("v"):
+                    version = "v" + version
                 buildout.set(sections[0], "version", version)
-                if self.arguments.get("--commit-changes", False):
-                    commit_message = "changed isolated python version to {}".format(version)
-                    commit_changes_to_buildout(commit_message)
+        if self.arguments.get("--commit-changes", False):
+            commit_message = "changed isolated python version to {}".format(version)
+            commit_changes_to_buildout(commit_message)

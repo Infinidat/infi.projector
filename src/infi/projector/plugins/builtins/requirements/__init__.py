@@ -83,15 +83,13 @@ class RequirementsPlugin(CommandPlugin):
         plugin = DevEnvPlugin()
         plugin.arguments = {'--newest': self.arguments.get("--newest", False)}
         with open_tempfile() as tempfile:
-            with buildout_parameters_context(["buildout:extensions=buildout-versions",
-                                              "buildout:buildout_versions_file={0}".format(tempfile),
-                                              "buildout:versions="]):
+            with buildout_parameters_context(["buildout:update-versions-file={0}".format(tempfile)]):
                 plugin.build()
             with open(tempfile) as fd:
                 content = fd.read()
             with open(tempfile, 'w') as fd:
                 fd.write("[versions]\n" + content)
-            versions = freeze_versions(tempfile, self.arguments.get("--with-install-requires", False))
+            freeze_versions(tempfile, self.arguments.get("--with-install-requires", False))
         if self.arguments.get("--commit-changes", False):
             repository = LocalRepository(curdir)
             repository.add("buildout.cfg")
@@ -104,7 +102,7 @@ class RequirementsPlugin(CommandPlugin):
         from infi.projector.helper.utils import unfreeze_versions
         from gitpy import LocalRepository
         from os import curdir
-        versions = unfreeze_versions(self.arguments.get("--with-install-requires", False))
+        unfreeze_versions(self.arguments.get("--with-install-requires", False))
         if self.arguments.get("--commit-changes", False):
             repository = LocalRepository(curdir)
             repository.add("buildout.cfg")

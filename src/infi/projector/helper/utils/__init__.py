@@ -142,6 +142,13 @@ def commit_changes_to_buildout(message):
     repository.add("buildout.cfg")
     repository.commit("buildout.cfg: " + message)
 
+def commit_changes_to_manifest_in(message):
+    from os import curdir
+    from gitpy import LocalRepository
+    repository = LocalRepository(curdir)
+    repository.add("MANIFEST.in")
+    repository.commit("MANIFEST.in: " + message)
+
 def get_latest_version():
     from os import curdir
     from gitpy import LocalRepository
@@ -181,8 +188,6 @@ def set_freezed_versions_in_install_requires(buildout_cfg, versions_cfg):
 def freeze_versions(versions_file, change_install_requires):
     from os import curdir, path
     with open_buildout_configfile(write_on_exit=True) as buildout_cfg:
-        buildout_cfg.set("buildout", "extensions",  "buildout-versions")
-        buildout_cfg.set("buildout", "versions", "versions")
         with open_buildout_configfile(versions_file) as versions_cfg:
             if not buildout_cfg.has_section("versions"):
                 buildout_cfg.add_section("versions")
