@@ -105,7 +105,7 @@ If you wish to include additional (non-Python-source) files in your python packa
 
 ### Releasing versions
 
-As we mentioned earlier, we use gitflow's branching model and versioning scheme. However, there's a little for to in releasing versions than just running one `git-flow` command:
+As we mentioned earlier, we use gitflow's branching model and versioning scheme. However, there's a little more to do when releasing versions than just running one `git-flow` command:
 
 * You need to find out the latest version number, and advance on top of it
 * You need to bump the version-related files in the source
@@ -123,7 +123,7 @@ Where the options are:
 * `upload`. Upload an existing version to pypi
 * `--distributions=DISTRIBUTIONS`. Distributions to build [default: sdist,bdist_egg]
 * `--pypi-servers=PYPI`. PyPI server for publishing [default: pypi,]
-* `<version>`. x.y.z or major, minor, trivial (release only) or current, latest (upload only)
+* `<version>`. x.y.z, or the keywords: major, minor, trivial (for 'release' only) or current, latest (for 'upload' command only)
 * `--no-upload`. Do not upload the package as part of the release process
 * `--no-fetch`. Do not fetch origin before releasing
 * `--push-changes`. We often forget to push the commits and tags to origin. This option does it for you
@@ -132,20 +132,25 @@ Where the options are:
 
 If you're developing a complete application, and not just a python package, you probably want to generate a sysadmin-friendly package of your app, bundled with its own iterpreter.
 
-First, you'll need to build the development environment with the isolated python included:
+In order to do this, you will have to add the following dependency to your project by running the command:
+
+    projector requirements add infi.recipe.console_scripts
+
+Then, you'll need to build the development environment with the isolated python included:
 
     projector devenv build --isolated-python
 
-
-Then, you can use `projector` can build stand-alone, isolated, packages. just run:
+After the environment is ready, you can use `projector` to build stand-alone, isolated, packages. just run:
 
     projector devenv pack
 
 Based on the platform you're running on, this command will generate a package under the `parts` directory:
 
-* MSI on Windows platform, arhicture matches the OS (x86 for 32bit, x64 for 64bit)
+* MSI on Windows platform
 * DEB on ubuntu
 * RPM on redhat/centos
+
+The target arhicture of the package will also match the platform you are using (x86 for 32bit, x64 for 64bit)
 
 ### Project/User defaults
 
