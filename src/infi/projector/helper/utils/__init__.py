@@ -127,6 +127,7 @@ def _release_version_with_git_flow(version_tag):
 def git_checkout(branch_name_or_tag):
     from os import curdir
     from gitpy import LocalRepository
+    logger.info("checking out '{}'".format(branch_name_or_tag))
     try:
         LocalRepository(curdir).checkout(branch_name_or_tag)
     except Exception: # pragma: no cover

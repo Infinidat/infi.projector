@@ -10,18 +10,23 @@ Usage:
     projector repository init [--mkdir] <project_name> <origin> <short_description> <long_description>
     projector repository clone <origin>
     projector repository skeleton update [--remove-deprecated-files] [--commit-changes]
+    projector repository sync <remote-user> <remote-host> [<remote-path>] [--watch] [--verbose]
 
 Options:
     repository init                 Create a new project/git repository
     repository clone                Clone an exisiting project/git repository
     repository skeleton update      Update skeleton-related files (e.g bootstrap.py)
+    repository sync                 sync this repository with a remote target
     <project_name>                  The name of the project in pyhton-module-style (object)
     <origin>                        Remote repository url
     <short_description>             A one-line description
     <long_description>              A multi-line description
+    <remote-path>                   if missing, assuming target is at the default installation directory
     --mkdir                         Init the repository in a new directory instead of the current directory
     --remove-deprecated-files       remove files that were in use in previous versions of projector but are no longer necessary
+    --watch                         watch for changes
 """
+
 
 def get_package_namespace(name):
     namespaces = []
@@ -29,12 +34,15 @@ def get_package_namespace(name):
         namespaces.append('.'.join([namespaces[-1], item]) if namespaces else item)
     return namespaces
 
+
 def generate_package_code():
     from uuid import uuid1
     return '{' + str(uuid1()) + '}'
 
+
 def indent(text):
     return '\n'.join(['\t{}'.format(line) for line in text.splitlines()]).strip()
+
 
 def get(original, section, key, default=None):
     from ConfigParser import NoOptionError
@@ -42,6 +50,7 @@ def get(original, section, key, default=None):
         return original.get(section, key)
     except NoOptionError:
         return default
+
 
 class RepositoryPlugin(CommandPlugin):
     def get_docopt_string(self):
@@ -51,7 +60,7 @@ class RepositoryPlugin(CommandPlugin):
         return 'repository'
 
     def parse_commandline_arguments(self, arguments):
-        methods = [self.init, self.clone, self.skeleton]
+        methods = [self.init, self.clone, self.skeleton, self.sync]
         [method] = [method for method in methods
                     if arguments.get(method.__name__)]
         self.arguments = arguments
@@ -257,3 +266,35 @@ class RepositoryPlugin(CommandPlugin):
             repository = LocalRepository(curdir)
             message = "updated project files from skeleton"
             repository.commit(message, commitAll=True)
+
+    def _get_default_remote_path(self):
+        from infi.projector.helper.utils import open_buildout_configfile
+        is_windows = self.arguments.get("<remote-user>") == "Administrator"
+        basedir = "/cygdrive/c/Program Files/" if is_windows else "/opt"
+        with open_buildout_configfile() as buildout:
+            get = buildout.get
+            if is_windows:
+                return "/".join([basedir, get("project", "company"), get("project", "product_name")])
+            else:
+                return "/".join([basedir, get("project", "company").lower(),
+                                 get("project", "product_name").replace(' ', '-').replace('_', '-').lower()])
+
+    def sync(self):
+        from infi.pysync import main
+        args = ["--python"]
+        if self.arguments.get("--watch"):
+            args.extend(["--watch"])
+        if self.arguments.get("--verbose"):
+            args.extend(["--verbose"])
+        patterns = [".cache", ".git", ".gitignore", ".installed.cfg", ".projector", "MANIFEST.in",
+                    "bin", "bootstrap.py", "develop-eggs", "eggs", "parts", "setup.py",
+                    "src/*egg-info", "src/**/__version__.py"]
+        if not self.arguments.get("<remote-path>"):
+            patterns.extend(["buildout.cfg", "setup.in"])
+        args.extend(["--skip-source={}".format(item) for item in patterns])
+        args.extend(["--skip-target={}".format(item) for item in patterns])
+        default_remote_path = self._get_default_remote_path()
+        args.extend(["{}@{}:{}".format(self.arguments.get("<remote-user>"), self.arguments.get("<remote-host>"),
+                     self.arguments.get("<remote-path>") or default_remote_path)])
+        logger.info("pysync {}".format(" ".join(args)))
+        return main(args)
