@@ -58,7 +58,7 @@ class DevEnvPlugin(CommandPlugin):
         if not exists("bootstrap.py"):
             logger.error("bootsrap.py does not exist")
             raise SystemExit(1)
-        
+
         cmd = "bootstrap.py -d"
         additional_optional_args = {"PROJECTOR_BOOTSTRAP_DOWNLOAD_BASE": "--download-base",
                                     "PROJECTOR_BOOTSTRAP_SETUP_SOURCE": "--setup-source"}
@@ -102,6 +102,11 @@ class DevEnvPlugin(CommandPlugin):
         self.install_sections_by_recipe("infi.recipe.console_scripts")
         self.install_sections_by_recipe("infi.recipe.console_scripts:gui_scripts")
 
+    def _remove_files_of_type_recursively(self, root_path, file_type):
+        import os
+        file_type = file_type if file_type.startswith(".") else "." + file_type
+        [[os.remove(os.path.join(p, f)) for f in fs if f.endswith(file_type)] for p, ds, fs in os.walk(root_path)]
+
     def clean_build(self):
         from os.path import exists
         from os import remove
@@ -110,6 +115,7 @@ class DevEnvPlugin(CommandPlugin):
         files_to_clean = ['setup.py']
         _ = [remove(filename) for filename in files_to_clean if exists(filename)]
         _ = [rmtree(dirname)  for dirname in directories_to_clean if exists(dirname)]
+        self._remove_files_of_type_recursively("src", "pyc")
 
     @contextmanager
     def buildout_newest_or_offline_context(self):
@@ -160,6 +166,8 @@ class DevEnvPlugin(CommandPlugin):
     def build(self):
         if self.arguments.get("--clean", False):
             self.clean_build()
+        elif self.arguments.get("--newest", False):
+            self._remove_files_of_type_recursively("src", "pyc")
         self.create_cache_directories()
         self.bootstrap_if_necessary()
         with self.buildout_newest_or_offline_context():
