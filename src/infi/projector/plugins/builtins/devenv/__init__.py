@@ -85,7 +85,13 @@ class DevEnvPlugin(CommandPlugin):
 
     def bootstrap_if_necessary(self):
         from os.path import join
+        from pkg_resources import resource_filename
+        from infi.projector.plugins.builtins.repository import skeleton
         buildout_executable_exists = assertions.is_executable_exists(join("bin", "buildout"))
+        bootstrap_py = resource_filename(skeleton.__name__, "bootstrap.py")
+        with open("bootstrap.py", "w") as dst:
+            with open(bootstrap_py) as src:
+                dst.write(src.read())
         if not buildout_executable_exists or self.arguments.get("--force-bootstrap", False) or self.arguments.get("--newest", False):
             utils.execute_with_python(self._get_bootstrap_command())
 
@@ -157,7 +163,6 @@ class DevEnvPlugin(CommandPlugin):
         return True
 
     def install_readline(self):
-        from platform import system
         from infi.execute import execute_assert_success, ExecutionError
         module = self.get_readline_module()
         if not module or self.is_module_installed(module): # pragma: no cover
@@ -169,7 +174,6 @@ class DevEnvPlugin(CommandPlugin):
             pass
 
     def install_isolated_python_if_necessary(self):
-        from infi.execute import execute_assert_success, ExecutionError
         if not self.arguments.get("--use-isolated-python", False):
             return
         if not assertions.is_isolated_python_exists() or self.arguments.get("--newest", False):
