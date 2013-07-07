@@ -80,6 +80,11 @@ class DevEnvTestCase(TestCase):
                 raise SkipTest("Skipping because virtualenv does not work")
             virtualenv_dir = path.abspath(path.join(curdir, 'virtualenv-python'))
             bin_dir = path.join(virtualenv_dir, 'Scripts' if assertions.is_windows() else 'bin')
+            easy_install = path.join(bin_dir, "easy_install")
+            try:
+                self.execute_assert_success("{} -U distribute".format(easy_install))
+            except ExecutionError, error:
+                pass
             python = path.join(bin_dir, 'python')
             with utils.chdir(PROJECT_ROOT):
                 self.execute_assert_success("{python} setup.py develop".format(python=python))
