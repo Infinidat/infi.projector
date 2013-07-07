@@ -52,6 +52,16 @@ class DevEnvPlugin(CommandPlugin):
         if not exists(cache_dist):
             makedirs(cache_dist)
 
+    def _get_pypi_index_url(self):
+        from ConfigParser import ConfigParser, NoOptionError, NoSectionError
+        from os import path
+        pydistutils = ConfigParser()
+        pydistutils.read([path.expanduser(path.join("~", basename)) for basename in ['.pydistutils.cfg', 'pydistutils.cfg']])
+        try:
+            return pydistutils.get("easy_install", "index-url").strip("/")
+        except (NoSectionError, NoOptionError):
+            return "https://pypi.python.org/simple"
+
     def _get_bootstrap_command(self):
         from os.path import exists
         from os import environ
@@ -59,18 +69,29 @@ class DevEnvPlugin(CommandPlugin):
             logger.error("bootsrap.py does not exist")
             raise SystemExit(1)
 
-        cmd = "bootstrap.py -d"
+        cmd = "bootstrap.py"
         additional_optional_args = {"PROJECTOR_BOOTSTRAP_DOWNLOAD_BASE": "--download-base",
-                                    "PROJECTOR_BOOTSTRAP_SETUP_SOURCE": "--setup-source"}
+                                    "PROJECTOR_BOOTSTRAP_SETUP_SOURCE": "--setup-source",
+                                    "PROJECTOR_BOOTSTRAP_INDEX_URL": "--index-url",
+                                    }
         for key, cmd_option in additional_optional_args.items():
             option_value = environ.get(key, None)
             if option_value:
                 cmd += ' {}={}'.format(cmd_option, option_value)
+        if not environ.get("PROJECTOR_BOOTSTRAP_INDEX_URL", None):
+            # we want to extract the index-url from pydistutils.cfg
+            cmd += ' --index-url={}'.format(self._get_pypi_index_url())
         return cmd
 
     def bootstrap_if_necessary(self):
         from os.path import join
+        from pkg_resources import resource_filename
+        from infi.projector.plugins.builtins.repository import skeleton
         buildout_executable_exists = assertions.is_executable_exists(join("bin", "buildout"))
+        bootstrap_py = resource_filename(skeleton.__name__, "bootstrap.py")
+        with open("bootstrap.py", "w") as dst:
+            with open(bootstrap_py) as src:
+                dst.write(src.read())
         if not buildout_executable_exists or self.arguments.get("--force-bootstrap", False) or self.arguments.get("--newest", False):
             utils.execute_with_python(self._get_bootstrap_command())
 
@@ -142,7 +163,6 @@ class DevEnvPlugin(CommandPlugin):
         return True
 
     def install_readline(self):
-        from platform import system
         from infi.execute import execute_assert_success, ExecutionError
         module = self.get_readline_module()
         if not module or self.is_module_installed(module): # pragma: no cover
@@ -154,7 +174,6 @@ class DevEnvPlugin(CommandPlugin):
             pass
 
     def install_isolated_python_if_necessary(self):
-        from infi.execute import execute_assert_success, ExecutionError
         if not self.arguments.get("--use-isolated-python", False):
             return
         if not assertions.is_isolated_python_exists() or self.arguments.get("--newest", False):

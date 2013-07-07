@@ -17,7 +17,7 @@ Options:
     repository clone                Clone an exisiting project/git repository
     repository skeleton update      Update skeleton-related files (e.g bootstrap.py)
     repository sync                 sync this repository with a remote target
-    <project_name>                  The name of the project in pyhton-module-style (object)
+    <project_name>                  The name of the project in python-module-style (object)
     <origin>                        Remote repository url
     <short_description>             A one-line description
     <long_description>              A multi-line description
@@ -149,6 +149,15 @@ class RepositoryPlugin(CommandPlugin):
         project_name = self.get_project_name()
         with open('.gitignore', 'a') as fd:
             fd.write('\n' + '/'.join(['src'] + project_name.split('.') + ['__version__.py']) + '\n')
+            fd.write("bootstrap.py\n")
+
+    def safe_append_to_gitignore(self, entry):
+        with open('.gitignore') as fd:
+            entries = [line.strip() for line in fd.readlines()]
+        if entry in entries:
+            return
+        with open('.gitignore', 'a') as fd:
+            fd.write(entry + "\n")
 
     def commit_all(self):
         from os import curdir
@@ -253,6 +262,7 @@ class RepositoryPlugin(CommandPlugin):
                 self.remove_deprecated_files()
             logger.info("Writing skeleton files")
             self.overwrite_update_files()
+            self.safe_append_to_gitignore("bootstrap.py")
             with open_buildout_configfile(write_on_exit=True) as update:
                 logger.info("Writing buildout.cfg")
                 for section, attributes in backup.items():

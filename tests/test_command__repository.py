@@ -11,7 +11,6 @@ class RepositoryTestCase(TestCase):
 
     def assert_project_checked_out(self):
         self.assertTrue(path.exists(".git"))
-        self.assertTrue(path.exists("bootstrap.py"))
         self.assertTrue(path.exists("setup.in"))
 
     def test_init(self):
