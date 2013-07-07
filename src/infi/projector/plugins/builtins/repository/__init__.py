@@ -17,7 +17,7 @@ Options:
     repository clone                Clone an exisiting project/git repository
     repository skeleton update      Update skeleton-related files (e.g bootstrap.py)
     repository sync                 sync this repository with a remote target
-    <project_name>                  The name of the project in pyhton-module-style (object)
+    <project_name>                  The name of the project in python-module-style (object)
     <origin>                        Remote repository url
     <short_description>             A one-line description
     <long_description>              A multi-line description
