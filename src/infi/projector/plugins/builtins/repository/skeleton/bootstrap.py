@@ -55,7 +55,7 @@ def normalize_to_url(option, opt_str, value, parser):
     name = opt_str[2:].replace('-', '_')
     setattr(parser.values, name, value)
 
-ezsetup_source = 'https://bitbucket.org/pypa/setuptools/raw/0.7.2/ez_setup.py'
+ezsetup_source = 'https://bitbucket.org/pypa/setuptools/raw/0.8/ez_setup.py'
 setuptools_source = "https://pypi.python.org/packages/source/s/setuptools/"
 pypi_index = "https://pypi.python.org/simple/"
 
@@ -96,6 +96,17 @@ options, args = parser.parse_args()
 
 ######################################################################
 # load/install setuptools
+
+def _cleanup_old_zc_buildout_modules():
+    # installing setuptools imported the site module, which added all the stuff in site-packages to sys.path,
+    # even though in the case Python was executed -S.
+    # we want to remove all traces for this
+    for item in sys.path:
+        if 'zc' in item:
+            sys.path.remove(item)
+    for module in sys.modules.keys():
+        if 'zc' in module:
+            del sys.modules[module]
 
 to_reload = False
 import glob
@@ -210,7 +221,11 @@ if subprocess.call(cmd, env=dict(os.environ, PYTHONPATH=setuptools_path)) != 0:
 
 ######################################################################
 # Import and run buildout
-
+# installing setuptools imported site.py, which added zc.buildout to the WorkingSet if it was previously installed
+# this may raise a VerionConflict here; we just need to resolve the location of the buildout we just installed
+# so we clear the WorkingSet
+_cleanup_old_zc_buildout_modules()
+ws.by_key = {}
 ws.add_entry(tmpeggs)
 ws.require(requirement)
 import zc.buildout.buildout
