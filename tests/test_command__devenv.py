@@ -44,8 +44,7 @@ class DevEnvTestCase(TestCase):
         with self.temporary_directory_context():
             self.projector("repository init a.b.c none short long")
             remove("bootstrap.py")
-            with self.assertRaises(SystemExit):
-                self.projector("devenv build --clean")
+            self.projector("devenv build --clean")
 
     def test_build_after_init__use_isolated_python(self):
         with self.temporary_directory_context():
