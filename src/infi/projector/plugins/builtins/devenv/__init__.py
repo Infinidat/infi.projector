@@ -52,6 +52,16 @@ class DevEnvPlugin(CommandPlugin):
         if not exists(cache_dist):
             makedirs(cache_dist)
 
+    def _get_pypi_index_url(self):
+        from ConfigParser import ConfigParser, NoOptionError, NoSectionError
+        from os import path
+        pydistutils = ConfigParser()
+        pydistutils.read([path.expanduser(path.join("~", basename)) for basename in ['.pydistutils.cfg', 'pydistutils.cfg']])
+        try:
+            return pydistutils.get("easy_install", "index-url").strip("/")
+        except (NoSectionError, NoOptionError):
+            return "https://pypi.python.org/simple"
+
     def _get_bootstrap_command(self):
         from os.path import exists
         from os import environ
@@ -59,13 +69,18 @@ class DevEnvPlugin(CommandPlugin):
             logger.error("bootsrap.py does not exist")
             raise SystemExit(1)
 
-        cmd = "bootstrap.py -d"
+        cmd = "bootstrap.py"
         additional_optional_args = {"PROJECTOR_BOOTSTRAP_DOWNLOAD_BASE": "--download-base",
-                                    "PROJECTOR_BOOTSTRAP_SETUP_SOURCE": "--setup-source"}
+                                    "PROJECTOR_BOOTSTRAP_SETUP_SOURCE": "--setup-source",
+                                    "PROJECTOR_BOOTSTRAP_INDEX_URL": "--index-url",
+                                    }
         for key, cmd_option in additional_optional_args.items():
             option_value = environ.get(key, None)
             if option_value:
                 cmd += ' {}={}'.format(cmd_option, option_value)
+        if not environ.get("PROJECTOR_BOOTSTRAP_INDEX_URL", None):
+            # we want to extract the index-url from pydistutils.cfg
+            cmd += ' --index-url={}'.format(self._get_pypi_index_url())
         return cmd
 
     def bootstrap_if_necessary(self):
