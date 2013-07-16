@@ -22,6 +22,8 @@ import os
 import shutil
 import sys
 import tempfile
+import glob
+import re
 
 from optparse import OptionParser
 
@@ -108,9 +110,21 @@ def _cleanup_old_zc_buildout_modules():
         if 'zc' in module:
             del sys.modules[module]
 
+def _cleanup_setuptools_and_distribute_modules():
+    # installing setuptools imported the site module, which added all the stuff in site-packages to sys.path,
+    # even though in the case Python was executed -S.
+    # we want to remove all traces for this
+    for item in sys.path:
+        if 'setuptools' in item or 'distribute' in item:
+            sys.path.remove(item)
+        if glob.glob(os.path.join(item, 'setuptools*')) and item in sys.path:
+            sys.path.remove(item)
+        if glob.glob(os.path.join(item, 'distribute*')) and item in sys.path:
+            sys.path.remove(item)
+
+_cleanup_setuptools_and_distribute_modules()
+_cleanup_setuptools_and_distribute_modules()  # wtf need to run twice
 to_reload = False
-import glob
-import re
 try:
     from urlparse import urlparse
 except ImportError:
