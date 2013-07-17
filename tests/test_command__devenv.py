@@ -76,14 +76,15 @@ class DevEnvTestCase(TestCase):
         with self.temporary_directory_context():
             try:
                 self.execute_assert_success("virtualenv virtualenv-python")
-            except ExecutionError, error:
+            except ExecutionError:
                 raise SkipTest("Skipping because virtualenv does not work")
             virtualenv_dir = path.abspath(path.join(curdir, 'virtualenv-python'))
             bin_dir = path.join(virtualenv_dir, 'Scripts' if assertions.is_windows() else 'bin')
             easy_install = path.join(bin_dir, "easy_install")
             try:
-                self.execute_assert_success("{} -U distribute".format(easy_install))
-            except ExecutionError, error:
+                self.execute_assert_success("{} -U setuptools".format(easy_install))  # TODO remove this once
+                self.execute_assert_success("{} -U setuptools".format(easy_install))  # virtualenv uses new setuptools
+            except ExecutionError:
                 pass
             python = path.join(bin_dir, 'python')
             with utils.chdir(PROJECT_ROOT):
