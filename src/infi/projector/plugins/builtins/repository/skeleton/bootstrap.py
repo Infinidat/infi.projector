@@ -114,31 +114,34 @@ def _cleanup_setuptools_and_distribute_modules():
     # installing setuptools imported the site module, which added all the stuff in site-packages to sys.path,
     # even though in the case Python was executed -S.
     # we want to remove all traces for this
-    for item in sys.path:
-        if 'setuptools' in item or 'distribute' in item:
-            sys.path.remove(item)
-        if glob.glob(os.path.join(item, 'setuptools*')) and item in sys.path:
-            sys.path.remove(item)
-        if glob.glob(os.path.join(item, 'distribute*')) and item in sys.path:
-            sys.path.remove(item)
+    paths_to_remove = [item for item in sys.path if 'setuptools-' in item or 'distribute-' in item]
+    # the python-setuptools installs setuptools in a different way
+    paths_to_remove.extend(item for item in sys.path if glob.glob(os.path.join(item, 'setuptools-*'))
+                           and 'dist-packages' in item)
+    paths_to_remove.extend(item for item in sys.path if glob.glob(os.path.join(item, 'distribute-*'))
+                           and 'dist-packages' in item)
+    sys.path = list(set(sys.path) - set(paths_to_remove))
 
-_cleanup_setuptools_and_distribute_modules()
-_cleanup_setuptools_and_distribute_modules()  # wtf need to run twice
+
 to_reload = False
 try:
     from urlparse import urlparse
 except ImportError:
     from urllib.parse import urlparse
+
+try:
+    from urllib.request import urlopen
+except ImportError:
+    from urllib2 import urlopen
+
+_cleanup_setuptools_and_distribute_modules()
+_cleanup_setuptools_and_distribute_modules()  # wtf need to run twice
+
 try:
     import pkg_resources
     import setuptools
 except ImportError:
     ez = {}
-
-    try:
-        from urllib.request import urlopen
-    except ImportError:
-        from urllib2 import urlopen
 
     # XXX use a more permanent ez_setup.py URL when available.
     exec(urlopen(options.setup_source).read(), ez)
