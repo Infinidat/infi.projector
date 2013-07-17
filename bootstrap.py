@@ -22,8 +22,6 @@ import os
 import shutil
 import sys
 import tempfile
-import glob
-import re
 
 from optparse import OptionParser
 
@@ -57,7 +55,7 @@ def normalize_to_url(option, opt_str, value, parser):
     name = opt_str[2:].replace('-', '_')
     setattr(parser.values, name, value)
 
-ezsetup_source = 'https://bitbucket.org/pypa/setuptools/raw/0.8/ez_setup.py'
+ezsetup_source = 'https://bitbucket.org/pypa/setuptools/raw/0.7.2/ez_setup.py'
 setuptools_source = "https://pypi.python.org/packages/source/s/setuptools/"
 pypi_index = "https://pypi.python.org/simple/"
 
@@ -99,49 +97,23 @@ options, args = parser.parse_args()
 ######################################################################
 # load/install setuptools
 
-def _cleanup_old_zc_buildout_modules():
-    # installing setuptools imported the site module, which added all the stuff in site-packages to sys.path,
-    # even though in the case Python was executed -S.
-    # we want to remove all traces for this
-    for item in sys.path:
-        if 'zc' in item:
-            sys.path.remove(item)
-    for module in sys.modules.keys():
-        if 'zc' in module:
-            del sys.modules[module]
-
-def _cleanup_setuptools_and_distribute_modules():
-    # installing setuptools imported the site module, which added all the stuff in site-packages to sys.path,
-    # even though in the case Python was executed -S.
-    # we want to remove all traces for this
-    paths_to_remove = [item for item in sys.path if 'setuptools-' in item or 'distribute-' in item]
-    # the python-setuptools installs setuptools in a different way
-    paths_to_remove.extend(item for item in sys.path if glob.glob(os.path.join(item, 'setuptools-*'))
-                           and 'dist-packages' in item)
-    paths_to_remove.extend(item for item in sys.path if glob.glob(os.path.join(item, 'distribute-*'))
-                           and 'dist-packages' in item)
-    sys.path = list(set(sys.path) - set(paths_to_remove))
-
-
 to_reload = False
+import glob
+import re
 try:
     from urlparse import urlparse
 except ImportError:
     from urllib.parse import urlparse
-
-try:
-    from urllib.request import urlopen
-except ImportError:
-    from urllib2 import urlopen
-
-_cleanup_setuptools_and_distribute_modules()
-_cleanup_setuptools_and_distribute_modules()  # wtf need to run twice
-
 try:
     import pkg_resources
     import setuptools
 except ImportError:
     ez = {}
+
+    try:
+        from urllib.request import urlopen
+    except ImportError:
+        from urllib2 import urlopen
 
     # XXX use a more permanent ez_setup.py URL when available.
     exec(urlopen(options.setup_source).read(), ez)
@@ -238,11 +210,7 @@ if subprocess.call(cmd, env=dict(os.environ, PYTHONPATH=setuptools_path)) != 0:
 
 ######################################################################
 # Import and run buildout
-# installing setuptools imported site.py, which added zc.buildout to the WorkingSet if it was previously installed
-# this may raise a VerionConflict here; we just need to resolve the location of the buildout we just installed
-# so we clear the WorkingSet
-_cleanup_old_zc_buildout_modules()
-ws.by_key = {}
+
 ws.add_entry(tmpeggs)
 ws.require(requirement)
 import zc.buildout.buildout
