@@ -4,6 +4,8 @@ from infi.unittest.parameters import iterate
 from infi.pyutils.contexts import contextmanager
 from gitpy import LocalRepository
 from os import curdir, name
+from mock import patch
+from infi.projector.plugins.builtins.version import VersionPlugin
 
 is_windows = name == "nt"
 
@@ -88,7 +90,6 @@ class VersionTestCase(TestCase):
                     self.projector("version release 1.2.3 --no-fetch --no-upload  --no-push-changes")
 
     def test_upload(self):
-        from mock import patch
         with self.temporary_directory_context():
             self.projector("repository init a.b.c none short long")
             self.projector("devenv build --no-script")
@@ -112,7 +113,6 @@ class VersionTestCase(TestCase):
     @contextmanager
     def mock_build_and_upload_distributions(self):
         from mock import patch
-        from infi.projector.plugins.builtins.version import VersionPlugin
         with patch.object(VersionPlugin, "build_and_upload_distributions") as mock:
             yield mock
 
@@ -136,3 +136,24 @@ class VersionTestCase(TestCase):
                     with chdir(path.basename(origin_location)):
                         self.projector("devenv build --no-scripts --no-readline")
                         self.projector("version release minor --pypi-servers=")
+
+    def test_reset_minor_when_releasing_major(self):
+        with patch.object(VersionPlugin, "get_git_describe", return_value="2.5.0"):
+            plugin = VersionPlugin()
+            plugin.arguments = {"<version>": "major"}
+            result = plugin.replace_version_tag()
+            self.assertEquals(result, "3.0")
+
+    def test_reset_trivial_when_releasing_major(self):
+        with patch.object(VersionPlugin, "get_git_describe", return_value="0.0.5"):
+            plugin = VersionPlugin()
+            plugin.arguments = {"<version>": "major"}
+            result = plugin.replace_version_tag()
+            self.assertEquals(result, "1.0")
+
+    def test_reset_trivial_when_releasing_minor(self):
+        with patch.object(VersionPlugin, "get_git_describe", return_value="1.5.5"):
+            plugin = VersionPlugin()
+            plugin.arguments = {"<version>": "minor"}
+            result = plugin.replace_version_tag()
+            self.assertEquals(result, "1.6")

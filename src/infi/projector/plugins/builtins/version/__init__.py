@@ -54,6 +54,7 @@ class VersionPlugin(CommandPlugin):
         current_version = self.get_git_describe().lstrip('v')
         version_numbers = current_version.split('-')[0].split('.')
         version_numbers = [int(item) for item in version_numbers]
+        version_numbers = version_numbers[:placeholder + 1]
         while len(version_numbers) < 3:
             version_numbers.append(0)
         version_numbers[placeholder] += 1
