@@ -73,19 +73,17 @@ class DevEnvTestCase(TestCase):
 
     def test_build_in_virtualenv(self):
         from infi.execute import ExecutionError
+        from urllib import urlretrieve
         with self.temporary_directory_context():
             try:
                 self.execute_assert_success("virtualenv virtualenv-python")
-            except ExecutionError, error:
+            except ExecutionError:
                 raise SkipTest("Skipping because virtualenv does not work")
             virtualenv_dir = path.abspath(path.join(curdir, 'virtualenv-python'))
             bin_dir = path.join(virtualenv_dir, 'Scripts' if assertions.is_windows() else 'bin')
-            easy_install = path.join(bin_dir, "easy_install")
-            try:
-                self.execute_assert_success("{} -U distribute".format(easy_install))
-            except ExecutionError, error:
-                pass
             python = path.join(bin_dir, 'python')
+            urlretrieve("http://pypi01.infinidat.com/media/dists/ez_setup.py", "ez_setup.py")
+            self.execute_assert_success("{python} ez_setup.py --download-base=http://pypi01.infinidat.com/media/dists/".format(python=python))
             with utils.chdir(PROJECT_ROOT):
                 self.execute_assert_success("{python} setup.py develop".format(python=python))
             with patch.object(sys, "executable", new=python+'.exe' if assertions.is_windows() else python):
