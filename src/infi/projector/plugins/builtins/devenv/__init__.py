@@ -8,7 +8,7 @@ logger = getLogger(__name__)
 
 USAGE = """
 Usage:
-    projector devenv build [--clean] [--force-bootstrap] [--no-submodules] [--no-scripts] [--no-readline] [--use-isolated-python] [[--newest] | [--offline]]
+    projector devenv build [--clean] [--force-bootstrap] [--no-submodules] [--no-scripts] [--no-readline] [--use-isolated-python] [[--newest] | [--offline] | [--prefer-final]]
     projector devenv relocate ([--absolute] | [--relative]) [--commit-changes]
     projector devenv pack
 
@@ -26,6 +26,7 @@ Options:
     --offline               install packages only from download cache (no internet connection)
     --absolute              change the paths in the development environment to absolute paths
     --relative              change the paths in the development environment to relative paths
+    --prefer-final          don't install development versions of dependencies, prefer their latest final versions.
 """
 
 class DevEnvPlugin(CommandPlugin):
@@ -120,8 +121,10 @@ class DevEnvPlugin(CommandPlugin):
         return sections[0]
 
     def create_scripts(self):
-        self.install_sections_by_recipe("infi.recipe.console_scripts")
-        self.install_sections_by_recipe("infi.recipe.console_scripts:gui_scripts")
+        additional_options = ["buildout:prefer-final=true"] if self.arguments.get("--prefer-final") else []
+        with utils.buildout_parameters_context(additional_options):
+            self.install_sections_by_recipe("infi.recipe.console_scripts")
+            self.install_sections_by_recipe("infi.recipe.console_scripts:gui_scripts")
 
     def _remove_files_of_type_recursively(self, root_path, file_type):
         import os
