@@ -135,9 +135,11 @@ def git_checkout(branch_name_or_tag):
         raise SystemExit(1)
 
 def commit_changes_to_buildout(message):
-    from os import curdir
+    import os
     from gitpy import LocalRepository
-    repository = LocalRepository(curdir)
+    repository = LocalRepository(os.curdir)
+    # workaround https://github.com/msysgit/git/issues/79
+    os.system("git status")
     if "buildout.cfg" not in [modified_file.filename for modified_file in repository.getChangedFiles()]:
         return
     repository.add("buildout.cfg")
