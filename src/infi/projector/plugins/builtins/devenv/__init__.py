@@ -8,7 +8,7 @@ logger = getLogger(__name__)
 
 USAGE = """
 Usage:
-    projector devenv build [--clean] [--force-bootstrap] [--no-submodules] [--no-scripts] [--no-readline] [--use-isolated-python] [[--newest] | [--offline] | [--prefer-final]]
+    projector devenv build [--clean] [--force-bootstrap] [--no-submodules] [--no-setup-py] [--no-scripts] [--no-readline] [--use-isolated-python] [[--newest] | [--offline] | [--prefer-final]]
     projector devenv relocate ([--absolute] | [--relative]) [--commit-changes]
     projector devenv pack
 
