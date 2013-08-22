@@ -8,7 +8,7 @@ logger = getLogger(__name__)
 
 USAGE = """
 Usage:
-    projector devenv build [--clean] [--force-bootstrap] [--no-submodules] [--no-scripts] [--no-readline] [--use-isolated-python] [[--newest] | [--offline] | [--prefer-final]]
+    projector devenv build [--clean] [--force-bootstrap] [--no-submodules] [--no-setup-py] [--no-scripts] [--no-readline] [--use-isolated-python] [[--newest] | [--offline] | [--prefer-final]]
     projector devenv relocate ([--absolute] | [--relative]) [--commit-changes]
     projector devenv pack
 
@@ -174,11 +174,25 @@ class DevEnvPlugin(CommandPlugin):
             execute_assert_success("bin/easy_install {}".format(module).split())
         except (OSError, ExecutionError): # pragma: no cover
             logger.warn("distribute is not a requirements, not installing readline support")
-            pass
+
+    def _remove_setuptools_egg_link(self):
+        # HOSTDEV-1130
+        # https://bugs.launchpad.net/zc.buildout/+bug/1210996
+        import os
+        from ConfigParser import NoOptionError, NoSectionError
+        with utils.open_buildout_configfile() as buildout:
+            try:
+                develop_eggs_dir = buildout.get("buildout", "develop-eggs-directory")
+            except (NoSectionError, NoOptionError):
+                develop_eggs_dir = "develop-eggs"
+            setuptools_egg_link = os.path.join(develop_eggs_dir, "setuptools.egg-link")
+            if os.path.exists(setuptools_egg_link):
+                os.remove(setuptools_egg_link)
 
     def install_isolated_python_if_necessary(self):
         if not self.arguments.get("--use-isolated-python", False):
             return
+        self._remove_setuptools_egg_link()
         if not assertions.is_isolated_python_exists() or self.arguments.get("--newest", False):
             with utils.buildout_parameters_context(['buildout:develop=']):
                 utils.execute_with_buildout("install {}".format(self.get_isolated_python_section_name()))

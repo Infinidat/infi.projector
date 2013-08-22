@@ -297,7 +297,7 @@ class RepositoryPlugin(CommandPlugin):
         if self.arguments.get("--verbose"):
             args.extend(["--verbose"])
         patterns = [".cache", ".git", ".gitignore", ".installed.cfg", ".projector", "MANIFEST.in",
-                    "bin", "bootstrap.py", "develop-eggs", "eggs", "parts", "setup.py",
+                    "bin", "bootstrap.py", "develop-eggs", "eggs", "parts", "dist", "devlocal", "data", "setup.py",
                     "src/*egg-info", "src/**/__version__.py"]
         if not self.arguments.get("<remote-path>"):
             patterns.extend(["buildout.cfg", "setup.in"])
