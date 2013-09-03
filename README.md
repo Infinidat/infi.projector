@@ -53,7 +53,7 @@ This script will create the buildout environment, generate the version files fro
 
 If you want to use our isolated python builds in our development environment, and not the global Python, run instead:
 
-    projector devenv build --isolated-python
+    projector devenv build --use-isolated-python
 
 This will download the platform-specific build from our servers, and use that.
 
@@ -138,7 +138,7 @@ In order to do this, you will have to add the following dependency to your proje
 
 Then, you'll need to build the development environment with the isolated python included:
 
-    projector devenv build --isolated-python
+    projector devenv build --use-isolated-python
 
 After the environment is ready, you can use `projector` to build stand-alone, isolated, packages. just run:
 
