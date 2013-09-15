@@ -173,7 +173,8 @@ class DevEnvPlugin(CommandPlugin):
         try:
             execute_assert_success("bin/easy_install {}".format(module).split())
         except (OSError, ExecutionError): # pragma: no cover
-            logger.warn("distribute is not a requirements, not installing readline support")
+            logger.warn("easy_install script not generated (perhaps not a requirement). "
+                        "Not installing readline support")
 
     def _remove_setuptools_egg_link(self):
         # HOSTDEV-1130
