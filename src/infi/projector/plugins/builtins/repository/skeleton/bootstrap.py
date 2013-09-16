@@ -93,7 +93,10 @@ parser.add_option("--index-url", action="callback", dest="index_url",
                   callback=normalize_to_url, nargs=1, type="string",
                   help=("Specify an alternative for PyPI simple index url"),
                   default=pypi_index)
-
+# explicit setuptools version
+parser.add_option("--setuptools-version", action="store", dest="setuptools_version", type="string",
+                  help=("Specifiy a specific version of setuptools to use"),
+                  )
 options, args = parser.parse_args()
 
 ######################################################################
@@ -156,6 +159,8 @@ except ImportError:
                     setuptools_version = re.match("setuptools-(?P<version>.*).tar.gz",
                                                   os.path.basename(files[0])).groupdict()['version']
                     setup_args['version'] = setuptools_version
+        if options.setuptools_version:
+            setup_args['version'] = options.setuptools_version
     ez['use_setuptools'](**setup_args)
 
     if to_reload:
