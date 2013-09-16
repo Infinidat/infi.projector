@@ -85,7 +85,7 @@ class DevEnvPlugin(CommandPlugin):
         # in case dependencies are frozen, we need to use the frozen version of setuptools
         with utils.open_buildout_configfile() as buildout:
             if buildout.has_option("versions", "setuptools"):
-                cmd += ' --setuptools-version={}'.format(buildout.get_option("versions", "setuptools"))
+                cmd += ' --setuptools-version={}'.format(buildout.get("versions", "setuptools"))
         return cmd
 
     def bootstrap_if_necessary(self):

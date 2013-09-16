@@ -100,3 +100,20 @@ class DevEnvTestCase(TestCase):
             self.assertTrue(path.exists(path.join("parts", "python")))
             self.assert_scripts_were_generated_by_buildout()
             self.assert_shebang_line_in_nosetests_script_uses_isolated_python()
+
+    def assert_specific_setuptools_version_is_being_used(self, setuptools_version):
+        buildout_script = path.join("bin", "buildout" if name != 'nt' else "buildout-script.py")
+        with open(buildout_script) as fd:
+            content = fd.read()
+        self.assertIn("setuptools-{}-py".format(setuptools_version), content)
+
+    def test_build_with_frozen_setuptools_version(self):
+        with self.temporary_directory_context():
+            self.projector("repository init a.b.c none short long")
+            with utils.open_buildout_configfile(write_on_exit=True) as buildout:
+                buildout.add_section("versions")
+                buildout.set("versions", "setuptools", "1.1")
+            self.projector("devenv build --use-isolated-python")
+            self.assertTrue(path.exists(path.join("parts", "python")))
+            self.assert_scripts_were_generated_by_buildout()
+            self.assert_specific_setuptools_version_is_being_used("1.1")

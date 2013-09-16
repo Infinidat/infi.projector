@@ -159,8 +159,8 @@ except ImportError:
                     setuptools_version = re.match("setuptools-(?P<version>.*).tar.gz",
                                                   os.path.basename(files[0])).groupdict()['version']
                     setup_args['version'] = setuptools_version
-        if options.setuptools_version:
-            setup_args['version'] = options.setuptools_version
+    if options.setuptools_version:
+        setup_args['version'] = options.setuptools_version
     ez['use_setuptools'](**setup_args)
 
     if to_reload:
