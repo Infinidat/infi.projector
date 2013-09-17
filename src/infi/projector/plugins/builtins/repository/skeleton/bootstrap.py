@@ -93,7 +93,10 @@ parser.add_option("--index-url", action="callback", dest="index_url",
                   callback=normalize_to_url, nargs=1, type="string",
                   help=("Specify an alternative for PyPI simple index url"),
                   default=pypi_index)
-
+# explicit setuptools version
+parser.add_option("--setuptools-version", action="store", dest="setuptools_version", type="string",
+                  help=("Specifiy a specific version of setuptools to use"),
+                  )
 options, args = parser.parse_args()
 
 ######################################################################
@@ -120,6 +123,14 @@ def _cleanup_setuptools_and_distribute_modules():
                            and 'dist-packages' in item)
     paths_to_remove.extend(item for item in sys.path if glob.glob(os.path.join(item, 'distribute-*'))
                            and 'dist-packages' in item)
+    # virtualenv creates under site-packages a directory named setuptools/ with an __init__.py inside in
+    # this causes makes setuptools importable if that site-packages is in sys.path
+    # in this case, pkg_resources is directly under site-packages/
+    # so it must go
+    paths_to_remove.extend(item for item in sys.path if
+                           os.path.exists(os.path.join(item, "setuptools")) and
+                           os.path.exists(os.path.join(item, "pkg_resources.py")) and
+                           'site-packages' in item)
     sys.path = list(set(sys.path) - set(paths_to_remove))
 
 
@@ -156,6 +167,8 @@ except ImportError:
                     setuptools_version = re.match("setuptools-(?P<version>.*).tar.gz",
                                                   os.path.basename(files[0])).groupdict()['version']
                     setup_args['version'] = setuptools_version
+    if options.setuptools_version:
+        setup_args['version'] = options.setuptools_version
     ez['use_setuptools'](**setup_args)
 
     if to_reload:

@@ -82,6 +82,10 @@ class DevEnvPlugin(CommandPlugin):
         if not environ.get("PROJECTOR_BOOTSTRAP_INDEX_URL", None):
             # we want to extract the index-url from pydistutils.cfg
             cmd += ' --index-url={}'.format(self._get_pypi_index_url())
+        # in case dependencies are frozen, we need to use the frozen version of setuptools
+        with utils.open_buildout_configfile() as buildout:
+            if buildout.has_option("versions", "setuptools"):
+                cmd += ' --setuptools-version={}'.format(buildout.get("versions", "setuptools"))
         return cmd
 
     def bootstrap_if_necessary(self):
@@ -173,7 +177,8 @@ class DevEnvPlugin(CommandPlugin):
         try:
             execute_assert_success("bin/easy_install {}".format(module).split())
         except (OSError, ExecutionError): # pragma: no cover
-            logger.warn("distribute is not a requirements, not installing readline support")
+            logger.warn("easy_install script not generated (perhaps not a requirement). "
+                        "Not installing readline support")
 
     def _remove_setuptools_egg_link(self):
         # HOSTDEV-1130
