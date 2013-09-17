@@ -123,6 +123,14 @@ def _cleanup_setuptools_and_distribute_modules():
                            and 'dist-packages' in item)
     paths_to_remove.extend(item for item in sys.path if glob.glob(os.path.join(item, 'distribute-*'))
                            and 'dist-packages' in item)
+    # virtualenv creates under site-packages a directory named setuptools/ with an __init__.py inside in
+    # this causes makes setuptools importable if that site-packages is in sys.path
+    # in this case, pkg_resources is directly under site-packages/
+    # so it must go
+    paths_to_remove.extend(item for item in sys.path if
+                           os.path.exists(os.path.join(item, "setuptools")) and
+                           os.path.exists(os.path.join(item, "pkg_resources.py")) and
+                           'site-packages' in item)
     sys.path = list(set(sys.path) - set(paths_to_remove))
 
 
