@@ -54,7 +54,7 @@ class RequirementsTestCase(TestCase):
         from os import path
         with self.temporary_directory_context():
             self.projector("repository init a.b.c none short long")
-            self.projector("devenv build --no-readline")
+            self.projector("devenv build --no-readline --use-isolated-python")
             self.projector("requirements add infi.execute<=0.0.7 --commit-changes")
             self.projector("requirements add infi.pyutils==1.0.2 --commit-changes")
             with self.assert_new_commit():
