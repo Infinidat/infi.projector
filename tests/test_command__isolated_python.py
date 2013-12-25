@@ -6,4 +6,4 @@ class IsolatedPythonVersion(TestCase):
         with self.temporary_directory_context():
             self.projector("repository init a.b.c none short long")
             self.projector("isolated-python python-version get")
-            self.projector("isolated-python python-version set v2.7.2.5 --commit-changes")
+            self.projector("isolated-python python-version set v2.7.5.5 --commit-changes")
