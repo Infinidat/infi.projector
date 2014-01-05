@@ -25,7 +25,7 @@ Options:
     requirements unfreeze           Deletes the versions.cfg file, if it exists
     <requirement>                   requirement to add/remove
     --development                   Requirement for the development environment only
-    --with-install-requires         Set >= requireements in the install_requires section
+    --with-install-requires         Set >= requirements in the install_requires section
     --push-changes                  Push freeze commits
 """
 
@@ -49,7 +49,7 @@ class RequirementsPlugin(CommandPlugin):
 
     def list(self):
         from pprint import pprint
-        pprint(list(self.get_package_set().get()))
+        pprint(sorted(list(self.get_package_set().get()), key=lambda s: s.lower()))
 
     def remove(self):
         package_set = self.get_package_set()
