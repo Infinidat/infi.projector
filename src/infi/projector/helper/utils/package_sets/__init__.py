@@ -49,7 +49,10 @@ class RepresentedListSet(BasePackageSet):
 
     @classmethod
     def to_value(cls, package_set):
-        return repr(list([item.replace(' ', '') for item in set(package_set)]))
+        items = [repr(item.replace(' ', '')) for item in set(package_set)]
+        items.sort(key=lambda s: s.lower())
+        newline = ',\r\n ' if assertions.is_windows() else ',\n '
+        return '[' + newline.join(items) + ']'
 
 class MultilineValueSet(BasePackageSet):
     @classmethod
@@ -70,7 +73,11 @@ class EntryPointSet(BasePackageSet):
 
     @classmethod
     def to_value(cls, package_set):
-        return ["{} = {}".format(key, value) for key, value in package_set.items()]
+        items = ["'{} = {}'".format(key, value) for key, value in package_set.items()]
+        items.sort(key=lambda s: s.lower())
+        newline = ',\r\n ' if assertions.is_windows() else ',\n '
+        return '[' + newline.join(items) + ']'
+
 
 class InstallRequiresPackageSet(RepresentedListSet):
     def __init__(self):

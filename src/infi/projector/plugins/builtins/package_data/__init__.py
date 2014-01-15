@@ -39,11 +39,12 @@ class PackageDataPlugin(CommandPlugin):
 
     def list(self):
         from pprint import pprint
-        pprint(list(self.get_package_set().get()))
+        pprint(sorted(list(self.get_package_set().get()), key=lambda s: s.lower()))
 
     def write_manifest_in(self, data_set):
+        data_list = sorted(list(data_set), key=lambda s: s.lower())
         with open("MANIFEST.in", 'w') as fd:
-            fd.write("recursive-include src {}\n".format(' '.join(data_set)))
+            fd.write("recursive-include src {}\n".format(' '.join(data_list)))
 
     def remove(self):
         package_set = self.get_package_set()
