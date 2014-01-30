@@ -1,7 +1,5 @@
-from contextlib import contextmanager
 from infi.projector.plugins import CommandPlugin
 from infi.projector.helper import assertions
-from textwrap import dedent
 from logging import getLogger
 
 logger = getLogger(__name__)
@@ -58,7 +56,7 @@ class VersionPlugin(CommandPlugin):
         while len(version_numbers) < 3:
             version_numbers.append(0)
         version_numbers[placeholder] += 1
-        return '.'.join([str(item) for item in version_numbers[:2 if placeholder<2 else 3]])
+        return '.'.join([str(item) for item in version_numbers[:2 if placeholder < 2 else 3]])
 
     def fetch_origin(self):
         from gitpy import LocalRepository
@@ -95,7 +93,7 @@ class VersionPlugin(CommandPlugin):
 
     def upload(self):
         from infi.projector.helper.assertions import assert_version_tag_for_upload
-        from infi.projector.helper.utils import release_version_with_git_flow, git_checkout, get_latest_version
+        from infi.projector.helper.utils import git_checkout, get_latest_version
         version_tag = self.arguments['<version>']
         assert_version_tag_for_upload(version_tag)
         if version_tag == 'current':
@@ -132,10 +130,6 @@ class VersionPlugin(CommandPlugin):
     def build_and_upload_distributions(self, version_tag_with_v):
         from infi.projector.helper.utils import execute_with_buildout, git_checkout
         from infi.projector.plugins.builtins.devenv import DevEnvPlugin
-        from infi.projector.scripts import projector
-        from gitpy import LocalRepository
-        from os import curdir
-        repository = LocalRepository(curdir)
         for distribution in self.arguments.get("--distributions").split(','):
             for pypi in self.arguments.get("--pypi-servers").split(','):
                 git_checkout(version_tag_with_v)

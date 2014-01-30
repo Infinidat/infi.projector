@@ -1,9 +1,7 @@
-from contextlib import contextmanager
 from infi.projector.plugins import CommandPlugin
 from infi.projector.helper import assertions
-from infi.projector.helper.utils import open_buildout_configfile, commit_changes_to_buildout
+from infi.projector.helper.utils import commit_changes_to_buildout
 from infi.projector.helper.utils.package_sets import ConsoleScriptsSet
-from textwrap import dedent
 from logging import getLogger
 
 logger = getLogger(__name__)
@@ -13,7 +11,7 @@ Usage:
     projector console-scripts list
     projector console-scripts add <script-name> <entry-point> [--commit-changes]
     projector console-scripts remove <script-name> [--commit-changes]
-    
+
 Options:
     <script-name>           name of console script
     <entry-point>           path to Python entry point for the console script

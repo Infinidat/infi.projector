@@ -22,4 +22,3 @@ for command in COMMANDS:
     print command
     if system(command):
         raise SystemExit(1)
-

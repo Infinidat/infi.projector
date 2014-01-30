@@ -13,7 +13,7 @@ def specs_to_string(value):
 def from_dict(dict_object):
     return set(['{}{}'.format(key, specs_to_string(value)) for key, value in dict_object.items()])
 
-class PackageSetInterface(object): # pragma: no cover
+class PackageSetInterface(object):  # pragma: no cover
     def get(self):
         raise NotImplementedError()
 
@@ -35,11 +35,11 @@ class BasePackageSet(PackageSetInterface, object):
             buildout_cfg.set(self.section_name, self.attribute_name, self.to_value(package_set))
 
     @classmethod
-    def from_value(cls, value): # pragma: no cover
+    def from_value(cls, value):  # pragma: no cover
         raise NotImplementedError()
 
     @classmethod
-    def to_value(cls, package_set): # pragma: no cover
+    def to_value(cls, package_set):  # pragma: no cover
         raise NotImplementedError()
 
 class RepresentedListSet(BasePackageSet):
@@ -68,7 +68,7 @@ class EntryPointSet(BasePackageSet):
     @classmethod
     def from_value(cls, value):
         formatted_entrypoints = eval(value)
-        return {name.strip():entry_point.strip()
+        return {name.strip(): entry_point.strip()
                 for name, entry_point in [item.split('=') for item in formatted_entrypoints]}
 
     @classmethod
@@ -91,7 +91,7 @@ class EggsPackageSet(MultilineValueSet):
     def get_section(cls):
         with open_buildout_configfile() as buildout:
             sections = [section for section in buildout.sections()
-                        if buildout.has_option(section, "recipe") and \
+                        if buildout.has_option(section, "recipe") and
                         buildout.get(section, "recipe") == "infi.recipe.console_scripts"]
             return sections[0]
 
@@ -121,7 +121,7 @@ class VersionSectionSet(PackageSetInterface, object):
         raise NotImplementedError()
 
     @classmethod
-    def from_value(cls, cfg): # pragma: no cover
+    def from_value(cls, cfg):  # pragma: no cover
         names = set()
         items = set()
         for option in cfg.options("versions"):
@@ -131,5 +131,5 @@ class VersionSectionSet(PackageSetInterface, object):
         return items
 
     @classmethod
-    def to_value(cls, package_set): # pragma: no cover
+    def to_value(cls, package_set):  # pragma: no cover
         raise NotImplementedError()

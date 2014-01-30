@@ -60,7 +60,7 @@ def get_version():
     try:
         from infi.projector.__version__ import __version__
         return __version__
-    except ImportError: # pragma: no cover
+    except ImportError:  # pragma: no cover
         return '<unknown>'
 
 def get_commandline_doc():
@@ -121,7 +121,7 @@ def parse_commandline_arguments(argv):
     if arguments.get('-v'):
         print get_version()
         return
-    plugins = {plugin.get_command_name():plugin for plugin in plugin_repository.get_all_plugins()}
+    plugins = {plugin.get_command_name(): plugin for plugin in plugin_repository.get_all_plugins()}
     [selected_plugin] = [value for key, value in plugins.items() if arguments.get(key)]
     append_default_arguments_from_configuration_files(arguments)
     selected_plugin.parse_commandline_arguments(arguments)

@@ -1,6 +1,5 @@
 from infi.pyutils.contexts import contextmanager
 from infi.projector.plugins import CommandPlugin
-from textwrap import dedent
 from logging import getLogger
 
 logger = getLogger(__name__)
@@ -255,7 +254,7 @@ class RepositoryPlugin(CommandPlugin):
             backup = {}
             logger.info("Backing up buildout sections")
             for section in ATTRIBURES_BY_SECTION.keys():
-                backup[section] = {key:get(original, section, key, DEFAULTS.get(key, None))
+                backup[section] = {key: get(original, section, key, DEFAULTS.get(key, None))
                                    for key in ATTRIBURES_BY_SECTION[section]}
             if self.arguments.get("--remove-deprecated-files", False):
                 logger.info("Removing deprecated files")

@@ -13,7 +13,7 @@ def get_dependencies():
     from infi.projector.helper.utils import open_buildout_configfile
     with open_buildout_configfile() as buildout:
         exec 'dependencies = {0}'.format(buildout.get("project", "install_requires"))
-    return dependencies
+    return dependencies  # noqa    # flake8 doesn't recognize the exec, thinks 'dependencies' is undefined
 
 def is_dependency_installed(dependency):
     separators = ['>', '<', '=']
@@ -47,4 +47,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

@@ -90,7 +90,6 @@ def execute_with_python(commandline_or_args):
         execute_assert_success(executable + args)
 
 def execute_with_isolated_python(commandline_or_args):
-    import sys
     import os
     from ..assertions import is_windows
     args = parse_args(commandline_or_args)
@@ -103,26 +102,23 @@ def execute_with_isolated_python(commandline_or_args):
 def execute_with_buildout(commandline_or_args):
     from os import name, path
     args = parse_args(commandline_or_args)
-    execute_assert_success([path.join('bin', 'buildout{}'.format('.exe' if name == 'nt' else ''))] + \
+    execute_assert_success([path.join('bin', 'buildout{}'.format('.exe' if name == 'nt' else ''))] +
                             BUILDOUT_PARAMETERS + args)
 
 @contextmanager
 def buildout_parameters_context(parameters):
     try:
-        _ = [BUILDOUT_PARAMETERS.append(param) for param in parameters if param not in BUILDOUT_PARAMETERS]
+        [BUILDOUT_PARAMETERS.append(param) for param in parameters if param not in BUILDOUT_PARAMETERS]
         yield
     finally:
-        _ = [BUILDOUT_PARAMETERS.remove(param) for param in parameters if param in BUILDOUT_PARAMETERS]
+        [BUILDOUT_PARAMETERS.remove(param) for param in parameters if param in BUILDOUT_PARAMETERS]
 
 def _release_version_with_git_flow(version_tag):
-    from os import curdir
     from gitflow.core import GitFlow
-    from gitpy import LocalRepository
     gitflow = GitFlow()
     gitflow.create("release", version_tag, base=None, fetch=False)
     gitflow.finish("release", version_tag, fetch=False, rebase=False, keep=False, force_delete=True,
                    tagging_info=dict(sign=False, message=version_tag))
-    repository = LocalRepository(curdir)
 
 def git_checkout(branch_name_or_tag):
     from os import curdir
@@ -130,7 +126,7 @@ def git_checkout(branch_name_or_tag):
     logger.info("checking out '{}'".format(branch_name_or_tag))
     try:
         LocalRepository(curdir).checkout(branch_name_or_tag)
-    except Exception: # pragma: no cover
+    except Exception:  # pragma: no cover
         logger.error("failed to checkout {}".format(branch_name_or_tag))
         raise SystemExit(1)
 
@@ -181,15 +177,14 @@ def set_freezed_versions_in_install_requires(buildout_cfg, versions_cfg):
     install_requires = to_dict(InstallRequiresPackageSet.from_value(buildout_cfg.get("project", "install_requires")))
     versions = to_dict(set([item.replace('==', ">=") for item in VersionSectionSet.from_value(versions_cfg)]))
     for key, value in versions.items():
-        if not install_requires.has_key(key):
+        if key not in install_requires:
             continue
-        if not install_requires[key]: # empty list
+        if not install_requires[key]:  # empty list
             install_requires[key] = value
     install_requires = from_dict(install_requires)
     buildout_cfg.set("project", "install_requires", InstallRequiresPackageSet.to_value(install_requires))
 
 def freeze_versions(versions_file, change_install_requires):
-    from os import curdir, path
     with open_buildout_configfile(write_on_exit=True) as buildout_cfg:
         with open_buildout_configfile(versions_file) as versions_cfg:
             if not buildout_cfg.has_section("versions"):
@@ -205,7 +200,7 @@ def unset_freezed_versions_in_install_requires(buildout_cfg):
     from .package_sets import InstallRequiresPackageSet, to_dict, from_dict
     install_requires = InstallRequiresPackageSet.from_value(buildout_cfg.get("project", "install_requires"))
     install_requires_dict = to_dict(install_requires)
-    install_requires_dict.update({key:[] for key, specs in install_requires_dict.items()
+    install_requires_dict.update({key: [] for key, specs in install_requires_dict.items()
                                   if specs and specs[-1][0] == '>='})
     install_requires = from_dict(install_requires_dict)
     buildout_cfg.set("project", "install_requires", InstallRequiresPackageSet.to_value(install_requires))
@@ -226,10 +221,10 @@ class RevertIfFailedOperations(object):
         self.repository = repository
 
     def get_tags(self):
-        return {tag.name:tag for tag in self.repository.getTags()}
+        return {tag.name: tag for tag in self.repository.getTags()}
 
     def get_branches(self):
-        return {branch.name:branch for branch in self.repository.getBranches()}
+        return {branch.name: branch for branch in self.repository.getBranches()}
 
     def get_head(self, branch_name):
         return self.repository.getBranchByName(branch_name).getHead()
