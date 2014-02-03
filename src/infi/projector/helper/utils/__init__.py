@@ -52,10 +52,10 @@ def is_running_inside_virtualenv():
 def parse_args(commandline_or_args):
     return commandline_or_args if isinstance(commandline_or_args, list) else commandline_or_args.split()
 
-def execute_assert_success(args):
+def execute_assert_success(args, env=None):
     from infi import execute
     logger.info("Executing {}".format(' '.join(args)))
-    result = execute.execute(args)
+    result = execute.execute(args, env=env)
     if result.get_returncode() is not None and result.get_returncode() != 0:
         raise PrettyExecutionError(result)
 
@@ -99,11 +99,14 @@ def execute_with_isolated_python(commandline_or_args):
             [executable] = os.path.abspath(executable[0])
     execute_assert_success(executable + args)
 
-def execute_with_buildout(commandline_or_args):
-    from os import name, path
+def execute_with_buildout(commandline_or_args, env=None):
+    from os import name, path, environ
+    _env = environ.copy()
+    if env:
+        _env.update(env)
     args = parse_args(commandline_or_args)
-    execute_assert_success([path.join('bin', 'buildout{}'.format('.exe' if name == 'nt' else ''))] +
-                            BUILDOUT_PARAMETERS + args)
+    execute_assert_success([path.join('bin', 'buildout{}'.format('.exe' if name == 'nt' else ''))] + \
+                            BUILDOUT_PARAMETERS + args, env=_env)
 
 @contextmanager
 def buildout_parameters_context(parameters):

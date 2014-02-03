@@ -136,4 +136,4 @@ class VersionPlugin(CommandPlugin):
                 DevEnvPlugin().create_setup_py()
                 setup_cmd = "setup . register -r {pypi} {distribution} upload -r {pypi}"
                 setup_cmd = setup_cmd.format(pypi=pypi, distribution=distribution)
-                execute_with_buildout(setup_cmd)
+                execute_with_buildout(setup_cmd, env=dict(LC_ALL="C"))
