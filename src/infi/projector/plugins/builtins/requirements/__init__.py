@@ -80,9 +80,10 @@ class RequirementsPlugin(CommandPlugin):
         from os import curdir
         plugin = DevEnvPlugin()
         plugin.arguments = {'--newest': self.arguments.get("--newest", False)}
-        plugin.arguments = {'--use-isolateded-python': True}
+        plugin.arguments = {'--use-isolated-python': True}
         with open_tempfile() as tempfile:
-            with buildout_parameters_context(["buildout:update-versions-file={0}".format(tempfile)]):
+            with buildout_parameters_context(["buildout:update-versions-file={0}".format(tempfile),
+                                              "buildout:versions="]):
                 plugin.build()
             with open(tempfile) as fd:
                 content = fd.read()

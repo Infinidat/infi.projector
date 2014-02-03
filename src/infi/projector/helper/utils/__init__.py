@@ -187,10 +187,9 @@ def set_freezed_versions_in_install_requires(buildout_cfg, versions_cfg):
 def freeze_versions(versions_file, change_install_requires):
     with open_buildout_configfile(write_on_exit=True) as buildout_cfg:
         with open_buildout_configfile(versions_file) as versions_cfg:
-            if not buildout_cfg.has_section("versions"):
-                buildout_cfg.add_section("versions")
-            for option in buildout_cfg.options("versions"):
-                buildout_cfg.remove_option("versions", option)
+            if buildout_cfg.has_section("versions"):
+                buildout_cfg.remove_section("versions")
+            buildout_cfg.add_section("versions")
             for option in sorted(versions_cfg.options("versions"), key=lambda s: s.lower()):
                 buildout_cfg.set("versions", option, versions_cfg.get("versions", option))
         if change_install_requires:
