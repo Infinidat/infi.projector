@@ -1,9 +1,6 @@
-from contextlib import contextmanager
 from infi.projector.plugins import CommandPlugin
 from infi.projector.helper import assertions
 from infi.projector.helper.utils import open_buildout_configfile, commit_changes_to_buildout
-from infi.projector.helper.utils.package_sets import PackageDataSet
-from textwrap import dedent
 from logging import getLogger
 
 logger = getLogger(__name__)
@@ -38,7 +35,7 @@ class SubmodulePlugin(CommandPlugin):
     def get_submodule_sections(self):
         with open_buildout_configfile() as buildout:
             sections = [section for section in buildout.sections()
-                        if buildout.has_option(section, "recipe") and \
+                        if buildout.has_option(section, "recipe") and
                         buildout.get(section, "recipe") == "zerokspot.recipe.git"]
             return sections
 
@@ -49,7 +46,7 @@ class SubmodulePlugin(CommandPlugin):
     def add(self):
         with open_buildout_configfile(write_on_exit=True) as buildout:
             name = self.arguments.get("<name>")
-            if name  not in self.get_submodule_sections():
+            if name not in self.get_submodule_sections():
                 buildout.add_section(name)
             repository = self.arguments.get("<repository>")
             rev = self.arguments.get("<rev>")

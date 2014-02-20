@@ -1,10 +1,7 @@
-from contextlib import contextmanager
 from infi.projector.plugins import CommandPlugin
 from infi.projector.helper import assertions
-from infi.projector.helper.utils import open_buildout_configfile
 from infi.projector.helper.utils import commit_changes_to_buildout, commit_changes_to_manifest_in
 from infi.projector.helper.utils.package_sets import PackageDataSet
-from textwrap import dedent
 from logging import getLogger
 
 logger = getLogger(__name__)
@@ -14,7 +11,7 @@ Usage:
     projector package-data list
     projector package-data add <filename> [--commit-changes]
     projector package-data remove <filename> [--commit-changes]
-    
+
 Options:
     <filename>              file to add
 """

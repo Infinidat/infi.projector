@@ -1,9 +1,7 @@
-from contextlib import contextmanager
 from infi.projector.plugins import CommandPlugin
 from infi.projector.helper import assertions
-from infi.projector.helper.utils import open_buildout_configfile, commit_changes_to_buildout
+from infi.projector.helper.utils import commit_changes_to_buildout
 from infi.projector.helper.utils.package_sets import InstallRequiresPackageSet, EggsPackageSet
-from textwrap import dedent
 from logging import getLogger
 
 logger = getLogger(__name__)
@@ -82,9 +80,10 @@ class RequirementsPlugin(CommandPlugin):
         from os import curdir
         plugin = DevEnvPlugin()
         plugin.arguments = {'--newest': self.arguments.get("--newest", False)}
-        plugin.arguments = {'--use-isolateded-python': True}
+        plugin.arguments = {'--use-isolated-python': True}
         with open_tempfile() as tempfile:
-            with buildout_parameters_context(["buildout:update-versions-file={0}".format(tempfile)]):
+            with buildout_parameters_context(["buildout:update-versions-file={0}".format(tempfile),
+                                              "buildout:versions="]):
                 plugin.build()
             with open(tempfile) as fd:
                 content = fd.read()

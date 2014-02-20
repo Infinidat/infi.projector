@@ -65,3 +65,14 @@ class RequirementsTestCase(TestCase):
                 self.projector("requirements unfreeze --commit-changes --with-install-requires")
             self.assertNotIn("[versions]", open("buildout.cfg").read())
             self.assertIn("Flask==0.9", open("buildout.cfg").read())
+
+    def test_freeze_after_freeze(self):
+        with self.temporary_directory_context():
+            self.projector("repository init a.b.c none short long")
+            self.projector("requirements add Flask==0.9 --commit-changes")
+            self.projector("devenv build --no-readline --use-isolated-python")
+            self.projector("requirements freeze --with-install-requires --newest --commit-changes")
+            self.projector("requirements freeze --with-install-requires --newest")
+            self.assertIn("[versions]", open("buildout.cfg").read())
+            self.assertIn("Flask==0.9", open("buildout.cfg").read())
+            self.assertIn("distribute", open("buildout.cfg").read())

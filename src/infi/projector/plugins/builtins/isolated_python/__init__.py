@@ -1,9 +1,7 @@
-from contextlib import contextmanager
 from infi.projector.plugins import CommandPlugin
 from infi.projector.helper import assertions
 from infi.projector.helper.utils import open_buildout_configfile, commit_changes_to_buildout
 from infi.projector.helper.utils.package_sets import PackageDataSet
-from textwrap import dedent
 from logging import getLogger
 
 logger = getLogger(__name__)
@@ -38,9 +36,9 @@ class IsolatedPythonPlugin(CommandPlugin):
     def python_version(self):
         with open_buildout_configfile(write_on_exit=self.arguments.get("set")) as buildout:
             sections = [section for section in buildout.sections()
-                        if buildout.has_option(section, "recipe") and \
+                        if buildout.has_option(section, "recipe") and
                         buildout.get(section, "recipe") == "infi.recipe.python"]
-            if not sections: # pragma: no cover
+            if not sections:  # pragma: no cover
                 logger.error("isolated python section not found in buildout.cfg")
                 raise SystemExit(1)
             if self.arguments.get("get"):

@@ -1,7 +1,6 @@
 from contextlib import contextmanager
 from infi.projector.plugins import CommandPlugin
 from infi.projector.helper import assertions, utils
-from textwrap import dedent
 from logging import getLogger
 
 logger = getLogger(__name__)
@@ -103,7 +102,7 @@ class DevEnvPlugin(CommandPlugin):
     def install_sections_by_recipe(self, recipe):
         with utils.open_buildout_configfile() as buildout:
             sections_to_install = [section for section in buildout.sections()
-                                   if buildout.has_option(section, "recipe") and \
+                                   if buildout.has_option(section, "recipe") and
                                       buildout.get(section, "recipe") == recipe]
         if sections_to_install:
             utils.execute_with_buildout("install {}".format(' '.join(sections_to_install)))
@@ -119,8 +118,8 @@ class DevEnvPlugin(CommandPlugin):
     def get_isolated_python_section_name(self):
         with utils.open_buildout_configfile() as buildout:
             sections = [section for section in buildout.sections()
-                        if buildout.has_option(section, "recipe") and \
-                        buildout.get(section, "recipe").startswith("infi.recipe.python")\
+                        if buildout.has_option(section, "recipe") and
+                        buildout.get(section, "recipe").startswith("infi.recipe.python")
                         and not buildout.get(section, "recipe").endswith(":pack")]
         return sections[0]
 
@@ -141,8 +140,8 @@ class DevEnvPlugin(CommandPlugin):
         from shutil import rmtree
         directories_to_clean = ['bin', 'eggs', 'develop-eggs']
         files_to_clean = ['setup.py']
-        _ = [remove(filename) for filename in files_to_clean if exists(filename)]
-        _ = [rmtree(dirname)  for dirname in directories_to_clean if exists(dirname)]
+        [remove(filename) for filename in files_to_clean if exists(filename)]
+        [rmtree(dirname) for dirname in directories_to_clean if exists(dirname)]
         self._remove_files_of_type_recursively("src", "pyc")
 
     @contextmanager
@@ -165,18 +164,18 @@ class DevEnvPlugin(CommandPlugin):
         from infi.execute import execute_assert_success, ExecutionError
         try:
             execute_assert_success("bin/python -c import {}".format(module).split())
-        except (OSError, ExecutionError): # pragma: no cover
+        except (OSError, ExecutionError):  # pragma: no cover
             return False
         return True
 
     def install_readline(self):
         from infi.execute import execute_assert_success, ExecutionError
         module = self.get_readline_module()
-        if not module or self.is_module_installed(module): # pragma: no cover
+        if not module or self.is_module_installed(module):  # pragma: no cover
             return
         try:
             execute_assert_success("bin/easy_install {}".format(module).split())
-        except (OSError, ExecutionError): # pragma: no cover
+        except (OSError, ExecutionError):  # pragma: no cover
             logger.warn("easy_install script not generated (perhaps not a requirement). "
                         "Not installing readline support")
 
@@ -201,7 +200,7 @@ class DevEnvPlugin(CommandPlugin):
         if not assertions.is_isolated_python_exists() or self.arguments.get("--newest", False):
             with utils.buildout_parameters_context(['buildout:develop=']):
                 utils.execute_with_buildout("install {}".format(self.get_isolated_python_section_name()))
-            self.arguments["--force-bootstrap"] =  True
+            self.arguments["--force-bootstrap"] = True
             utils.execute_with_isolated_python(self._get_bootstrap_command())
 
     def build(self):
@@ -223,8 +222,6 @@ class DevEnvPlugin(CommandPlugin):
                     self.install_readline()
 
     def relocate(self):
-        from os import curdir
-        from gitpy import LocalRepository
         relative_paths = self.arguments.get("--relative", False)
         with utils.open_buildout_configfile(write_on_exit=True) as buildout:
             buildout.set("buildout", "relative-paths", 'true' if relative_paths else 'false')

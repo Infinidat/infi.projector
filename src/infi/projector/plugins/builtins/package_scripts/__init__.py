@@ -1,8 +1,6 @@
-from contextlib import contextmanager
 from infi.projector.plugins import CommandPlugin
 from infi.projector.helper import assertions
 from infi.projector.helper.utils import open_buildout_configfile, commit_changes_to_buildout
-from textwrap import dedent
 from logging import getLogger
 
 logger = getLogger(__name__)
