@@ -232,7 +232,8 @@ class RepositoryPlugin(CommandPlugin):
                                                    "buildout-version.cfg",
                                                    "buildout-pack.cfg",
                                                    "buildout-dist.cfg",
-                                                   "buildout.in"]
+                                                   "buildout.in",
+                                                   "bootstrap.py"]
                          if path.exists(filename)]:
             logger.info("removing {}".format(filename))
             if self.arguments.get("--commit-changes", False):
@@ -256,12 +257,12 @@ class RepositoryPlugin(CommandPlugin):
             for section in ATTRIBURES_BY_SECTION.keys():
                 backup[section] = {key: get(original, section, key, DEFAULTS.get(key, None))
                                    for key in ATTRIBURES_BY_SECTION[section]}
-            if self.arguments.get("--remove-deprecated-files", False):
-                logger.info("Removing deprecated files")
-                self.remove_deprecated_files()
             logger.info("Writing skeleton files")
             self.overwrite_update_files()
             self.safe_append_to_gitignore("bootstrap.py")
+            if self.arguments.get("--remove-deprecated-files", False):
+                logger.info("Removing deprecated files")
+                self.remove_deprecated_files()
             with open_buildout_configfile(write_on_exit=True) as update:
                 logger.info("Writing buildout.cfg")
                 for section, attributes in backup.items():
