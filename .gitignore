@@ -54,3 +54,4 @@ tmp*
 buildout.in
 .cache
 eggs
+parts
