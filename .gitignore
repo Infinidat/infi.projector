@@ -53,3 +53,4 @@ tmp*
 !tmp*py
 buildout.in
 .cache
+eggs
