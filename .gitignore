@@ -52,3 +52,4 @@ src/infi/projector/__version__.py
 tmp*
 !tmp*py
 buildout.in
+.cache
