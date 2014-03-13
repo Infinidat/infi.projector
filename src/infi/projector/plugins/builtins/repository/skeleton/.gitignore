@@ -23,9 +23,12 @@ setup.py
 # buildout
 buildout.in.cfg
 .installed*.cfg
+.cache
 .cache/
+eggs
 eggs/
 develop-eggs/
+parts
 parts/
 build/
 dist/
