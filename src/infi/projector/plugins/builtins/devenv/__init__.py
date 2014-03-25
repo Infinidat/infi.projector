@@ -103,7 +103,7 @@ class DevEnvPlugin(CommandPlugin):
         with utils.open_buildout_configfile() as buildout:
             sections_to_install = [section for section in buildout.sections()
                                    if buildout.has_option(section, "recipe") and
-                                      buildout.get(section, "recipe") == recipe]
+                                      buildout.get(section, "recipe").startswith(recipe)]
         if sections_to_install:
             utils.execute_with_buildout("install {}".format(' '.join(sections_to_install)))
 
