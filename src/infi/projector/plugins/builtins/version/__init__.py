@@ -86,7 +86,7 @@ class VersionPlugin(CommandPlugin):
         push_changes = not self.arguments.get("--no-push-changes", False)
         if push_changes:
             self.push_commits_and_tags()
-        if self.arguments.get('--no-upload', False):
+        if self.arguments.get('--no-upload', False) or len(self.arguments.get("--pypi-servers")) == 0:
             git_checkout("develop")
         else:
             self.upload()
