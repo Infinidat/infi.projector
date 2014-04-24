@@ -116,4 +116,4 @@ class DevEnvTestCase(TestCase):
             self.projector("devenv build --use-isolated-python")
             self.assertTrue(path.exists(path.join("parts", "python")))
             self.assert_scripts_were_generated_by_buildout()
-            self.assert_specific_setuptools_version_is_being_used("2.2")
+            self.assert_specific_setuptools_version_is_being_used("3.0.1")
