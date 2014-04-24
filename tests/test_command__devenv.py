@@ -112,7 +112,7 @@ class DevEnvTestCase(TestCase):
             self.projector("repository init a.b.c none short long")
             with utils.open_buildout_configfile(write_on_exit=True) as buildout:
                 buildout.add_section("versions")
-                buildout.set("versions", "setuptools", "2.2")
+                buildout.set("versions", "setuptools", "3.0.1")
             self.projector("devenv build --use-isolated-python")
             self.assertTrue(path.exists(path.join("parts", "python")))
             self.assert_scripts_were_generated_by_buildout()
