@@ -169,6 +169,8 @@ except ImportError:
                     setup_args['version'] = setuptools_version
     if options.setuptools_version:
         setup_args['version'] = options.setuptools_version
+    # workaround for telling setuptools to use urlopen
+    ez['get_best_downloader'] = lambda: ez['download_file_insecure']
     ez['use_setuptools'](**setup_args)
 
     if to_reload:
