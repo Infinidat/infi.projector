@@ -60,7 +60,7 @@ class RequirementsTestCase(TestCase):
                 self.projector("requirements freeze --with-install-requires --newest --commit-changes")
             self.assertIn("[versions]", open("buildout.cfg").read())
             self.assertIn("Flask==0.9", open("buildout.cfg").read())
-            self.assertIn("distribute", open("buildout.cfg").read())
+            self.assertIn("setuptool", open("buildout.cfg").read())
             with self.assert_new_commit():
                 self.projector("requirements unfreeze --commit-changes --with-install-requires")
             self.assertNotIn("[versions]", open("buildout.cfg").read())
@@ -75,4 +75,4 @@ class RequirementsTestCase(TestCase):
             self.projector("requirements freeze --with-install-requires --newest")
             self.assertIn("[versions]", open("buildout.cfg").read())
             self.assertIn("Flask==0.9", open("buildout.cfg").read())
-            self.assertIn("distribute", open("buildout.cfg").read())
+            self.assertIn("setuptools", open("buildout.cfg").read())
