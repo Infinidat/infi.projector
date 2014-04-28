@@ -57,7 +57,7 @@ def normalize_to_url(option, opt_str, value, parser):
     name = opt_str[2:].replace('-', '_')
     setattr(parser.values, name, value)
 
-ezsetup_source = 'https://bitbucket.org/pypa/setuptools/raw/0.8/ez_setup.py'
+ezsetup_source = 'http://python.infinidat.com/archives/ez_setup.py'
 setuptools_source = "https://pypi.python.org/packages/source/s/setuptools/"
 pypi_index = "https://pypi.python.org/simple/"
 
@@ -169,6 +169,8 @@ except ImportError:
                     setup_args['version'] = setuptools_version
     if options.setuptools_version:
         setup_args['version'] = options.setuptools_version
+    # workaround for telling setuptools to use urlopen
+    ez['get_best_downloader'] = lambda: ez['download_file_insecure']
     ez['use_setuptools'](**setup_args)
 
     if to_reload:
