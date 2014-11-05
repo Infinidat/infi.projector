@@ -258,6 +258,7 @@ if subprocess.call(cmd, env=dict(os.environ, PYTHONPATH=setuptools_path)) != 0:
 # so we clear the WorkingSet
 _cleanup_old_zc_buildout_modules()
 ws.by_key = {}
+ws.add_entry(setuptools_path)
 ws.add_entry(tmpeggs)
 ws.require(requirement)
 import zc.buildout.buildout
