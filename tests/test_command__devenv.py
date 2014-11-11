@@ -82,8 +82,8 @@ class DevEnvTestCase(TestCase):
             virtualenv_dir = path.abspath(path.join(curdir, 'virtualenv-python'))
             bin_dir = path.join(virtualenv_dir, 'Scripts' if assertions.is_windows() else 'bin')
             python = path.join(bin_dir, 'python')
-            urlretrieve("http://pypi01.infinidat.com/media/dists/ez_setup.py", "ez_setup.py")
-            self.execute_assert_success("{python} ez_setup.py --download-base=http://pypi01.infinidat.com/media/dists/".format(python=python))
+            urlretrieve("http://pypi.infinidat.com/media/dists/ez_setup.py", "ez_setup.py")
+            self.execute_assert_success("{python} ez_setup.py --download-base=http://pypi.infinidat.com/media/dists/".format(python=python))
             with utils.chdir(PROJECT_ROOT):
                 self.execute_assert_success("{python} setup.py develop".format(python=python))
             with patch.object(sys, "executable", new=python+'.exe' if assertions.is_windows() else python):
@@ -112,8 +112,8 @@ class DevEnvTestCase(TestCase):
             self.projector("repository init a.b.c none short long")
             with utils.open_buildout_configfile(write_on_exit=True) as buildout:
                 buildout.add_section("versions")
-                buildout.set("versions", "setuptools", "1.1")
+                buildout.set("versions", "setuptools", "7.0")
             self.projector("devenv build --use-isolated-python")
             self.assertTrue(path.exists(path.join("parts", "python")))
             self.assert_scripts_were_generated_by_buildout()
-            self.assert_specific_setuptools_version_is_being_used("1.1")
+            self.assert_specific_setuptools_version_is_being_used("7.0")
