@@ -85,6 +85,8 @@ class DevEnvPlugin(CommandPlugin):
         with utils.open_buildout_configfile() as buildout:
             if buildout.has_option("versions", "setuptools"):
                 cmd += ' --setuptools-version={}'.format(buildout.get("versions", "setuptools"))
+            if buildout.has_option("versions", "zc.buildout"):
+                cmd += ' --version={}'.format(buildout.get("versions", "zc.buildout"))
         return cmd
 
     def bootstrap_if_necessary(self):
