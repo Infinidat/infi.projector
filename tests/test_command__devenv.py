@@ -82,8 +82,8 @@ class DevEnvTestCase(TestCase):
             virtualenv_dir = path.abspath(path.join(curdir, 'virtualenv-python'))
             bin_dir = path.join(virtualenv_dir, 'Scripts' if assertions.is_windows() else 'bin')
             python = path.join(bin_dir, 'python')
-            urlretrieve("http://pypi01.infinidat.com/media/dists/ez_setup.py", "ez_setup.py")
-            self.execute_assert_success("{python} ez_setup.py --download-base=http://pypi01.infinidat.com/media/dists/".format(python=python))
+            urlretrieve("http://pypi.infinidat.com/media/dists/ez_setup.py", "ez_setup.py")
+            self.execute_assert_success("{python} ez_setup.py --download-base=http://pypi.infinidat.com/media/dists/".format(python=python))
             with utils.chdir(PROJECT_ROOT):
                 self.execute_assert_success("{python} setup.py develop".format(python=python))
             with patch.object(sys, "executable", new=python+'.exe' if assertions.is_windows() else python):
@@ -107,13 +107,32 @@ class DevEnvTestCase(TestCase):
             content = fd.read()
         self.assertIn("setuptools-{}-py".format(setuptools_version), content)
 
+    def assert_specific_zc_buildout_version_is_being_used(self, zc_buildout_version):
+        buildout_script = path.join("bin", "buildout" if name != 'nt' else "buildout-script.py")
+        with open(buildout_script) as fd:
+            content = fd.read()
+        self.assertIn("zc.buildout-{}-py".format(zc_buildout_version), content)
+
     def test_build_with_frozen_setuptools_version(self):
         with self.temporary_directory_context():
             self.projector("repository init a.b.c none short long")
             with utils.open_buildout_configfile(write_on_exit=True) as buildout:
                 buildout.add_section("versions")
-                buildout.set("versions", "setuptools", "1.1")
+                buildout.set("versions", "setuptools", "7.0")
             self.projector("devenv build --use-isolated-python")
             self.assertTrue(path.exists(path.join("parts", "python")))
             self.assert_scripts_were_generated_by_buildout()
-            self.assert_specific_setuptools_version_is_being_used("1.1")
+            self.assert_specific_setuptools_version_is_being_used("7.0")
+
+    def test_build_with_frozen_setuptools_and_zc_buildout_versions(self):
+        with self.temporary_directory_context():
+            self.projector("repository init a.b.c none short long")
+            with utils.open_buildout_configfile(write_on_exit=True) as buildout:
+                buildout.add_section("versions")
+                buildout.set("versions", "setuptools", "2.2")
+                buildout.set("versions", "zc.buildout", "2.2.1")
+            self.projector("devenv build --use-isolated-python")
+            self.assertTrue(path.exists(path.join("parts", "python")))
+            self.assert_scripts_were_generated_by_buildout()
+            self.assert_specific_setuptools_version_is_being_used("2.2")
+            self.assert_specific_zc_buildout_version_is_being_used("2.2.1")
