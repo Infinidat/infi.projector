@@ -200,7 +200,7 @@ class DevEnvPlugin(CommandPlugin):
             return
         self._remove_setuptools_egg_link()
         if not assertions.is_isolated_python_exists() or self.arguments.get("--newest", False):
-            with utils.buildout_parameters_context(['buildout:develop=']):
+            with utils.buildout_parameters_context(['buildout:develop=', 'buildout:versions=no', 'no:key=value']):
                 utils.execute_with_buildout("install {}".format(self.get_isolated_python_section_name()))
             self.arguments["--force-bootstrap"] = True
             utils.execute_with_isolated_python(self._get_bootstrap_command())
