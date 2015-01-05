@@ -156,6 +156,13 @@ except ImportError:
 
     # XXX use a more permanent ez_setup.py URL when available.
     exec(urlopen(options.setup_source).read(), ez)
+    # wheh running python -S bootstap.py, when setuptools is in site-packages
+    # but not included in sys.path due to the -S flag,
+    # exec() somehows puts all the stuff from site-packages in sys.path
+    # this can cause a version conflict for setuptools, when we want version X,
+    # but version Y is in site-packages
+    # this is a workaround for this issue
+    _cleanup_setuptools_and_distribute_modules()
     setup_args = dict(to_dir=tmpeggs, download_delay=0)
     if options.download_base:
         setup_args['download_base'] = options.download_base
