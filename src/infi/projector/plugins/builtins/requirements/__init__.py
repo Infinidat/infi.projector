@@ -11,7 +11,7 @@ Usage:
     projector requirements list [--development]
     projector requirements add <requirement> [--development] [--commit-changes]
     projector requirements remove <requirement> [--development] [--commit-changes]
-    projector requirements freeze [--with-install-requires] [--newest] [--commit-changes] [--push-changes] [--strip-post-suffix]
+    projector requirements freeze [--with-install-requires] [--newest] [--allow-post-releases | --strip-suffix-from-post-releases] [--push-changes] [--commit-changes]
     projector requirements unfreeze [--with-install-requires] [--commit-changes] [--push-changes]
 
 
@@ -89,11 +89,13 @@ class RequirementsPlugin(CommandPlugin):
             with open(tempfile) as fd:
                 content = fd.read()
             if '.post' in content:
-                if self.arguments.get('--strip-post-suffix'):
+                if self.arguments.get('--allow-post-releases'):
+                    pass
+                elif self.arguments.get('--strip-suffix-from-post-releases'):
                     content = sub(r'.post\d+.[A-Za-z0-9]*', '', content)
                 else:
-                    logger.error("post-release found in version file")
                     logger.info(content)
+                    logger.error("freeze found post-release dependencies, see above")
                     raise RuntimeError()
             with open(tempfile, 'w') as fd:
                 fd.write("[versions]\n" + content)
