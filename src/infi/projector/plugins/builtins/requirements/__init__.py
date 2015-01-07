@@ -11,7 +11,7 @@ Usage:
     projector requirements list [--development]
     projector requirements add <requirement> [--development] [--commit-changes]
     projector requirements remove <requirement> [--development] [--commit-changes]
-    projector requirements freeze [--with-install-requires] [--newest] [--commit-changes] [--push-changes]
+    projector requirements freeze [--with-install-requires] [--newest] [--commit-changes] [--push-changes] [--strip-post-suffix]
     projector requirements unfreeze [--with-install-requires] [--commit-changes] [--push-changes]
 
 
@@ -78,6 +78,7 @@ class RequirementsPlugin(CommandPlugin):
         from infi.projector.plugins.builtins.devenv import DevEnvPlugin
         from gitpy import LocalRepository
         from os import curdir
+        from re import sub
         plugin = DevEnvPlugin()
         plugin.arguments = {'--newest': self.arguments.get("--newest", False)}
         plugin.arguments = {'--use-isolated-python': True}
@@ -87,6 +88,13 @@ class RequirementsPlugin(CommandPlugin):
                 plugin.build()
             with open(tempfile) as fd:
                 content = fd.read()
+            if '.post' in content:
+                if self.arguments.get('--strip-post-suffix'):
+                    content = sub(r'.post\d+.[A-Za-z0-9]*', '', content)
+                else:
+                    logger.error("post-release found in version file")
+                    logger.info(content)
+                    raise RuntimeError()
             with open(tempfile, 'w') as fd:
                 fd.write("[versions]\n" + content)
             freeze_versions(tempfile, self.arguments.get("--with-install-requires", False))
