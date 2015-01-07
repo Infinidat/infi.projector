@@ -78,7 +78,7 @@ class RequirementsPlugin(CommandPlugin):
         from infi.projector.plugins.builtins.devenv import DevEnvPlugin
         from gitpy import LocalRepository
         from os import curdir
-        from re import sub
+        from re import sub, findall, MULTILINE
         plugin = DevEnvPlugin()
         plugin.arguments = {'--newest': self.arguments.get("--newest", False)}
         plugin.arguments = {'--use-isolated-python': True}
@@ -88,15 +88,18 @@ class RequirementsPlugin(CommandPlugin):
                 plugin.build()
             with open(tempfile) as fd:
                 content = fd.read()
-            if '.post' in content:
+            post_releases = findall(r'^[^#].* = .*\.post.*', content, MULTILINE)
+            if post_releases:
                 if self.arguments.get('--allow-post-releases'):
                     pass
                 elif self.arguments.get('--strip-suffix-from-post-releases'):
                     content = sub(r'.post\d+.[A-Za-z0-9]*', '', content)
                 else:
+                    msg = "freeze found the follwing post-releases, see the dependency tree above:\n{}"
+                    formatted_post_releases = "\n".join(item for item in post_releases)
                     logger.info(content)
-                    logger.error("freeze found post-release dependencies, see above")
-                    raise RuntimeError()
+                    logger.error(msg.format(formatted_post_releases))
+                    raise SystemExit(1)
             with open(tempfile, 'w') as fd:
                 fd.write("[versions]\n" + content)
             freeze_versions(tempfile, self.arguments.get("--with-install-requires", False))
