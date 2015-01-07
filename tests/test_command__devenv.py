@@ -118,11 +118,11 @@ class DevEnvTestCase(TestCase):
             self.projector("repository init a.b.c none short long")
             with utils.open_buildout_configfile(write_on_exit=True) as buildout:
                 buildout.add_section("versions")
-                buildout.set("versions", "setuptools", "7.0")
+                buildout.set("versions", "setuptools", "8.1")
             self.projector("devenv build --use-isolated-python")
             self.assertTrue(path.exists(path.join("parts", "python")))
             self.assert_scripts_were_generated_by_buildout()
-            self.assert_specific_setuptools_version_is_being_used("7.0")
+            self.assert_specific_setuptools_version_is_being_used("8.1")
 
     def test_build_with_frozen_setuptools_and_zc_buildout_versions(self):
         with self.temporary_directory_context():
