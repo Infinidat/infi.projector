@@ -120,13 +120,6 @@ class VersionPlugin(CommandPlugin):
     def get_git_describe(self):
         return self.get_repository()._executeGitCommand("git describe --tags").stdout.read().splitlines()[0]
 
-    def get_current_version_from_git_describe(self):
-        returned = self.get_git_describe()
-        all_tags = set(tag.name for tag in self.get_repository().getTags())
-        if returned not in all_tags:
-            returned = "{}.post{}.{}".format(*returned.rsplit("-", 2))
-        return returned
-
     def build_and_upload_distributions(self, version_tag_with_v):
         from infi.projector.helper.utils import execute_with_buildout, git_checkout
         from infi.projector.plugins.builtins.devenv import DevEnvPlugin
