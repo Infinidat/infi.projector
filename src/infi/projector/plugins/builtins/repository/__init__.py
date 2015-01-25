@@ -23,7 +23,7 @@ Options:
     <remote-path>                   If missing, assuming target is at the default installation directory
     <local-path>                    If missing, the local path will be the project name
     --mkdir                         Init the repository in a new directory instead of the current directory
-    --remove-deprecated-files       Eemove files that were in use in previous versions of projector but are no longer necessary
+    --remove-deprecated-files       Remove files that were in use in previous versions of projector but are no longer necessary
     --watch                         Watch for changes
 """
 
