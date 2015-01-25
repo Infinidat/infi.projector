@@ -7,7 +7,7 @@ logger = getLogger(__name__)
 USAGE = """
 Usage:
     projector repository init [--mkdir] <project_name> <origin> <short_description> <long_description>
-    projector repository clone <origin>
+    projector repository clone <origin> [<local-path>]
     projector repository skeleton update [--remove-deprecated-files] [--commit-changes]
     projector repository sync <remote-user> <remote-host> [<remote-path>] [--watch] [--verbose]
 
@@ -15,15 +15,16 @@ Options:
     repository init                 Create a new project/git repository
     repository clone                Clone an exisiting project/git repository
     repository skeleton update      Update skeleton-related files (e.g bootstrap.py)
-    repository sync                 sync this repository with a remote target
+    repository sync                 Sync this repository with a remote target
     <project_name>                  The name of the project in python-module-style (object)
     <origin>                        Remote repository url
     <short_description>             A one-line description
     <long_description>              A multi-line description
-    <remote-path>                   if missing, assuming target is at the default installation directory
+    <remote-path>                   If missing, assuming target is at the default installation directory
+    <local-path>                    If missing, the local path will be the project name
     --mkdir                         Init the repository in a new directory instead of the current directory
-    --remove-deprecated-files       remove files that were in use in previous versions of projector but are no longer necessary
-    --watch                         watch for changes
+    --remove-deprecated-files       Eemove files that were in use in previous versions of projector but are no longer necessary
+    --watch                         Watch for changes
 """
 
 
@@ -76,7 +77,8 @@ class RepositoryPlugin(CommandPlugin):
         if not self.arguments.get('--mkdir'):
             yield
             return
-        dirname = self.arguments.get('<project_name>') or self.arguments.get('<origin>')
+        dirname = self.arguments.get('<local-path>') or \
+            self.arguments.get('<project_name>') or self.arguments.get('<origin>')
         if name == 'nt':
             dirname = dirname.replace(sep, '/')
         dirname = (dirname if not dirname.endswith('.git') else dirname[0:-4]).split('/')[-1]
