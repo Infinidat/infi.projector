@@ -1,5 +1,4 @@
 from textwrap import dedent
-from infi.exceptools import chain, InfiException
 from logging import getLogger
 
 logger = getLogger(__name__)
@@ -74,16 +73,10 @@ def get_commandline_doc():
                       options=ident_options(all_options),
                       version=__version__)
 
-class ParseException(InfiException):
-    pass
-
 def parse_configfile(configfile_path):
     from ConfigParser import ConfigParser
-    try:
-        parser = ConfigParser()
-        parser.read(configfile_path)
-    except:
-        raise chain(InfiException())
+    parser = ConfigParser()
+    parser.read(configfile_path)
     return parser
 
 def parse_configfile_value(value):
@@ -93,10 +86,11 @@ def parse_configfile_value(value):
         return value
 
 def merge_commandline_arguments_from_configfile(arguments, configfile_path):
+    import ConfigParser
     try:
         configuration = parse_configfile(configfile_path)
         logger.debug("Failed to parse {}".format(configfile_path))
-    except ParseException:
+    except ConfigParser.Error:
         return
     if not configuration.has_section("commandline-arguments"):
         logger.debug("File {} has no commandline-arguments".format(configfile_path))
