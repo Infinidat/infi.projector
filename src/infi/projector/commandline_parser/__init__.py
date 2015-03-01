@@ -30,7 +30,7 @@ def build_usage_and_options():
     from infi.projector.plugins import plugin_repository
     usage = ''
     options = ''
-    for plugin in plugin_repository.get_all_plugins():
+    for plugin in sorted(plugin_repository.get_all_plugins(), key=lambda plugin: plugin.get_command_name()):
         docopt_string = plugin.get_docopt_string()
         plugin_usage, plugin_options = parse_docopt_string(docopt_string)
         usage = '\n'.join([usage, plugin_usage])
