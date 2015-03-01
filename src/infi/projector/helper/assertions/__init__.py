@@ -75,15 +75,6 @@ def requires_repository(func):
         return func(*args, **kwargs)
     return decorator
 
-def requires_built_repository(func):
-    @wraps(func)
-    def decorator(*args, **kwargs):
-        assert_buildout_configfile_exists()
-        assert_git_repository()
-        assert_setup_py_exists()
-        return func(*args, **kwargs)
-    return decorator
-
 def is_version_tag_exists(version_tag):
     repository = LocalRepository(curdir)
     version_tag = version_tag if version_tag.startswith('v') else 'v' + version_tag

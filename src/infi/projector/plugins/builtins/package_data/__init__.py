@@ -23,13 +23,12 @@ class PackageDataPlugin(CommandPlugin):
     def get_command_name(self):
         return 'package-data'
 
+    def get_methods(self):
+        return [self.list, self.add, self.remove]
+
     @assertions.requires_repository
-    def parse_commandline_arguments(self, arguments):
-        methods = [self.list, self.add, self.remove]
-        [method] = [method for method in methods
-                    if arguments.get(method.__name__)]
-        self.arguments = arguments
-        method()
+    def pre_command_assertions(self):
+        pass
 
     def get_package_set(self):
         return PackageDataSet()

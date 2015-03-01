@@ -22,13 +22,12 @@ class IsolatedPythonPlugin(CommandPlugin):
     def get_command_name(self):
         return 'isolated-python'
 
+    def get_methods(self):
+        return [self.python_version]
+
     @assertions.requires_repository
-    def parse_commandline_arguments(self, arguments):
-        methods = [self.python_version]
-        [method] = [method for method in methods
-                    if arguments.get(method.__name__.replace('_', '-'))]
-        self.arguments = arguments
-        method()
+    def pre_command_assertions(self):
+        pass
 
     def get_package_set(self):
         return PackageDataSet()

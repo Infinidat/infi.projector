@@ -55,12 +55,8 @@ class RepositoryPlugin(CommandPlugin):
     def get_command_name(self):
         return 'repository'
 
-    def parse_commandline_arguments(self, arguments):
-        methods = [self.init, self.clone, self.skeleton]
-        [method] = [method for method in methods
-                    if arguments.get(method.__name__)]
-        self.arguments = arguments
-        method()
+    def get_methods(self):
+        return [self.init, self.clone, self.skeleton]
 
     def get_project_name(self):
         return self.arguments.get("<project_name>")

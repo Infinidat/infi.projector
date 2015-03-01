@@ -28,15 +28,14 @@ class VersionPlugin(CommandPlugin):
     def get_command_name(self):
         return 'version'
 
-    @assertions.requires_built_repository
-    def parse_commandline_arguments(self, arguments):
+    def get_methods(self):
+        return [self.release, self.upload]
+
+    @assertions.requires_repository
+    def pre_command_assertions(self):
+        assertions.assert_setup_py_exists()
         assertions.assert_on_branch("develop")
         assertions.assert_no_uncommitted_changes()
-        methods = [self.release, self.upload]
-        [method] = [method for method in methods
-                    if arguments.get(method.__name__)]
-        self.arguments = arguments
-        method()
 
     def replace_version_tag(self):
         """find the next major/minor/trivial version number if applicable"""

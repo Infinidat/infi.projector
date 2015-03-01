@@ -115,7 +115,13 @@ def parse_commandline_arguments(argv):
     if arguments.get('-v'):
         print get_version()
         return
-    plugins = {plugin.get_command_name(): plugin for plugin in plugin_repository.get_all_plugins()}
-    [selected_plugin] = [value for key, value in plugins.items() if arguments.get(key)]
+    selected_plugins = [plugin for plugin in plugin_repository.get_all_plugins()
+                        if arguments.get(plugin.get_command_name())]
     append_default_arguments_from_configuration_files(arguments)
-    selected_plugin.parse_commandline_arguments(arguments)
+    if not selected_plugins:
+        logger.error("No matching plugin found")
+        return
+    if not any(selected_plugin.parse_commandline_arguments(arguments) for selected_plugin in selected_plugins):
+        logger.error("No matching method found")
+        return
+
