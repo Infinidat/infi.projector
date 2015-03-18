@@ -34,13 +34,12 @@ class RequirementsPlugin(CommandPlugin):
     def get_command_name(self):
         return 'requirements'
 
+    def get_methods(self):
+        return [self.list, self.add, self.remove, self.freeze, self.unfreeze]
+
     @assertions.requires_repository
-    def parse_commandline_arguments(self, arguments):
-        methods = [self.list, self.add, self.remove, self.freeze, self.unfreeze]
-        [method] = [method for method in methods
-                    if arguments.get(method.__name__)]
-        self.arguments = arguments
-        method()
+    def pre_command_assertions(self):
+        pass
 
     def get_package_set(self):
         return EggsPackageSet() if self.arguments.get("--development", False) else InstallRequiresPackageSet()

@@ -1,5 +1,4 @@
 from textwrap import dedent
-from infi.exceptools import chain, InfiException
 from logging import getLogger
 
 logger = getLogger(__name__)
@@ -31,7 +30,7 @@ def build_usage_and_options():
     from infi.projector.plugins import plugin_repository
     usage = ''
     options = ''
-    for plugin in plugin_repository.get_all_plugins():
+    for plugin in sorted(plugin_repository.get_all_plugins(), key=lambda plugin: plugin.get_command_name()):
         docopt_string = plugin.get_docopt_string()
         plugin_usage, plugin_options = parse_docopt_string(docopt_string)
         usage = '\n'.join([usage, plugin_usage])
@@ -74,16 +73,10 @@ def get_commandline_doc():
                       options=ident_options(all_options),
                       version=__version__)
 
-class ParseException(InfiException):
-    pass
-
 def parse_configfile(configfile_path):
     from ConfigParser import ConfigParser
-    try:
-        parser = ConfigParser()
-        parser.read(configfile_path)
-    except:
-        raise chain(InfiException())
+    parser = ConfigParser()
+    parser.read(configfile_path)
     return parser
 
 def parse_configfile_value(value):
@@ -93,10 +86,11 @@ def parse_configfile_value(value):
         return value
 
 def merge_commandline_arguments_from_configfile(arguments, configfile_path):
+    import ConfigParser
     try:
         configuration = parse_configfile(configfile_path)
         logger.debug("Failed to parse {}".format(configfile_path))
-    except ParseException:
+    except ConfigParser.Error:
         return
     if not configuration.has_section("commandline-arguments"):
         logger.debug("File {} has no commandline-arguments".format(configfile_path))
@@ -121,7 +115,13 @@ def parse_commandline_arguments(argv):
     if arguments.get('-v'):
         print get_version()
         return
-    plugins = {plugin.get_command_name(): plugin for plugin in plugin_repository.get_all_plugins()}
-    [selected_plugin] = [value for key, value in plugins.items() if arguments.get(key)]
+    selected_plugins = [plugin for plugin in plugin_repository.get_all_plugins()
+                        if arguments.get(plugin.get_command_name())]
     append_default_arguments_from_configuration_files(arguments)
-    selected_plugin.parse_commandline_arguments(arguments)
+    if not selected_plugins:
+        logger.error("No matching plugin found")
+        return
+    if not any(selected_plugin.parse_commandline_arguments(arguments) for selected_plugin in selected_plugins):
+        logger.error("No matching method found")
+        return
+

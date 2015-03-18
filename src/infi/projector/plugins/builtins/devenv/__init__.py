@@ -35,13 +35,12 @@ class DevEnvPlugin(CommandPlugin):
     def get_command_name(self):
         return 'devenv'
 
+    def get_methods(self):
+        return [self.build, self.relocate, self.pack]
+
     @assertions.requires_repository
-    def parse_commandline_arguments(self, arguments):
-        methods = [self.build, self.relocate, self.pack]
-        [method] = [method for method in methods
-                    if arguments.get(method.__name__)]
-        self.arguments = arguments
-        method()
+    def pre_command_assertions(self):
+        pass
 
     def create_cache_directories(self):
         from os import makedirs

@@ -107,7 +107,9 @@ def _cleanup_old_zc_buildout_modules():
     # even though in the case Python was executed -S.
     # we want to remove all traces for this
     for item in sys.path:
-        if 'zc' in item:
+        if item.endswith('zc') or item.endswith('buildout'):
+            sys.path.remove(item)
+        if os.path.exists(os.path.join(item, 'zc')) and 'site-packages' in item:
             sys.path.remove(item)
     for module in sys.modules.keys():
         if 'zc' in module:
@@ -128,9 +130,10 @@ def _cleanup_setuptools_and_distribute_modules():
     # in this case, pkg_resources is directly under site-packages/
     # so it must go
     paths_to_remove.extend(item for item in sys.path if
-                           os.path.exists(os.path.join(item, "setuptools")) and
-                           os.path.exists(os.path.join(item, "pkg_resources.py")) and
-                           'site-packages' in item)
+                           (os.path.exists(os.path.join(item, "setuptools")) or
+                           os.path.exists(os.path.join(item, "pkg_resources")) or
+                           os.path.exists(os.path.join(item, "pkg_resources.py"))) and
+                           item.endswith('site-packages'))
     sys.path = list(set(sys.path) - set(paths_to_remove))
 
 
@@ -206,8 +209,6 @@ find_links = os.environ.get(
     )
 if find_links:
     cmd.extend(['-f', find_links])
-if options.download_base:
-    cmd.extend(["-f", options.download_base])
 if options.index_url:
     cmd.extend(["-i", options.index_url])
 setuptools_path = ws.find(

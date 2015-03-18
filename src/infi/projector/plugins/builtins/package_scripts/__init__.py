@@ -23,13 +23,12 @@ class PackageScriptsPlugin(CommandPlugin):
     def get_command_name(self):
         return 'package-scripts'
 
+    def get_methods(self):
+        return [self.show, self.set]
+
     @assertions.requires_repository
-    def parse_commandline_arguments(self, arguments):
-        methods = [self.show, self.set]
-        [method] = [method for method in methods
-                    if arguments.get(method.__name__)]
-        self.arguments = arguments
-        method()
+    def pre_command_assertions(self):
+        pass
 
     def get_attribute(self):
         if self.arguments.get('--post-install'):

@@ -12,8 +12,22 @@ class CommandPlugin(object):  # pragma: no cover
     def get_command_name(self):
         raise NotImplementedError()
 
-    def parse_commandline_arguments(self, arguments):
+    def get_methods(self):
         raise NotImplementedError()
+
+    def pre_command_assertions(self):
+        pass
+
+    def parse_commandline_arguments(self, arguments):
+        methods = self.get_methods()
+        matching_methods = [method for method in methods if arguments.get(method.__name__.replace('_', '-'))]
+        self.arguments = arguments
+        if matching_methods:
+            method = matching_methods[0]
+            self.pre_command_assertions()
+            method()
+            return True
+        return False
 
 class PluginRepository(object):
     @cached_method
@@ -25,7 +39,7 @@ class PluginRepository(object):
         if not issubclass(plugin_class, CommandPlugin):
             logger.error("Plugin {} is not a subclasss of CommandPlugin".format(plugin_class.__name__))
             return False
-        methods = ["get_docopt_string", "get_command_name", "parse_commandline_arguments"]
+        methods = ["get_docopt_string", "get_command_name", "get_methods"]
         for method in [method for method in methods
                        if getattr(plugin_class, method) == getattr(CommandPlugin, method)]:
             logger.error("Plugin {} does not override {} ".format(plugin_class.__name__, method))
