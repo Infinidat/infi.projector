@@ -92,7 +92,7 @@ class RequirementsPlugin(CommandPlugin):
                 if self.arguments.get('--allow-post-releases'):
                     pass
                 elif self.arguments.get('--strip-suffix-from-post-releases'):
-                    content = sub(r'.post\d+.[A-Za-z0-9]*', '', content)
+                    content = sub(r'\.post\d+(?:.[A-Za-z0-9])*', '', content, MULTILINE)
                 else:
                     msg = "freeze found the follwing post-releases, see the dependency tree above:\n{}"
                     formatted_post_releases = "\n".join(item for item in post_releases)
