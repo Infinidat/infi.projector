@@ -79,8 +79,8 @@ class RequirementsPlugin(CommandPlugin):
         from os import curdir
         from re import sub, findall, MULTILINE
         plugin = DevEnvPlugin()
-        plugin.arguments = {'--newest': self.arguments.get("--newest", False)}
-        plugin.arguments = {'--use-isolated-python': True}
+        plugin.arguments = {'--newest': self.arguments.get("--newest", False),
+                            '--use-isolated-python': True}
         with open_tempfile() as tempfile:
             with buildout_parameters_context(["buildout:update-versions-file={0}".format(tempfile),
                                               "buildout:versions="]):
