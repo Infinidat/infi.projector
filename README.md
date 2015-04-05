@@ -34,7 +34,7 @@ We will start by creating a new project:
 
     projector repository init --mkdir infi.example git@github.com:Infinidat/example.git "example on infi.projector" "An example by walkthrough"
 
-This creates a new skeleton for the project, under a new directory, called infi.example`. Inside, you'll find the following files:
+This creates a new skeleton for the project, under a new directory, called `infi.example`. Inside, you'll find the following files:
 
 * `bootstrap.py`. This file is buildout's boot strapper, used to start building the development environment
 * `buildout.cfg`. This project's configuration file. Already includes the project name and description strings.
