@@ -124,6 +124,8 @@ class VersionPlugin(CommandPlugin):
         from infi.projector.plugins.builtins.devenv import DevEnvPlugin
         for distribution in self.arguments.get("--distributions").split(','):
             for pypi in self.arguments.get("--pypi-servers").split(','):
+                if not pypi:
+                    continue
                 git_checkout(version_tag_with_v)
                 DevEnvPlugin().create_setup_py()
                 setup_cmd = "setup . register -r {pypi} {distribution} upload -r {pypi}"
