@@ -79,8 +79,8 @@ class RequirementsPlugin(CommandPlugin):
         from os import curdir
         from re import sub, findall, MULTILINE
         plugin = DevEnvPlugin()
-        plugin.arguments = {'--newest': self.arguments.get("--newest", False)}
-        plugin.arguments = {'--use-isolated-python': True}
+        plugin.arguments = {'--newest': self.arguments.get("--newest", False),
+                            '--use-isolated-python': True}
         with open_tempfile() as tempfile:
             with buildout_parameters_context(["buildout:update-versions-file={0}".format(tempfile),
                                               "buildout:versions="]):
@@ -92,7 +92,7 @@ class RequirementsPlugin(CommandPlugin):
                 if self.arguments.get('--allow-post-releases'):
                     pass
                 elif self.arguments.get('--strip-suffix-from-post-releases'):
-                    content = sub(r'.post\d+.[A-Za-z0-9]*', '', content)
+                    content = sub(r'\.post\d+(?:.[A-Za-z0-9])*', '', content, MULTILINE)
                 else:
                     msg = "freeze found the follwing post-releases, see the dependency tree above:\n{}"
                     formatted_post_releases = "\n".join(item for item in post_releases)
