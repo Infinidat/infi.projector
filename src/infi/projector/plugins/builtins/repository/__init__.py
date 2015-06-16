@@ -65,7 +65,7 @@ class RepositoryPlugin(CommandPlugin):
     def _create_subdir_if_necessary(self):
         from infi.projector.helper.utils import chdir
         from os.path import exists, isdir, sep
-        from os import makedirs, name
+        from os import makedirs, name, listdir, removedirs
         if not self.arguments.get('--mkdir'):
             yield
             return
@@ -78,8 +78,12 @@ class RepositoryPlugin(CommandPlugin):
             logger.debug("{} already exists".format(dirname))
             raise SystemExit(1)
         makedirs(dirname)
-        with chdir(dirname):
-            yield
+        try:
+            with chdir(dirname):
+                yield
+        finally:
+            if not listdir(dirname):
+                removedirs(dirname)
 
     def _exit_if_dotgit_exists(self):
         from os.path import exists
