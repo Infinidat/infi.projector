@@ -119,6 +119,7 @@ class DevEnvTestCase(TestCase):
             with utils.open_buildout_configfile(write_on_exit=True) as buildout:
                 buildout.add_section("versions")
                 buildout.set("versions", "setuptools", "8.1")
+                buildout.set("versions", "mock", "1.0.1")
             self.projector("devenv build --use-isolated-python")
             self.assertTrue(path.exists(path.join("parts", "python")))
             self.assert_scripts_were_generated_by_buildout()
@@ -131,6 +132,7 @@ class DevEnvTestCase(TestCase):
                 buildout.add_section("versions")
                 buildout.set("versions", "setuptools", "2.2")
                 buildout.set("versions", "zc.buildout", "2.2.1")
+                buildout.set("versions", "mock", "1.0.1")
             self.projector("devenv build --use-isolated-python")
             self.assertTrue(path.exists(path.join("parts", "python")))
             self.assert_scripts_were_generated_by_buildout()
