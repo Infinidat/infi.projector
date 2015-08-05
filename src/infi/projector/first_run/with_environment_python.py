@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 
 PACKAGE_QUICKS = {
                   'distribute': 'setuptools',
@@ -32,7 +33,7 @@ def check_for_dependencies():
     missing_dependencies = [dependency for dependency in get_dependencies()
                             if not is_dependency_installed(dependency)]
     if missing_dependencies:
-        print 'Please install the following dependencies: {0}'.format(' '.join(missing_dependencies))
+        print('Please install the following dependencies: {0}'.format(' '.join(missing_dependencies)))
         raise SystemExit(1)
 
 def build_scripts():

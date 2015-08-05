@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sys
 from os import makedirs, system, path, name
 
@@ -19,6 +20,6 @@ if not path.exists(CACHE_DIST):
     makedirs(path.join(".cache", "dist"))
 
 for command in COMMANDS:
-    print command
+    print(command)
     if system(command):
         raise SystemExit(1)
