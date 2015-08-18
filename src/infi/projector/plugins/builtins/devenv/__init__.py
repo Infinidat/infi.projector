@@ -128,7 +128,6 @@ class DevEnvPlugin(CommandPlugin):
         additional_options = ["buildout:prefer-final=true"] if self.arguments.get("--prefer-final") else []
         with utils.buildout_parameters_context(additional_options):
             self.install_sections_by_recipe("infi.recipe.console_scripts")
-            self.install_sections_by_recipe("infi.recipe.console_scripts:gui_scripts")
 
     def _remove_files_of_type_recursively(self, root_path, file_type):
         import os
