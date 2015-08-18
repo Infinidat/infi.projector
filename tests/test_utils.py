@@ -6,7 +6,7 @@ class UtilsTestCase(TestCase):
         from infi.projector.helper.utils import execute_with_buildout, PrettyExecutionError
         try:
             execute_with_buildout(["install", "non-existing-section"])
-        except PrettyExecutionError, err:
+        except PrettyExecutionError as err:
             self.assertFalse(r"\n" in str(err))
         except OSError:
             raise SkipTest("bin/buildout not found")

@@ -1,3 +1,4 @@
+from __future__ import print_function
 from textwrap import dedent
 from logging import getLogger
 
@@ -113,7 +114,7 @@ def parse_commandline_arguments(argv):
     doc = get_commandline_doc()
     arguments = dict(docopt(doc, argv=argv, version=get_version()))
     if arguments.get('-v'):
-        print get_version()
+        print(get_version())
         return
     selected_plugins = [plugin for plugin in plugin_repository.get_all_plugins()
                         if arguments.get(plugin.get_command_name())]

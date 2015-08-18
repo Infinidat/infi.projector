@@ -64,7 +64,7 @@ class VersionPlugin(CommandPlugin):
         repository = LocalRepository(curdir)
         try:
             repository.fetch()
-        except (TypeError, GitCommandFailedException), error:
+        except (TypeError, GitCommandFailedException) as error:
             logger.error("Failed to fetch origin: {}".format(getattr(error, 'msg', error.message)))
             logger.info("Either fix this or run with --no-fetch")
             raise SystemExit(1)

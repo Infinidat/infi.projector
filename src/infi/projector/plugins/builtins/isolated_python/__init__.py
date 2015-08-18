@@ -1,3 +1,4 @@
+from __future__ import print_function
 from infi.projector.plugins import CommandPlugin
 from infi.projector.helper import assertions
 from infi.projector.helper.utils import open_buildout_configfile, commit_changes_to_buildout
@@ -41,7 +42,7 @@ class IsolatedPythonPlugin(CommandPlugin):
                 logger.error("isolated python section not found in buildout.cfg")
                 raise SystemExit(1)
             if self.arguments.get("get"):
-                print buildout.get(sections[0], "version")
+                print(buildout.get(sections[0], "version"))
             elif self.arguments.get("set"):
                 version = self.arguments.get("<version>")
                 if not version.startswith("v"):
