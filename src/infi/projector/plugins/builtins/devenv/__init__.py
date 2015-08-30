@@ -111,6 +111,8 @@ class DevEnvPlugin(CommandPlugin):
     def submodule_update(self):
         with utils.buildout_parameters_context(['buildout:develop=']):
             self.install_sections_by_recipe("zerokspot.recipe.git")
+            self.install_sections_by_recipe("gitrecipe")
+            self.install_sections_by_recipe("git-recipe")
 
     def create_setup_py(self):
         with utils.buildout_parameters_context(['buildout:develop=']):
