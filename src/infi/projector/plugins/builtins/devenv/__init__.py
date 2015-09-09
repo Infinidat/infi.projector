@@ -111,6 +111,8 @@ class DevEnvPlugin(CommandPlugin):
     def submodule_update(self):
         with utils.buildout_parameters_context(['buildout:develop=']):
             self.install_sections_by_recipe("zerokspot.recipe.git")
+            self.install_sections_by_recipe("gitrecipe")
+            self.install_sections_by_recipe("git-recipe")
 
     def create_setup_py(self):
         with utils.buildout_parameters_context(['buildout:develop=']):
@@ -128,7 +130,6 @@ class DevEnvPlugin(CommandPlugin):
         additional_options = ["buildout:prefer-final=true"] if self.arguments.get("--prefer-final") else []
         with utils.buildout_parameters_context(additional_options):
             self.install_sections_by_recipe("infi.recipe.console_scripts")
-            self.install_sections_by_recipe("infi.recipe.console_scripts:gui_scripts")
 
     def _remove_files_of_type_recursively(self, root_path, file_type):
         import os

@@ -35,7 +35,7 @@ class SubmodulePlugin(CommandPlugin):
         with open_buildout_configfile() as buildout:
             sections = [section for section in buildout.sections()
                         if buildout.has_option(section, "recipe") and
-                        buildout.get(section, "recipe") == "zerokspot.recipe.git"]
+                        buildout.get(section, "recipe") in ("zerokspot.recipe.git", "gitrecipe", "git-recipe")]
             return sections
 
     def list(self):
