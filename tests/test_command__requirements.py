@@ -55,6 +55,10 @@ class RequirementsTestCase(TestCase):
         with self.temporary_directory_context():
             self.projector("repository init a.b.c none short long")
             self.projector("requirements add Flask==0.9 --commit-changes")
+            self.projector("requirements remove infi.traceback --commit-changes --development")
+            self.projector("requirements remove infi.unittest --commit-changes --development")
+            self.projector("requirements remove ipython --commit-changes --development")
+            self.projector("requirements remove nose --commit-changes --development")
             self.projector("devenv build --no-readline --use-isolated-python")
             with self.assert_new_commit():
                 self.projector("requirements freeze --with-install-requires --newest --commit-changes")
@@ -70,6 +74,10 @@ class RequirementsTestCase(TestCase):
         with self.temporary_directory_context():
             self.projector("repository init a.b.c none short long")
             self.projector("requirements add Flask==0.9 --commit-changes")
+            self.projector("requirements remove infi.traceback --commit-changes --development")
+            self.projector("requirements remove infi.unittest --commit-changes --development")
+            self.projector("requirements remove ipython --commit-changes --development")
+            self.projector("requirements remove nose --commit-changes --development")
             self.projector("devenv build --no-readline --use-isolated-python")
             self.projector("requirements freeze --with-install-requires --newest --commit-changes")
             self.projector("requirements freeze --with-install-requires --newest")
