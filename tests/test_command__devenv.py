@@ -119,6 +119,9 @@ class DevEnvTestCase(TestCase):
             with utils.open_buildout_configfile(write_on_exit=True) as buildout:
                 buildout.add_section("versions")
                 buildout.set("versions", "setuptools", "8.1")
+                # ipython>4 depends on simplegeneric>0.8, and setuptools 8.1 fails to parse this dependency correctly
+                # this is fixed in setuptools 8.4, so if anyone bumps setuptools, remove the following set:
+                buildout.set("versions", "ipython", "3.2.1")
             self.projector("devenv build --use-isolated-python")
             self.assertTrue(path.exists(path.join("parts", "python")))
             self.assert_scripts_were_generated_by_buildout()
