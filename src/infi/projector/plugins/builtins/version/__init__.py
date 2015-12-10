@@ -16,7 +16,7 @@ Options:
     --no-upload                     Do not upload the package as part of the release process
     --no-fetch                      Do not fetch origin before releasing
     --distributions=DISTRIBUTIONS   Distributions to build [default: sdist,bdist_egg]
-    --pypi-servers=PYPI             PyPI server for publishing [default: pypi,]
+    --pypi-servers=PYPI             PyPI server for publishing (as defined in pypirc file) [default: pypi,]
     --no-push-changes               Do no push release commits and tags to origin
     --keep-leftovers                If something fails during release, don't
 """
