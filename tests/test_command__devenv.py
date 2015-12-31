@@ -134,6 +134,9 @@ class DevEnvTestCase(TestCase):
                 buildout.add_section("versions")
                 buildout.set("versions", "setuptools", "2.2")
                 buildout.set("versions", "zc.buildout", "2.2.1")
+                # ipython==4.0.1 fails to install with setuptools 2.2
+                # if anyone bumps setuptools, try to remove the following set:
+                buildout.set("versions", "ipython", "4.0.0")
             self.projector("devenv build --use-isolated-python")
             self.assertTrue(path.exists(path.join("parts", "python")))
             self.assert_scripts_were_generated_by_buildout()
