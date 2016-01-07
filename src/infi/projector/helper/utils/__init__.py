@@ -207,13 +207,32 @@ def unset_freezed_versions_in_install_requires(buildout_cfg):
     install_requires = from_dict(install_requires_dict)
     buildout_cfg.set("project", "install_requires", InstallRequiresPackageSet.to_value(install_requires))
 
+
+def get_dependencies_with_specific_versions(buildout_cfg):
+    from .package_sets import InstallRequiresPackageSet, to_dict, from_dict
+    results = set()
+    install_requires = InstallRequiresPackageSet.from_value(buildout_cfg.get("project", "install_requires"))
+    install_requires_dict = to_dict(install_requires)
+    for key, specs in install_requires_dict.items():
+        if specs and len(specs) == 1 and specs[0][0] == '==':
+            results.add(key)
+    return list(results)
+
+
 def unfreeze_versions(change_install_requires):
     with open_buildout_configfile(write_on_exit=True) as buildout_cfg:
         buildout_cfg.remove_option("buildout", "extensions")
         buildout_cfg.remove_option("buildout", "buildout_versions_file")
         buildout_cfg.remove_option("buildout", "extends")
         buildout_cfg.remove_option("buildout", "versions")
-        buildout_cfg.remove_section("versions")
+
+        dependencies_that_need_to_remain_frozen = get_dependencies_with_specific_versions(buildout_cfg)
+        if dependencies_that_need_to_remain_frozen:
+            for option in buildout_cfg.options("versions"):
+                if option not in dependencies_that_need_to_remain_frozen:
+                    buildout_cfg.remove_option("versions", option)
+        else:
+            buildout_cfg.remove_section("versions")
         if change_install_requires:
             unset_freezed_versions_in_install_requires(buildout_cfg)
 
