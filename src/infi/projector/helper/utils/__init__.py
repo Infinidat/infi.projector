@@ -231,7 +231,7 @@ def unfreeze_versions(change_install_requires):
         if dependencies_that_need_to_remain_frozen:
             buildout_cfg.add_section("versions")
             for key, value in dependencies_that_need_to_remain_frozen.items():
-                buildout_cfg.add_option("versions", key, value)
+                buildout_cfg.set("versions", key, value)
         if change_install_requires:
             unset_freezed_versions_in_install_requires(buildout_cfg)
 
