@@ -67,8 +67,8 @@ class RequirementsTestCase(TestCase):
             self.assertIn("setuptool", open("buildout.cfg").read())
             with self.assert_new_commit():
                 self.projector("requirements unfreeze --commit-changes --with-install-requires")
-            self.assertNotIn("[versions]", open("buildout.cfg").read())
             self.assertIn("Flask==0.9", open("buildout.cfg").read())
+            self.assertIn("Flask = 0.9", open("buildout.cfg").read())
 
     def test_freeze_after_freeze(self):
         with self.temporary_directory_context():
