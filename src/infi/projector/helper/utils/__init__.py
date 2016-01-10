@@ -188,13 +188,17 @@ def set_freezed_versions_in_install_requires(buildout_cfg, versions_cfg):
     buildout_cfg.set("project", "install_requires", InstallRequiresPackageSet.to_value(install_requires))
 
 def freeze_versions(versions_file, change_install_requires):
+    dependencies = dict()
     with open_buildout_configfile(write_on_exit=True) as buildout_cfg:
         with open_buildout_configfile(versions_file) as versions_cfg:
             if buildout_cfg.has_section("versions"):
                 buildout_cfg.remove_section("versions")
             buildout_cfg.add_section("versions")
             for option in sorted(versions_cfg.options("versions"), key=lambda s: s.lower()):
-                buildout_cfg.set("versions", option, versions_cfg.get("versions", option))
+                dependencies[option] = versions_cfg.get("versions", option)
+        dependencies.update(**get_dependencies_with_specific_versions(buildout_cfg))
+        for key in sorted(dependencies, key=lambda s: s.lower()):
+            buildout_cfg.set("versions", key, dependencies[key])
         if change_install_requires:
                 set_freezed_versions_in_install_requires(buildout_cfg, versions_cfg)
 
@@ -209,13 +213,22 @@ def unset_freezed_versions_in_install_requires(buildout_cfg):
 
 
 def get_dependencies_with_specific_versions(buildout_cfg):
-    from .package_sets import InstallRequiresPackageSet, to_dict, from_dict
+    from .package_sets import InstallRequiresPackageSet, EggsPackageSet, to_dict, from_dict
     results = {}
     install_requires = InstallRequiresPackageSet.from_value(buildout_cfg.get("project", "install_requires"))
     install_requires_dict = to_dict(install_requires)
     for key, specs in install_requires_dict.items():
         if specs and len(specs) == 1 and specs[0][0] == '==':
             results[key] = specs[0][1]
+
+    development_eggs = [item for
+                        item in EggsPackageSet.from_value(buildout_cfg.get('development-scripts', 'eggs')) if
+                        item != '${project:name}']
+    development_eggs_dict = to_dict(development_eggs)
+    for key, specs in development_eggs_dict.items():
+        if specs and len(specs) == 1 and specs[0][0] == '==':
+            results[key] = specs[0][1]
+
     return results
 
 
@@ -234,6 +247,7 @@ def unfreeze_versions(change_install_requires):
                 buildout_cfg.set("versions", key, value)
         if change_install_requires:
             unset_freezed_versions_in_install_requires(buildout_cfg)
+
 
 class RevertIfFailedOperations(object):
     def __init__(self, repository):
