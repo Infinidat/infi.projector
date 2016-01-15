@@ -105,7 +105,7 @@ If you wish to include additional (non-Python-source) files in your python packa
 
 ### Releasing versions
 
-As we mentioned earlier, we use gitflow's branching model and versioning scheme. However, there's a little more to do when releasing versions than just running one `git-flow` command:
+As we mentioned earlier, we use gitflow's branching model and versioning scheme. However, there's a little more to do when releasing versions than just merging git branches:
 
 * You need to find out the latest version number, and advance on top of it
 * You need to bump the version-related files in the source

@@ -116,12 +116,13 @@ def buildout_parameters_context(parameters):
     finally:
         [BUILDOUT_PARAMETERS.remove(param) for param in parameters if param in BUILDOUT_PARAMETERS]
 
-def _release_version_with_git_flow(version_tag):
-    from gitflow.core import GitFlow
-    gitflow = GitFlow()
-    gitflow.create("release", version_tag, base=None, fetch=False)
-    gitflow.finish("release", version_tag, fetch=False, rebase=False, keep=False, force_delete=True,
-                   tagging_info=dict(sign=False, message=version_tag))
+def _release_version_in_git(version_tag):
+    from infi.execute import execute_assert_success
+    execute_assert_success("git checkout master", shell=True)
+    execute_assert_success("git merge develop --no-ff -m 'Finished Release {}'".format(version_tag), shell=True)
+    execute_assert_success("git tag -a {0} -m {0}".format(version_tag), shell=True)
+    execute_assert_success("git checkout develop", shell=True)
+    execute_assert_success("git merge master", shell=True)
 
 def git_checkout(branch_name_or_tag):
     from os import curdir
@@ -303,6 +304,6 @@ def revert_if_failed(keep_leftovers):
         ops.reset_master_and_develop(before, now)
         raise
 
-def release_version_with_git_flow(version_tag, keep_leftovers=True):
+def release_version_in_git(version_tag, keep_leftovers=True):
     with revert_if_failed(keep_leftovers):
-        _release_version_with_git_flow(version_tag)
+        _release_version_in_git(version_tag)
