@@ -105,7 +105,7 @@ def execute_with_buildout(commandline_or_args, env=None):
     if env:
         _env.update(env)
     args = parse_args(commandline_or_args)
-    execute_assert_success([path.join('bin', 'buildout{}'.format('.exe' if name == 'nt' else ''))] + \
+    execute_assert_success([path.join('bin', 'buildout{}'.format('.exe' if name == 'nt' else ''))] +
                             BUILDOUT_PARAMETERS + args, env=_env)
 
 @contextmanager
@@ -214,7 +214,7 @@ def unset_freezed_versions_in_install_requires(buildout_cfg):
 
 
 def get_dependencies_with_specific_versions(buildout_cfg):
-    from .package_sets import InstallRequiresPackageSet, EggsPackageSet, to_dict, from_dict
+    from .package_sets import InstallRequiresPackageSet, EggsPackageSet, to_dict
     results = {}
     install_requires = InstallRequiresPackageSet.from_value(buildout_cfg.get("project", "install_requires"))
     install_requires_dict = to_dict(install_requires)
