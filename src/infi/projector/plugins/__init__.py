@@ -1,4 +1,3 @@
-from infi.pyutils.lazy import cached_method
 from logging import getLogger
 
 logger = getLogger(__name__)
@@ -30,7 +29,6 @@ class CommandPlugin(object):  # pragma: no cover
         return False
 
 class PluginRepository(object):
-    @cached_method
     def get_all_plugins(self):
         return [plugin_class() for plugin_class in self.get_all_plugin_classes()
                 if self.validate_plugin(plugin_class)]

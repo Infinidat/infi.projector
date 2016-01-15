@@ -1,6 +1,6 @@
 from .test_case import TestCase
 from infi.unittest.parameters import iterate
-from infi.pyutils.contexts import contextmanager
+from contextlib import contextmanager
 
 class RequirementsTestCase(TestCase):
 

@@ -1,4 +1,4 @@
-from infi.pyutils.contexts import contextmanager
+from contextlib import contextmanager
 from infi.projector.plugins import CommandPlugin
 from logging import getLogger
 
