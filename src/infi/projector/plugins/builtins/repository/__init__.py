@@ -1,5 +1,6 @@
 from contextlib import contextmanager
 from infi.projector.plugins import CommandPlugin
+from infi.projector.helper.utils import configparser
 from logging import getLogger
 
 logger = getLogger(__name__)
@@ -41,10 +42,9 @@ def indent(text):
 
 
 def get(original, section, key, default=None):
-    from ConfigParser import NoOptionError
     try:
         return original.get(section, key)
-    except NoOptionError:
+    except configparser.NoOptionError:
         return default
 
 

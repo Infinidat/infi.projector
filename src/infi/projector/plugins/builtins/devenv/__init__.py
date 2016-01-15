@@ -1,6 +1,7 @@
 from contextlib import contextmanager
 from infi.projector.plugins import CommandPlugin
 from infi.projector.helper import assertions, utils
+from infi.projector.helper.utils import configparser
 from logging import getLogger
 
 logger = getLogger(__name__)
@@ -52,13 +53,12 @@ class DevEnvPlugin(CommandPlugin):
             makedirs(cache_dist)
 
     def _get_pypi_index_url(self):
-        from ConfigParser import ConfigParser, NoOptionError, NoSectionError
         from os import path
-        pydistutils = ConfigParser()
+        pydistutils = configparser.ConfigParser()
         pydistutils.read([path.expanduser(path.join("~", basename)) for basename in ['.pydistutils.cfg', 'pydistutils.cfg']])
         try:
             return pydistutils.get("easy_install", "index-url").strip("/")
-        except (NoSectionError, NoOptionError):
+        except (configparser.NoSectionError, configparser.NoOptionError):
             return "https://pypi.python.org/simple"
 
     def _get_bootstrap_command(self):
@@ -185,11 +185,10 @@ class DevEnvPlugin(CommandPlugin):
         # HOSTDEV-1130
         # https://bugs.launchpad.net/zc.buildout/+bug/1210996
         import os
-        from ConfigParser import NoOptionError, NoSectionError
         with utils.open_buildout_configfile() as buildout:
             try:
                 develop_eggs_dir = buildout.get("buildout", "develop-eggs-directory")
-            except (NoSectionError, NoOptionError):
+            except (configparser.NoSectionError, configparser.NoOptionError):
                 develop_eggs_dir = "develop-eggs"
             setuptools_egg_link = os.path.join(develop_eggs_dir, "setuptools.egg-link")
             if os.path.exists(setuptools_egg_link):

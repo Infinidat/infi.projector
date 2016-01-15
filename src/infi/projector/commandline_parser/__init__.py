@@ -1,6 +1,7 @@
 from __future__ import print_function
 from textwrap import dedent
 from logging import getLogger
+from infi.projector.helper.utils import configparser
 
 logger = getLogger(__name__)
 
@@ -75,8 +76,7 @@ def get_commandline_doc():
                       version=__version__)
 
 def parse_configfile(configfile_path):
-    from ConfigParser import ConfigParser
-    parser = ConfigParser()
+    parser = configparser.ConfigParser()
     parser.read(configfile_path)
     return parser
 

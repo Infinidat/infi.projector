@@ -110,7 +110,7 @@ class VersionPlugin(CommandPlugin):
 
     def get_git_describe(self):
         from infi.execute import execute_assert_success
-        return execute_assert_success("git describe --tags", shell=True).get_stdout().splitlines()[0]
+        return execute_assert_success("git describe --tags", shell=True).get_stdout().splitlines()[0].decode("utf-8")
 
     def build_and_upload_distributions(self, version_tag_with_v):
         from infi.projector.helper.utils import execute_with_buildout, git_checkout

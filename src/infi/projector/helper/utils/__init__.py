@@ -1,6 +1,10 @@
-
 from contextlib import contextmanager
 from logging import getLogger
+try:
+    import configparser
+except ImportError:     # Python 2
+    import ConfigParser as configparser
+
 logger = getLogger(__name__)
 
 BUILDOUT_PARAMETERS = []
@@ -33,8 +37,7 @@ def chdir(path):
 
 @contextmanager
 def open_buildout_configfile(filepath="buildout.cfg", write_on_exit=False):
-    from ConfigParser import ConfigParser
-    parser = ConfigParser()
+    parser = configparser.ConfigParser()
     parser.optionxform = str    # make options case-sensitive
     parser.read(filepath)
     try:
