@@ -122,7 +122,7 @@ def buildout_parameters_context(parameters):
 def _release_version_in_git(version_tag):
     from infi.execute import execute_assert_success
     execute_assert_success("git checkout master", shell=True)
-    execute_assert_success("git merge develop --no-ff -m 'Finished Release {}'".format(version_tag), shell=True)
+    execute_assert_success("git merge develop --no-ff -m \"Finished Release {}\"".format(version_tag), shell=True)
     execute_assert_success("git tag -a {0} -m {0}".format(version_tag), shell=True)
     execute_assert_success("git checkout develop", shell=True)
     execute_assert_success("git merge master", shell=True)
