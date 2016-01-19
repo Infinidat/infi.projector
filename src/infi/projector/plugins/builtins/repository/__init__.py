@@ -179,7 +179,7 @@ class RepositoryPlugin(CommandPlugin):
                 execute_assert_success("git branch --track master origin/master", shell=True)
             else:
                 execute_assert_success("git symbolic-ref HEAD refs/heads/master", shell=True)
-                execute_assert_success("git commit --allow-empty -m 'Initial commit'", shell=True)
+                execute_assert_success("git commit --allow-empty -m \"Initial commit\"", shell=True)
         if 'develop' not in branches:
             if 'develop' in remote_branches:
                 execute_assert_success("git branch --track develop origin/develop", shell=True)
