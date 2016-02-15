@@ -13,7 +13,7 @@ def append_src_to_python_path():
 def get_dependencies():
     from infi.projector.helper.utils import open_buildout_configfile
     with open_buildout_configfile() as buildout:
-        exec 'dependencies = {0}'.format(buildout.get("project", "install_requires"))
+        exec('dependencies = {0}'.format(buildout.get("project", "install_requires")))
     return dependencies  # noqa    # flake8 doesn't recognize the exec, thinks 'dependencies' is undefined
 
 def is_dependency_installed(dependency):

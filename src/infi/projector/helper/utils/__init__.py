@@ -1,6 +1,10 @@
-
 from contextlib import contextmanager
 from logging import getLogger
+try:
+    import configparser
+except ImportError:     # Python 2
+    import ConfigParser as configparser
+
 logger = getLogger(__name__)
 
 BUILDOUT_PARAMETERS = []
@@ -33,8 +37,7 @@ def chdir(path):
 
 @contextmanager
 def open_buildout_configfile(filepath="buildout.cfg", write_on_exit=False):
-    from ConfigParser import ConfigParser
-    parser = ConfigParser()
+    parser = configparser.ConfigParser()
     parser.optionxform = str    # make options case-sensitive
     parser.read(filepath)
     try:
@@ -105,7 +108,7 @@ def execute_with_buildout(commandline_or_args, env=None):
     if env:
         _env.update(env)
     args = parse_args(commandline_or_args)
-    execute_assert_success([path.join('bin', 'buildout{}'.format('.exe' if name == 'nt' else ''))] + \
+    execute_assert_success([path.join('bin', 'buildout{}'.format('.exe' if name == 'nt' else ''))] +
                             BUILDOUT_PARAMETERS + args, env=_env)
 
 @contextmanager
@@ -116,12 +119,13 @@ def buildout_parameters_context(parameters):
     finally:
         [BUILDOUT_PARAMETERS.remove(param) for param in parameters if param in BUILDOUT_PARAMETERS]
 
-def _release_version_with_git_flow(version_tag):
-    from gitflow.core import GitFlow
-    gitflow = GitFlow()
-    gitflow.create("release", version_tag, base=None, fetch=False)
-    gitflow.finish("release", version_tag, fetch=False, rebase=False, keep=False, force_delete=True,
-                   tagging_info=dict(sign=False, message=version_tag))
+def _release_version_in_git(version_tag):
+    from infi.execute import execute_assert_success
+    execute_assert_success("git checkout master", shell=True)
+    execute_assert_success("git merge develop --no-ff -m \"Finished Release {}\"".format(version_tag), shell=True)
+    execute_assert_success("git tag -a {0} -m {0}".format(version_tag), shell=True)
+    execute_assert_success("git checkout develop", shell=True)
+    execute_assert_success("git merge master", shell=True)
 
 def git_checkout(branch_name_or_tag):
     from os import curdir
@@ -188,13 +192,17 @@ def set_freezed_versions_in_install_requires(buildout_cfg, versions_cfg):
     buildout_cfg.set("project", "install_requires", InstallRequiresPackageSet.to_value(install_requires))
 
 def freeze_versions(versions_file, change_install_requires):
+    dependencies = dict()
     with open_buildout_configfile(write_on_exit=True) as buildout_cfg:
         with open_buildout_configfile(versions_file) as versions_cfg:
             if buildout_cfg.has_section("versions"):
                 buildout_cfg.remove_section("versions")
             buildout_cfg.add_section("versions")
             for option in sorted(versions_cfg.options("versions"), key=lambda s: s.lower()):
-                buildout_cfg.set("versions", option, versions_cfg.get("versions", option))
+                dependencies[option] = versions_cfg.get("versions", option)
+        dependencies.update(**get_dependencies_with_specific_versions(buildout_cfg))
+        for key in sorted(dependencies, key=lambda s: s.lower()):
+            buildout_cfg.set("versions", key, dependencies[key])
         if change_install_requires:
                 set_freezed_versions_in_install_requires(buildout_cfg, versions_cfg)
 
@@ -207,6 +215,27 @@ def unset_freezed_versions_in_install_requires(buildout_cfg):
     install_requires = from_dict(install_requires_dict)
     buildout_cfg.set("project", "install_requires", InstallRequiresPackageSet.to_value(install_requires))
 
+
+def get_dependencies_with_specific_versions(buildout_cfg):
+    from .package_sets import InstallRequiresPackageSet, EggsPackageSet, to_dict
+    results = {}
+    install_requires = InstallRequiresPackageSet.from_value(buildout_cfg.get("project", "install_requires"))
+    install_requires_dict = to_dict(install_requires)
+    for key, specs in install_requires_dict.items():
+        if specs and len(specs) == 1 and specs[0][0] == '==':
+            results[key] = specs[0][1]
+
+    development_eggs = [item for
+                        item in EggsPackageSet.from_value(buildout_cfg.get('development-scripts', 'eggs')) if
+                        item != '${project:name}']
+    development_eggs_dict = to_dict(development_eggs)
+    for key, specs in development_eggs_dict.items():
+        if specs and len(specs) == 1 and specs[0][0] == '==':
+            results[key] = specs[0][1]
+
+    return results
+
+
 def unfreeze_versions(change_install_requires):
     with open_buildout_configfile(write_on_exit=True) as buildout_cfg:
         buildout_cfg.remove_option("buildout", "extensions")
@@ -214,8 +243,15 @@ def unfreeze_versions(change_install_requires):
         buildout_cfg.remove_option("buildout", "extends")
         buildout_cfg.remove_option("buildout", "versions")
         buildout_cfg.remove_section("versions")
+
+        dependencies_that_need_to_remain_frozen = get_dependencies_with_specific_versions(buildout_cfg)
+        if dependencies_that_need_to_remain_frozen:
+            buildout_cfg.add_section("versions")
+            for key, value in dependencies_that_need_to_remain_frozen.items():
+                buildout_cfg.set("versions", key, value)
         if change_install_requires:
             unset_freezed_versions_in_install_requires(buildout_cfg)
+
 
 class RevertIfFailedOperations(object):
     def __init__(self, repository):
@@ -271,6 +307,6 @@ def revert_if_failed(keep_leftovers):
         ops.reset_master_and_develop(before, now)
         raise
 
-def release_version_with_git_flow(version_tag, keep_leftovers=True):
+def release_version_in_git(version_tag, keep_leftovers=True):
     with revert_if_failed(keep_leftovers):
-        _release_version_with_git_flow(version_tag)
+        _release_version_in_git(version_tag)

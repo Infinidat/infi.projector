@@ -1,5 +1,5 @@
 from infi import unittest
-from infi.pyutils.contexts import contextmanager
+from contextlib import contextmanager
 from os import path, curdir
 
 PROJECTOR_BASE_DIR = path.abspath(curdir)

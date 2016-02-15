@@ -1,7 +1,7 @@
 from unittest import SkipTest
 from .test_case import TestCase
 from infi.unittest.parameters import iterate
-from infi.pyutils.contexts import contextmanager
+from contextlib import contextmanager
 from gitpy import LocalRepository
 from os import curdir, name
 from mock import patch

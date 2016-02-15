@@ -1,6 +1,6 @@
 from .test_case import TestCase
 from infi.unittest.parameters import iterate
-from infi.pyutils.contexts import contextmanager
+from contextlib import contextmanager
 
 class RequirementsTestCase(TestCase):
 
@@ -67,8 +67,26 @@ class RequirementsTestCase(TestCase):
             self.assertIn("setuptool", open("buildout.cfg").read())
             with self.assert_new_commit():
                 self.projector("requirements unfreeze --commit-changes --with-install-requires")
-            self.assertNotIn("[versions]", open("buildout.cfg").read())
+            self.assertIn("[versions]", open("buildout.cfg").read())
             self.assertIn("Flask==0.9", open("buildout.cfg").read())
+            self.assertIn("Flask = 0.9", open("buildout.cfg").read())
+
+    def test_freeze_unfreeze__no_specific_dependencies(self):
+        from os import path
+        with self.temporary_directory_context():
+            self.projector("repository init a.b.c none short long")
+            self.projector("requirements remove infi.traceback --commit-changes --development")
+            self.projector("requirements remove infi.unittest --commit-changes --development")
+            self.projector("requirements remove ipython --commit-changes --development")
+            self.projector("requirements remove nose --commit-changes --development")
+            self.projector("devenv build --no-readline --use-isolated-python")
+            with self.assert_new_commit():
+                self.projector("requirements freeze --with-install-requires --newest --commit-changes")
+            self.assertIn("[versions]", open("buildout.cfg").read())
+            self.assertIn("setuptool", open("buildout.cfg").read())
+            with self.assert_new_commit():
+                self.projector("requirements unfreeze --commit-changes --with-install-requires")
+            self.assertNotIn("[versions]", open("buildout.cfg").read())
 
     def test_freeze_after_freeze(self):
         with self.temporary_directory_context():

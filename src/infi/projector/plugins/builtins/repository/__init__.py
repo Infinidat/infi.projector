@@ -1,5 +1,6 @@
-from infi.pyutils.contexts import contextmanager
+from contextlib import contextmanager
 from infi.projector.plugins import CommandPlugin
+from infi.projector.helper.utils import configparser
 from logging import getLogger
 
 logger = getLogger(__name__)
@@ -41,10 +42,9 @@ def indent(text):
 
 
 def get(original, section, key, default=None):
-    from ConfigParser import NoOptionError
     try:
         return original.get(section, key)
-    except NoOptionError:
+    except configparser.NoOptionError:
         return default
 
 
@@ -98,14 +98,9 @@ class RepositoryPlugin(CommandPlugin):
         repository.init()
         repository.addRemote("origin", self.arguments.get('<origin>'))
 
-    def gitflow_init(self):
-        from gitflow.core import GitFlow
-        gitflow = GitFlow()
-        gitflow.init(force_defaults=True)
-
     def release_initial_version(self):
-        from infi.projector.helper.utils import release_version_with_git_flow
-        release_version_with_git_flow("v0")
+        from infi.projector.helper.utils import release_version_in_git
+        release_version_in_git("v0")
 
     def add_initial_files(self):
         from os.path import basename
@@ -169,11 +164,33 @@ class RepositoryPlugin(CommandPlugin):
         repository = LocalRepository(curdir)
         repository.checkout("develop")
 
+    def init_branches(self):
+        from infi.execute import execute_assert_success
+        from os import curdir
+        from gitpy import LocalRepository
+        repository = LocalRepository(curdir)
+        branches = [branch.name for branch in repository.getBranches()]
+        remotes = repository.getRemotes()
+        remote_branches = []
+        if len(remotes) > 0:
+            remote_branches = [branch.name for branch in remotes[0].getBranches()]
+        if 'master' not in branches:
+            if 'master' in remote_branches:
+                execute_assert_success("git branch --track master origin/master", shell=True)
+            else:
+                execute_assert_success("git symbolic-ref HEAD refs/heads/master", shell=True)
+                execute_assert_success("git commit --allow-empty -m \"Initial commit\"", shell=True)
+        if 'develop' not in branches:
+            if 'develop' in remote_branches:
+                execute_assert_success("git branch --track develop origin/develop", shell=True)
+            else:
+                execute_assert_success("git branch --no-track develop master", shell=True)
+
     def init(self):
         with self._create_subdir_if_necessary():
             self._exit_if_dotgit_exists()
             self.git_init()
-            self.gitflow_init()
+            self.init_branches()
             self.release_initial_version()
             self.git_checkout_develop()
             self.add_initial_files()
@@ -207,7 +224,7 @@ class RepositoryPlugin(CommandPlugin):
             self.git_clone()
             if self.origin_has_develop_branch():
                 self.git_checkout_develop()
-                self.gitflow_init()
+                self.init_branches()
 
     def overwrite_update_files(self):
         from os.path import basename

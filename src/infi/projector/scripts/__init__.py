@@ -1,5 +1,4 @@
 from sys import argv
-#pylint: disable=R0801
 
 def projector(argv=argv[1:]):
     from os import environ

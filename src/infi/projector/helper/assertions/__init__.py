@@ -1,6 +1,5 @@
 from os import path, name, curdir
 from gitpy import LocalRepository
-from infi.pyutils.decorators import wraps
 
 from logging import getLogger
 logger = getLogger(__name__)
@@ -68,7 +67,6 @@ def is_buildout_executable_using_isolated_python():
     return is_executable_using_isolated_python("buildout")
 
 def requires_repository(func):
-    @wraps(func)
     def decorator(*args, **kwargs):
         assert_buildout_configfile_exists()
         assert_git_repository()

@@ -71,7 +71,7 @@ class VersionPlugin(CommandPlugin):
 
     def release(self):
         from infi.projector.helper import assertions
-        from infi.projector.helper.utils import release_version_with_git_flow, git_checkout
+        from infi.projector.helper.utils import release_version_in_git
         version_tag = self.replace_version_tag()
         if not self.arguments.get('--no-fetch', False):
             self.fetch_origin()
@@ -80,19 +80,17 @@ class VersionPlugin(CommandPlugin):
         assertions.assert_develop_and_master_not_behind_origin()
         version_tag_without_v = version_tag.lstrip('v')
         version_tag_with_v = 'v{}'.format(version_tag_without_v)
-        release_version_with_git_flow(version_tag_with_v, self.arguments.get("--keep-leftovers", False))
+        release_version_in_git(version_tag_with_v, self.arguments.get("--keep-leftovers", False))
         self.arguments['<version>'] = version_tag
         push_changes = not self.arguments.get("--no-push-changes", False)
         if push_changes:
             self.push_commits_and_tags()
-        if self.arguments.get('--no-upload', False) or len(self.arguments.get("--pypi-servers")) == 0:
-            git_checkout("develop")
-        else:
+        if not self.arguments.get('--no-upload', False) and len(self.arguments.get("--pypi-servers")) > 0:
             self.upload()
 
     def upload(self):
         from infi.projector.helper.assertions import assert_version_tag_for_upload
-        from infi.projector.helper.utils import git_checkout, get_latest_version
+        from infi.projector.helper.utils import get_latest_version
         version_tag = self.arguments['<version>']
         assert_version_tag_for_upload(version_tag)
         if version_tag == 'current':
@@ -103,21 +101,16 @@ class VersionPlugin(CommandPlugin):
             version_tag_without_v = version_tag.lstrip('v')
             version_to_upload = 'v{}'.format(version_tag_without_v)
         self.build_and_upload_distributions(version_to_upload)
-        git_checkout("develop")
-
-    def get_repository(self):
-        from gitpy import LocalRepository
-        from os import curdir
-        return LocalRepository(curdir)
 
     def push_commits_and_tags(self):
-        repository = self.get_repository()
+        from infi.execute import execute_assert_success
         logger.debug("Pushing changes to origin")
-        repository._executeGitCommandAssertSuccess("git push --all")
-        repository._executeGitCommandAssertSuccess("git push --tags")
+        execute_assert_success("git push --all", shell=True)
+        execute_assert_success("git push --tags", shell=True)
 
     def get_git_describe(self):
-        return self.get_repository()._executeGitCommand("git describe --tags").stdout.read().splitlines()[0]
+        from infi.execute import execute_assert_success
+        return execute_assert_success("git describe --tags", shell=True).get_stdout().splitlines()[0].decode("utf-8")
 
     def build_and_upload_distributions(self, version_tag_with_v):
         from infi.projector.helper.utils import execute_with_buildout, git_checkout
@@ -131,3 +124,5 @@ class VersionPlugin(CommandPlugin):
                 setup_cmd = "setup . register -r {pypi} {distribution} upload -r {pypi}"
                 setup_cmd = setup_cmd.format(pypi=pypi, distribution=distribution)
                 execute_with_buildout(setup_cmd, env=dict(LC_ALL="C"))
+                git_checkout("develop")
+

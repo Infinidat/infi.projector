@@ -1,8 +1,6 @@
 from infi.projector.helper import assertions
 from infi.projector.helper.utils import open_buildout_configfile
 
-#pylint: disable=R0923
-
 def to_dict(iterable):
     from pkg_resources import parse_requirements
     return {item.project_name: item.specs for item in parse_requirements('\n'.join(iterable))}
