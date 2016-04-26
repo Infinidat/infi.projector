@@ -59,7 +59,7 @@ class RequirementsTestCase(TestCase):
             self.projector("requirements remove infi.unittest --commit-changes --development")
             self.projector("requirements remove ipython --commit-changes --development")
             self.projector("requirements remove nose --commit-changes --development")
-            self.projector("devenv build --no-readline --use-isolated-python")
+            self.projector("devenv build --use-isolated-python")
             with self.assert_new_commit():
                 self.projector("requirements freeze --with-install-requires --newest --commit-changes")
             self.assertIn("[versions]", open("buildout.cfg").read())
@@ -79,7 +79,7 @@ class RequirementsTestCase(TestCase):
             self.projector("requirements remove infi.unittest --commit-changes --development")
             self.projector("requirements remove ipython --commit-changes --development")
             self.projector("requirements remove nose --commit-changes --development")
-            self.projector("devenv build --no-readline --use-isolated-python")
+            self.projector("devenv build --use-isolated-python")
             with self.assert_new_commit():
                 self.projector("requirements freeze --with-install-requires --newest --commit-changes")
             self.assertIn("[versions]", open("buildout.cfg").read())
@@ -96,7 +96,7 @@ class RequirementsTestCase(TestCase):
             self.projector("requirements remove infi.unittest --commit-changes --development")
             self.projector("requirements remove ipython --commit-changes --development")
             self.projector("requirements remove nose --commit-changes --development")
-            self.projector("devenv build --no-readline --use-isolated-python")
+            self.projector("devenv build --use-isolated-python")
             self.projector("requirements freeze --with-install-requires --newest --commit-changes")
             self.projector("requirements freeze --with-install-requires --newest")
             self.assertIn("[versions]", open("buildout.cfg").read())
