@@ -61,7 +61,7 @@ def normalize_to_url(option, opt_str, value, parser):
     setattr(parser.values, name, value)
 
 ezsetup_source = 'https://bootstrap.pypa.io/ez_setup.py'
-setuptools_source = "https://pypi.python.org/packages/source/s/setuptools/"
+setuptools_source = "https://pypi.io/packages/source/s/setuptools/"
 pypi_index = "https://pypi.python.org/simple/"
 
 parser = OptionParser(usage=usage)
