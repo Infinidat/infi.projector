@@ -59,7 +59,7 @@ class DevEnvTestCase(TestCase):
         with self.temporary_directory_context():
             self.projector("repository init a.b.c none short long")
             self.projector("devenv relocate --absolute --commit-changes")
-            self.projector("devenv build --use-isolated-python --no-readline")
+            self.projector("devenv build --use-isolated-python")
             self.assertTrue(path.exists(path.join("parts", "python")))
             with open(path.join("bin", "python-script.py" if is_windows() else "python")) as fd:
                 python_content = fd.read()

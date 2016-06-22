@@ -17,7 +17,7 @@ class VersionTestCase(TestCase):
         with self.mock_build_and_upload_distributions():
             with self.temporary_directory_context():
                 self.projector("repository init a.b.c none short long")
-                self.projector("devenv build --no-scripts --no-readline")
+                self.projector("devenv build --no-scripts")
                 self.projector("version release --no-fetch {} --no-push-changes".format(version))
                 self.assert_tag_exists(RELEASE_TAGS.get(version, version))
 
@@ -26,14 +26,14 @@ class VersionTestCase(TestCase):
             with self.temporary_directory_context():
                 mock.side_effect = RuntimeError()
                 self.projector("repository init a.b.c none short long")
-                self.projector("devenv build --no-scripts --no-readline")
+                self.projector("devenv build --no-scripts")
                 self.projector("version release 1.2.3 --no-fetch --no-upload --no-push-changes")
                 self.assert_tag_exists('v1.2.3')
 
     def test_release__not_on_develop_branch(self):
         with self.temporary_directory_context():
             self.projector("repository init a.b.c none short long")
-            self.projector("devenv build --no-scripts --no-readline")
+            self.projector("devenv build --no-scripts")
             repository = LocalRepository(curdir)
             repository.checkout("master")
             with self.assertRaises(SystemExit):
@@ -42,7 +42,7 @@ class VersionTestCase(TestCase):
     def test_release__master_diverged(self):
         with self.temporary_directory_context():
             self.projector("repository init a.b.c none short long")
-            self.projector("devenv build --no-scripts --no-readline")
+            self.projector("devenv build --no-scripts")
             repository = LocalRepository(curdir)
             repository.checkout("master")
             repository.commit("empty commit", allowEmpty=True)
@@ -58,12 +58,12 @@ class VersionTestCase(TestCase):
             raise SkipTest("skipping test on windows")
         with self.temporary_directory_context():
             self.projector("repository init a.b.c none short long")
-            self.projector("devenv build --no-scripts --no-readline")
+            self.projector("devenv build --no-scripts")
             origin = abspath(curdir)
             with self.temporary_directory_context():
                 self.projector("repository clone {}".format(origin))
                 with chdir(basename(origin)):
-                    self.projector("devenv build --no-scripts --no-readline")
+                    self.projector("devenv build --no-scripts")
                     with chdir(origin):
                         repository = LocalRepository(curdir)
                         repository.checkout("master")
@@ -77,12 +77,12 @@ class VersionTestCase(TestCase):
         from infi.projector.helper.utils import chdir
         with self.temporary_directory_context():
             self.projector("repository init a.b.c none short long")
-            self.projector("devenv build --no-scripts --no-readline")
+            self.projector("devenv build --no-scripts")
             origin = abspath(curdir)
             with self.temporary_directory_context():
                 self.projector("repository clone {}".format(origin))
                 with chdir(basename(origin)):
-                    self.projector("devenv build --no-scripts --no-readline")
+                    self.projector("devenv build --no-scripts")
                     with chdir(origin):
                         repository = LocalRepository(curdir)
                         repository.checkout("master")
@@ -127,14 +127,14 @@ class VersionTestCase(TestCase):
         with self.mock_build_and_upload_distributions():
             with self.temporary_directory_context() as origin_location:
                 self.projector("repository init a.b.c none short long")
-                self.projector("devenv build --no-scripts --no-readline")
+                self.projector("devenv build --no-scripts")
                 self.projector("version release minor --no-fetch --pypi-servers= --no-push-changes")
                 git_config = path.join(".git", "config")
                 LocalRepository(curdir)._executeGitCommandAssertSuccess("git config -f {} receive.denyCurrentBranch ignore".format(git_config))
                 with self.temporary_directory_context():
                     self.projector("repository clone {}".format(origin_location))
                     with chdir(path.basename(origin_location)):
-                        self.projector("devenv build --no-scripts --no-readline")
+                        self.projector("devenv build --no-scripts")
                         self.projector("version release minor --pypi-servers=")
 
     def test_reset_minor_when_releasing_major(self):

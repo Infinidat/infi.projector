@@ -8,7 +8,7 @@ logger = getLogger(__name__)
 
 USAGE = """
 Usage:
-    projector devenv build [--clean] [--force-bootstrap] [--no-submodules] [--no-setup-py] [--no-scripts] [--no-readline] [--use-isolated-python] [[--newest] | [--offline] | [--prefer-final]]
+    projector devenv build [--clean] [--force-bootstrap] [--no-submodules] [--no-setup-py] [--no-scripts] [--use-isolated-python] [[--newest] | [--offline] | [--prefer-final]]
     projector devenv relocate ([--absolute] | [--relative]) [--commit-changes]
     projector devenv pack
 
@@ -20,7 +20,6 @@ Options:
     --force-bootstrap       run bootstrap.py even if the buildout script already exists
     --no-submodules         do not clone git sub-modules defined in buildout.cfg
     --no-scripts            do not install the dependent packages, nor create the console scripts. just create setup.py
-    --no-readline           do not install [py]readline support (where applicable)
     --use-isolated-python   do not use global system python in console scripts, use Infinidat's isolated python builds
     --newest                always check for new package version on PyPI
     --offline               install packages only from download cache (no internet connection)
@@ -156,31 +155,6 @@ class DevEnvPlugin(CommandPlugin):
         with utils.buildout_parameters_context(parameters):
             yield
 
-    def get_readline_module(self):
-        from platform import system
-        modules = {"Darwin": 'readline',
-                   "Windows": 'pyreadline'}
-        return modules.get(system())
-
-    def is_module_installed(self, module):
-        from infi.execute import execute_assert_success, ExecutionError
-        try:
-            execute_assert_success("bin/python -c import {}".format(module).split())
-        except (OSError, ExecutionError):  # pragma: no cover
-            return False
-        return True
-
-    def install_readline(self):
-        from infi.execute import execute_assert_success, ExecutionError
-        module = self.get_readline_module()
-        if not module or self.is_module_installed(module):  # pragma: no cover
-            return
-        try:
-            execute_assert_success("bin/easy_install {}".format(module).split())
-        except (OSError, ExecutionError):  # pragma: no cover
-            logger.warn("easy_install script not generated (perhaps not a requirement). "
-                        "Not installing readline support")
-
     def _remove_setuptools_egg_link(self):
         # HOSTDEV-1130
         # https://bugs.launchpad.net/zc.buildout/+bug/1210996
@@ -219,8 +193,6 @@ class DevEnvPlugin(CommandPlugin):
                 self.create_setup_py()
             if not self.arguments.get("--no-scripts", False):
                 self.create_scripts()
-                if not self.arguments.get("--no-readline", False):
-                    self.install_readline()
 
     def relocate(self):
         relative_paths = self.arguments.get("--relative", False)
