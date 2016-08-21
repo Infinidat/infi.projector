@@ -167,7 +167,7 @@ except ImportError:
     # download_file_wget.viable = has_wget
     # all of these need to change
     ez_setup_source = urlopen(options.setup_source).read()
-    ez_setup_source_fixed = ez_setup_source.replace('.viable = h', '.viable = lambda: False #')
+    ez_setup_source_fixed = ez_setup_source.replace(b'.viable = h', b'.viable = lambda: False #')
     exec(ez_setup_source_fixed, ez)
     # wheh running python -S bootstap.py, when setuptools is in site-packages
     # but not included in sys.path due to the -S flag,
