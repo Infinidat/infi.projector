@@ -14,8 +14,8 @@ class PrettyExecutionError(Exception):
     def __init__(self, result):
         super(PrettyExecutionError, self).__init__("Execution of %r failed!\nresult=%s\nstdout=%s\nstderr=%s" % (result._command,
                                                                                                                  result.get_returncode(),
-                                                                                                                 result.get_stdout(),
-                                                                                                                 result.get_stderr()))
+                                                                                                                 result.get_stdout().decode("ascii"),
+                                                                                                                 result.get_stderr().decode("ascii")))
         self.result = result
 
 def _chdir_and_log(path):

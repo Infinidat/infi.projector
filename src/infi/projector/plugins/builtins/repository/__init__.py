@@ -114,7 +114,7 @@ class RepositoryPlugin(CommandPlugin):
         project_name = self.get_project_name()
         with open_buildout_configfile(write_on_exit=True) as buildout:
             buildout.set('project', 'name', project_name)
-            buildout.set('project', 'namespace_packages', get_package_namespace(project_name))
+            buildout.set('project', 'namespace_packages', str(get_package_namespace(project_name)))
             buildout.set('project', 'version_file',
                              '/'.join(['src'] + project_name.split('.') + ['__version__.py']))
             buildout.set('project', 'description', self.arguments.get("<short_description>"))
