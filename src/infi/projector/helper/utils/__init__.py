@@ -1,5 +1,6 @@
 from contextlib import contextmanager
 from logging import getLogger
+import sys
 try:
     import configparser
 except ImportError:     # Python 2
@@ -14,8 +15,8 @@ class PrettyExecutionError(Exception):
     def __init__(self, result):
         super(PrettyExecutionError, self).__init__("Execution of %r failed!\nresult=%s\nstdout=%s\nstderr=%s" % (result._command,
                                                                                                                  result.get_returncode(),
-                                                                                                                 result.get_stdout().decode("ascii"),
-                                                                                                                 result.get_stderr().decode("ascii")))
+                                                                                                                 result.get_stdout().decode(sys.stdout.encoding),
+                                                                                                                 result.get_stderr().decode(sys.stderr.encoding)))
         self.result = result
 
 def _chdir_and_log(path):
