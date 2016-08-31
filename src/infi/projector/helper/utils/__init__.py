@@ -14,10 +14,15 @@ class PrettyExecutionError(Exception):
     # infi.execute.ExecutionError does print stdout and stderr well, and this is a must when running buildout
     def __init__(self, result):
         encoding = getattr(sys.stdout, 'encoding', 'utf-8')
-        super(PrettyExecutionError, self).__init__("Execution of %r failed!\nresult=%s\nstdout=%s\nstderr=%s" % (result._command,
-                                                                                                                 result.get_returncode(),
-                                                                                                                 result.get_stdout().decode(encoding),
-                                                                                                                 result.get_stderr().decode(encoding)))
+        stdout = result.get_stdout()
+        if stdout is not None:
+            stdout = stdout.decode(encoding)
+        stderr = result.get_stderr()
+        if stderr is not None:
+            stderr = stderr.decode(encoding)
+        msg = "Execution of %r failed!\nresult=%s\nstdout=%s\nstderr=%s"
+        msg = msg % (result._command, result.get_returncode(), stdout, stderr)
+        super(PrettyExecutionError, self).__init__(msg)
         self.result = result
 
 def _chdir_and_log(path):
