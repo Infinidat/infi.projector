@@ -13,7 +13,7 @@ BUILDOUT_PARAMETERS = []
 class PrettyExecutionError(Exception):
     # infi.execute.ExecutionError does print stdout and stderr well, and this is a must when running buildout
     def __init__(self, result):
-        encoding = getattr(sys.stdout, 'encoding', 'utf-8')
+        encoding = getattr(sys.stdout, 'encoding', None) or 'utf-8'
         stdout = result.get_stdout()
         if stdout is not None:
             stdout = stdout.decode(encoding)
