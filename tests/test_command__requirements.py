@@ -59,14 +59,14 @@ class RequirementsTestCase(TestCase):
             self.projector("requirements remove infi.unittest --commit-changes --development")
             self.projector("requirements remove ipython --commit-changes --development")
             self.projector("requirements remove nose --commit-changes --development")
-            self.projector("devenv build --use-isolated-python")
+            self.projector("devenv build --use-isolated-python --prefer-final")
             with self.assert_new_commit():
-                self.projector("requirements freeze --with-install-requires --newest --commit-changes")
+                self.projector("requirements freeze --with-install-requires --commit-changes --strip-suffix-from-post-releases")
             self.assertIn("[versions]", open("buildout.cfg").read())
             self.assertIn("Flask==0.9", open("buildout.cfg").read())
             self.assertIn("setuptool", open("buildout.cfg").read())
             with self.assert_new_commit():
-                self.projector("requirements unfreeze --commit-changes --with-install-requires")
+                self.projector("requirements unfreeze --commit-changes --with-install-requires --strip-suffix-from-post-releases")
             self.assertIn("[versions]", open("buildout.cfg").read())
             self.assertIn("Flask==0.9", open("buildout.cfg").read())
             self.assertIn("Flask = 0.9", open("buildout.cfg").read())
