@@ -66,7 +66,7 @@ class RequirementsTestCase(TestCase):
             self.assertIn("Flask==0.9", open("buildout.cfg").read())
             self.assertIn("setuptool", open("buildout.cfg").read())
             with self.assert_new_commit():
-                self.projector("requirements unfreeze --commit-changes --with-install-requires --strip-suffix-from-post-releases")
+                self.projector("requirements unfreeze --commit-changes --with-install-requires")
             self.assertIn("[versions]", open("buildout.cfg").read())
             self.assertIn("Flask==0.9", open("buildout.cfg").read())
             self.assertIn("Flask = 0.9", open("buildout.cfg").read())
