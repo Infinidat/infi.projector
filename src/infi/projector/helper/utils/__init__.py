@@ -1,5 +1,6 @@
 from contextlib import contextmanager
 from logging import getLogger
+import sys
 try:
     import configparser
 except ImportError:     # Python 2
@@ -12,10 +13,16 @@ BUILDOUT_PARAMETERS = []
 class PrettyExecutionError(Exception):
     # infi.execute.ExecutionError does print stdout and stderr well, and this is a must when running buildout
     def __init__(self, result):
-        super(PrettyExecutionError, self).__init__("Execution of %r failed!\nresult=%s\nstdout=%s\nstderr=%s" % (result._command,
-                                                                                                                 result.get_returncode(),
-                                                                                                                 result.get_stdout(),
-                                                                                                                 result.get_stderr()))
+        encoding = getattr(sys.stdout, 'encoding', None) or 'utf-8'
+        stdout = result.get_stdout()
+        if stdout is not None:
+            stdout = stdout.decode(encoding)
+        stderr = result.get_stderr()
+        if stderr is not None:
+            stderr = stderr.decode(encoding)
+        msg = "Execution of %r failed!\nresult=%s\nstdout=%s\nstderr=%s"
+        msg = msg % (result._command, result.get_returncode(), stdout, stderr)
+        super(PrettyExecutionError, self).__init__(msg)
         self.result = result
 
 def _chdir_and_log(path):
@@ -88,7 +95,7 @@ def execute_with_python(commandline_or_args):
     except PrettyExecutionError:
         if '-S' not in executable:
             raise
-        logger.warning("Command falied with -S, trying without")
+        logger.warning("Command failed with -S, trying without")
         executable.remove('-S')
         execute_assert_success(executable + args)
 

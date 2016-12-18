@@ -87,11 +87,10 @@ def parse_configfile_value(value):
         return value
 
 def merge_commandline_arguments_from_configfile(arguments, configfile_path):
-    import ConfigParser
     try:
         configuration = parse_configfile(configfile_path)
         logger.debug("Failed to parse {}".format(configfile_path))
-    except ConfigParser.Error:
+    except confirparser.Error:
         return
     if not configuration.has_section("commandline-arguments"):
         logger.debug("File {} has no commandline-arguments".format(configfile_path))
