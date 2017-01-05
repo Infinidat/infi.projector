@@ -50,15 +50,35 @@ class RequirementsTestCase(TestCase):
         yield
         self.assertNotEquals(head, repository.getHead().hash)
 
+    def _clear_development_requirements(self):
+        self.projector("requirements remove infi.traceback --commit-changes --development")
+        self.projector("requirements remove infi.unittest --commit-changes --development")
+        self.projector("requirements remove ipython --commit-changes --development")
+        self.projector("requirements remove nose --commit-changes --development")
+
+    def test_freeze_unfreeze_case_insensitive(self):
+        from os import path
+        with self.temporary_directory_context():
+            self.projector("repository init a.b.c none short long")
+            self.projector("requirements add PrettyTable --commit-changes")
+            self._clear_development_requirements()
+            self.projector("devenv build --use-isolated-python --prefer-final")
+            with self.assert_new_commit():
+                self.projector("requirements freeze --with-install-requires --commit-changes --strip-suffix-from-post-releases")
+            self.assertIn("prettytable =", open("buildout.cfg").read())
+            self.assertIn("PrettyTable>=", open("buildout.cfg").read())
+            with self.assert_new_commit():
+                self.projector("requirements unfreeze --commit-changes --with-install-requires")
+            self.assertNotIn("prettytable =", open("buildout.cfg").read())
+            self.assertNotIn("PrettyTable>=", open("buildout.cfg").read())
+            self.assertIn("PrettyTable", open("buildout.cfg").read())
+
     def test_freeze_unfreeze(self):
         from os import path
         with self.temporary_directory_context():
             self.projector("repository init a.b.c none short long")
             self.projector("requirements add Flask==0.9 --commit-changes")
-            self.projector("requirements remove infi.traceback --commit-changes --development")
-            self.projector("requirements remove infi.unittest --commit-changes --development")
-            self.projector("requirements remove ipython --commit-changes --development")
-            self.projector("requirements remove nose --commit-changes --development")
+            self._clear_development_requirements()
             self.projector("devenv build --use-isolated-python --prefer-final")
             with self.assert_new_commit():
                 self.projector("requirements freeze --with-install-requires --commit-changes --strip-suffix-from-post-releases")
