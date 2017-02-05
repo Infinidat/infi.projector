@@ -97,7 +97,7 @@ def get_python_interpreter():
 def get_executable(filename):
     import os
     dirpath, basename = os.path.split(sys.executable)
-    isolated_python_bin = os.path.join('parts', 'python', 'bin')
+    isolated_python_bin = os.path.join('parts', 'python', 'Scripts' if os.name == 'nt' else 'bin')
     filename_with_ext = (filename + '.exe') if basename.endswith('.exe') else filename
     # if we are under isolated python, the scripts will
     bin_dir = dirpath.replace(isolated_python_bin, 'bin') if \
