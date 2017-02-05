@@ -97,7 +97,13 @@ def get_python_interpreter():
 def get_executable(filename):
     import os
     dirpath, basename = os.path.split(sys.executable)
-    return os.path.join(dirpath, (filename + '.exe') if basename.endswith('.exe') else filename)
+    isolated_python_bin = os.path.join('parts', 'python', 'bin')
+    filename_with_ext = (filename + '.exe') if basename.endswith('.exe') else filename
+    # if we are under isolated python, the scripts will
+    bin_dir = dirpath.replace(isolated_python_bin, '').rstrip(os.path.sep) if \
+              dirpath.endswith(isolated_python_bin) else dirpath
+    return os.path.join(bin_dir, filename_with_ext)
+
 
 
 def execute_with_python(commandline_or_args):
