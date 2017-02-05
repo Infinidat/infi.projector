@@ -178,12 +178,3 @@ The easiest way to checkout the code is by using projector itself:
 
 There are two alternatives.
 
-The first one using the environment python and requires you to install dependencies (it'll tell you what they are):
-
-    python src/infi/projector/first_run/with_environment_python.py
-
-The second does not modify the environment python, it uses only the buildout environment, and, it can be used with our isolated python build:
-
-    python src/infi/projector/first_run/without_environment_python.py [--use-isolated-python]
-
-

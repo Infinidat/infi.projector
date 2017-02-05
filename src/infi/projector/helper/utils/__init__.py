@@ -83,11 +83,29 @@ def _get_executable_from_shebang_line():  # pragma: no cover
     executable_path = path.normpath(shebang_line[2:])
     return (executable_path + '.exe') if not executable_path.endswith('.exe') else executable_path
 
+
+def get_python_interpreter():
+    import os
+    import sys
+    from ..assertions import is_windows
+    if is_windows():
+        return _get_executable_from_shebang_line()
+    else:
+        return os.path.join(sys.real_prefix, 'bin', 'python') if is_running_inside_virtualenv() else sys.executable
+
+
+def get_executable(filename):
+    import os
+    dirpath, basename = os.path.split(sys.executable)
+    return os.path.join(dirpath, (filename + '.exe') if basename.endswith('.exe') else filename)
+
+
 def execute_with_python(commandline_or_args):
+    import os
     import sys
     from ..assertions import is_windows
     args = parse_args(commandline_or_args)
-    executable = [sys.executable if not is_windows() else _get_executable_from_shebang_line()]
+    executable = [get_python_interpreter()]
     if not is_running_inside_virtualenv():
         executable.append('-S')
     try:
@@ -99,11 +117,18 @@ def execute_with_python(commandline_or_args):
         executable.remove('-S')
         execute_assert_success(executable + args)
 
+
+def get_isolated_executable(filename):
+    import os
+    from ..assertions import is_windows
+    return os.path.join('parts', 'python', 'bin', '{}{}'.format(filename, '.exe' if is_windows() else ''))
+
+
 def execute_with_isolated_python(commandline_or_args):
     import os
     from ..assertions import is_windows
     args = parse_args(commandline_or_args)
-    executable = [os.path.join('parts', 'python', 'bin', 'python{}'.format('.exe' if is_windows() else ''))]
+    executable = [get_isolated_executable('python')]
     with open_buildout_configfile() as buildout:
         if buildout.get('buildout', 'relative-paths') in ['True', 'true']:
             [executable] = os.path.abspath(executable[0])

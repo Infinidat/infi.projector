@@ -141,7 +141,7 @@ class RepositoryPlugin(CommandPlugin):
         project_name = self.get_project_name()
         with open('.gitignore', 'a') as fd:
             fd.write('\n' + '/'.join(['src'] + project_name.split('.') + ['__version__.py']) + '\n')
-            fd.write("bootstrap.py\n")
+            fd.write("get-pip.py\n")
 
     def safe_append_to_gitignore(self, entry):
         with open('.gitignore') as fd:
@@ -274,7 +274,7 @@ class RepositoryPlugin(CommandPlugin):
                                    for key in ATTRIBURES_BY_SECTION[section]}
             logger.info("Writing skeleton files")
             self.overwrite_update_files()
-            self.safe_append_to_gitignore("bootstrap.py")
+            self.safe_append_to_gitignore("get-pip.py")
             if self.arguments.get("--remove-deprecated-files", False):
                 logger.info("Removing deprecated files")
                 self.remove_deprecated_files()
