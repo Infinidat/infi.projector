@@ -99,9 +99,14 @@ def get_executable(filename):
     dirpath, basename = os.path.split(get_python_interpreter())
     isolated_python_bin = os.path.join('parts', 'python', 'bin')
     filename_with_ext = (filename + '.exe') if basename.endswith('.exe') else filename
-    # if we are under isolated python, the scripts will
+    # if we are under a buildout project, the scripts won't be inside the isolated python
     bin_dir = dirpath.replace(isolated_python_bin, 'bin') if \
               dirpath.endswith(isolated_python_bin) else dirpath
+    if os.name == 'nt':
+        # if we are write_on_exit windows, the console scripts are under Scripts
+        for base_dir in [bin_dir, os.path.abspath(os.path.join(bin_dir, os.pardir))]:
+            if os.path.exists(os.path.join(base_dir, 'Scripts')):
+                bin_dir = os.path.join(base_dir, 'Scripts')
     return os.path.join(bin_dir, filename_with_ext)
 
 
