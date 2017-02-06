@@ -68,16 +68,16 @@ class DevEnvPlugin(CommandPlugin):
         if not buildout_executable_exists or self.arguments.get("--force-bootstrap", False) or self.arguments.get("--newest", False):
             try:
                 utils.execute_assert_success([utils.get_executable('buildout'), 'bootstrap'])
-            except OSError:
+            except OSError:  # workaround for OSX
                 utils.execute_assert_success(['buildout', 'bootstrap'])
 
-    def install_sections_by_recipe(self, recipe):
+    def install_sections_by_recipe(self, recipe, stripped=True):
         with utils.open_buildout_configfile() as buildout:
             sections_to_install = [section for section in buildout.sections()
                                    if buildout.has_option(section, "recipe") and
                                       buildout.get(section, "recipe").startswith(recipe)]
         if sections_to_install:
-            utils.execute_with_buildout("install {}".format(' '.join(sections_to_install)))
+            utils.execute_with_buildout("install {}".format(' '.join(sections_to_install)), stripped=stripped)
 
     def submodule_update(self):
         with utils.buildout_parameters_context(['buildout:develop=']):
@@ -208,4 +208,5 @@ class DevEnvPlugin(CommandPlugin):
 
     def pack(self):
         assertions.assert_isolated_python_exists()
-        self.install_sections_by_recipe("infi.recipe.application_packager")
+
+        self.install_sections_by_recipe("infi.recipe.application_packager", stripped=False)

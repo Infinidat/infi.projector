@@ -110,7 +110,6 @@ def get_executable(filename):
     return os.path.join(bin_dir, filename_with_ext)
 
 
-
 def execute_with_python(commandline_or_args):
     import os
     import sys
@@ -147,7 +146,7 @@ def execute_with_isolated_python(commandline_or_args):
             [executable] = os.path.abspath(executable[0])
     execute_assert_success(executable + args)
 
-def execute_with_buildout(commandline_or_args, env=None):
+def execute_with_buildout(commandline_or_args, env=None, stripped=True):
     from os import name, path, environ
     _env = environ.copy()
     if env:
@@ -156,7 +155,7 @@ def execute_with_buildout(commandline_or_args, env=None):
     python = path.join('bin', 'python{}'.format('.exe' if name == 'nt' else ''))
     buildout = path.join('bin', 'buildout{}'.format('.exe' if name == 'nt' else ''))
     buildout_script = path.join('bin', 'buildout{}'.format('-script.py' if name == 'nt' else ''))
-    if path.exists(python):
+    if path.exists(python) and not stripped:
         execute_assert_success([python, buildout_script] + BUILDOUT_PARAMETERS + args, env=_env)
     else:
         execute_assert_success([buildout] + BUILDOUT_PARAMETERS + args, env=_env)
