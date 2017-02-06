@@ -96,12 +96,14 @@ class DevEnvTestCase(TestCase):
             self.assert_shebang_line_in_nosetests_script_uses_isolated_python()
 
     def assert_specific_setuptools_version_is_being_used(self, setuptools_version):
-        executable = path.join("parts", "python", "bin", "easy_install")
+        import os
+        executable = path.join("parts", "python", "Scripts" if os.name == 'nt' else "bin", "easy_install")
         output = self.execute_assert_success([executable, '--version']).get_stdout()
         self.assertIn('setuptools {} '.format(setuptools_version), output)
 
     def assert_specific_zc_buildout_version_is_being_used(self, zc_buildout_version):
-        executable = path.join("parts", "python", "bin", "buildout")
+        import os
+        executable = path.join("parts", "python", "Scripts" if os.name == 'nt' else "bin", "buildout")
         output = self.execute_assert_success([executable, '--version']).get_stdout()
         self.assertEquals('buildout version {}'.format(zc_buildout_version), output.strip())
 
