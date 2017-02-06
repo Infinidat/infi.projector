@@ -132,7 +132,9 @@ def execute_with_python(commandline_or_args):
 def get_isolated_executable(filename):
     import os
     from ..assertions import is_windows
-    return os.path.join('parts', 'python', 'bin', '{}{}'.format(filename, '.exe' if is_windows() else ''))
+    return os.path.join('parts', 'python',
+                        'Scripts' in is_windows() and 'python' not in filename else 'bin',
+                        '{}{}'.format(filename, '.exe' if is_windows() else ''))
 
 
 def execute_with_isolated_python(commandline_or_args):
