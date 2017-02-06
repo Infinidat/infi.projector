@@ -40,12 +40,6 @@ class DevEnvTestCase(TestCase):
             else:
                 self.projector("devenv pack")
 
-    def test_build__no_bootstrap(self):
-        with self.temporary_directory_context():
-            self.projector("repository init a.b.c none short long")
-            remove("bootstrap.py")
-            self.projector("devenv build --clean")
-
     def test_build_after_init__use_isolated_python(self):
         with self.temporary_directory_context():
             self.projector("repository init a.b.c none short long")
