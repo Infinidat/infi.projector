@@ -1,5 +1,5 @@
 
-FILENAMES = [".gitignore", "README.md", "bootstrap.py", "buildout.cfg", "setup.in"]
+FILENAMES = [".gitignore", "README.md", "get-pip.py", "buildout.cfg", "setup.in"]
 FILENAMES_TO_UPDATE = ["bootstrap.py", "buildout.cfg", "setup.in"]
 
 def get_files():
