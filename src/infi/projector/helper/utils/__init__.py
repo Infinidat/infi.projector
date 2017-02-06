@@ -57,7 +57,7 @@ def open_buildout_configfile(filepath="buildout.cfg", write_on_exit=False):
 
 def is_running_inside_virtualenv():
     import sys
-    return hasattr(sys, 'real_prefix')
+    return isinstance(getattr(sys, 'real_prefix', None), basestring)
 
 def parse_args(commandline_or_args):
     return commandline_or_args if isinstance(commandline_or_args, list) else commandline_or_args.split()
