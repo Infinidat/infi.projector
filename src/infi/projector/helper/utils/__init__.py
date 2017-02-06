@@ -133,7 +133,7 @@ def get_isolated_executable(filename):
     import os
     from ..assertions import is_windows
     return os.path.join('parts', 'python',
-                        'Scripts' in is_windows() and 'python' not in filename else 'bin',
+                        'Scripts' if is_windows() and 'python' not in filename else 'bin',
                         '{}{}'.format(filename, '.exe' if is_windows() else ''))
 
 
