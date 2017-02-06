@@ -153,9 +153,13 @@ def execute_with_buildout(commandline_or_args, env=None):
     if env:
         _env.update(env)
     args = parse_args(commandline_or_args)
-    execute_assert_success([path.join('bin', 'python{}'.format('.exe' if name == 'nt' else '')),
-                            path.join('bin', 'buildout{}'.format('-script.py' if name == 'nt' else ''))] +
-                            BUILDOUT_PARAMETERS + args, env=_env)
+    python = path.join('bin', 'python{}'.format('.exe' if name == 'nt' else ''))
+    buildout = path.join('bin', 'buildout{}'.format('.exe' if name == 'nt' else ''))
+    buildout_script = path.join('bin', 'buildout{}'.format('-script.py' if name == 'nt' else ''))
+    if path.exists(python):
+        execute_assert_success([python, buildout_script] + BUILDOUT_PARAMETERS + args, env=_env)
+    else:
+        execute_assert_success([buildout] + BUILDOUT_PARAMETERS + args, env=_env)
 
 @contextmanager
 def buildout_parameters_context(parameters):
