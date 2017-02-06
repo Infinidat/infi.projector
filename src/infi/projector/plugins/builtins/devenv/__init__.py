@@ -66,7 +66,10 @@ class DevEnvPlugin(CommandPlugin):
         from infi.projector.plugins.builtins.repository import skeleton
         buildout_executable_exists = assertions.is_executable_exists(join("bin", "buildout"))
         if not buildout_executable_exists or self.arguments.get("--force-bootstrap", False) or self.arguments.get("--newest", False):
-            utils.execute_assert_success([utils.get_executable('buildout'), 'bootstrap'])
+            try:
+                utils.execute_assert_success([utils.get_executable('buildout'), 'bootstrap'])
+            except OSError:
+                utils.execute_assert_success(['buildout', 'bootstrap'])
 
     def install_sections_by_recipe(self, recipe):
         with utils.open_buildout_configfile() as buildout:
