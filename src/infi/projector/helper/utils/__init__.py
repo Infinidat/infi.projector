@@ -102,7 +102,7 @@ def get_executable(filename):
     # if we are under a buildout project, the scripts won't be inside the isolated python
     bin_dir = dirpath.replace(isolated_python_bin, 'bin') if \
               dirpath.endswith(isolated_python_bin) else dirpath
-    if os.name == 'nt':
+    if os.name == 'nt' and 'python' not in filename:
         # if we are write_on_exit windows, the console scripts are under Scripts
         for base_dir in [bin_dir, os.path.abspath(os.path.join(bin_dir, os.pardir))]:
             if os.path.exists(os.path.join(base_dir, 'Scripts')):
