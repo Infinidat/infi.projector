@@ -167,10 +167,13 @@ class DevEnvPlugin(CommandPlugin):
                 else:
                     packages += [package]
 
-        utils.execute_assert_success([utils.get_isolated_executable('python'), 'get-pip.py'] + packages)
-        utils.execute_assert_success([utils.get_isolated_executable('pip'), 'install', '--download', cache_dist] + packages)
+        env = environ.copy()
+        env['PYTHONPATH'] = ''
+        utils.execute_assert_success([utils.get_isolated_executable('python'), 'get-pip.py'] + packages, env=env)
+        utils.execute_assert_success([utils.get_isolated_executable('pip'), 'install', '--download', cache_dist] + packages, env=env)
 
     def install_isolated_python_if_necessary(self):
+        from os import environ
         if not self.arguments.get("--use-isolated-python", False):
             return
         self._remove_setuptools_egg_link()
@@ -179,7 +182,9 @@ class DevEnvPlugin(CommandPlugin):
                 utils.execute_with_buildout("install {}".format(self.get_isolated_python_section_name()))
         self._get_pip()
         self._install_setuptools_and_zc_buildout()
-        utils.execute_assert_success([utils.get_isolated_executable('buildout'), 'bootstrap'])
+        env = environ.copy()
+        env['PYTHONPATH'] = ''
+        utils.execute_assert_success([utils.get_isolated_executable('buildout'), 'bootstrap'], env=env)
 
     def build(self):
         if self.arguments.get("--clean", False):
