@@ -100,7 +100,7 @@ class RequirementsPlugin(CommandPlugin):
                     logger.error(msg.format(formatted_post_releases))
                     raise SystemExit(1)
             with open(tempfile, 'w') as fd:
-                fd.write("[versions]\n" + content)
+                fd.write("[versions]\n" + "\n".join(set(content.splitlines())))
             freeze_versions(tempfile, self.arguments.get("--with-install-requires", False))
         if self.arguments.get("--commit-changes", False):
             repository = LocalRepository(curdir)
