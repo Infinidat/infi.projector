@@ -17,7 +17,7 @@ Options:
     devenv relocate         use this command to switch from relative and absolute paths in the console scripts
     devenv pack             create a package, e.g. deb/rpm/msi
     --clean                 clean build-related files and directories before building
-    --force-bootstrap       run bootstrap.py even if the buildout script already exists
+    --force-bootstrap       run buildout bootsrap even if the buildout script already exists
     --no-submodules         do not clone git sub-modules defined in buildout.cfg
     --no-scripts            do not install the dependent packages, nor create the console scripts. just create setup.py
     --use-isolated-python   do not use global system python in console scripts, use Infinidat's isolated python builds
@@ -60,52 +60,24 @@ class DevEnvPlugin(CommandPlugin):
         except (configparser.NoSectionError, configparser.NoOptionError):
             return "https://pypi.python.org/simple"
 
-    def _get_bootstrap_command(self):
-        from os.path import exists
-        from os import environ
-        if not exists("bootstrap.py"):
-            logger.error("bootsrap.py does not exist")
-            raise SystemExit(1)
-
-        cmd = "bootstrap.py"
-        additional_optional_args = {"PROJECTOR_BOOTSTRAP_DOWNLOAD_BASE": "--download-base",
-                                    "PROJECTOR_BOOTSTRAP_SETUP_SOURCE": "--setup-source",
-                                    "PROJECTOR_BOOTSTRAP_INDEX_URL": "--index-url",
-                                    }
-        for key, cmd_option in additional_optional_args.items():
-            option_value = environ.get(key, None)
-            if option_value:
-                cmd += ' {}={}'.format(cmd_option, option_value)
-        if not environ.get("PROJECTOR_BOOTSTRAP_INDEX_URL", None):
-            # we want to extract the index-url from pydistutils.cfg
-            cmd += ' --index-url={}'.format(self._get_pypi_index_url())
-        # in case dependencies are frozen, we need to use the frozen version of setuptools
-        with utils.open_buildout_configfile() as buildout:
-            if buildout.has_option("versions", "setuptools"):
-                cmd += ' --setuptools-version={}'.format(buildout.get("versions", "setuptools"))
-            if buildout.has_option("versions", "zc.buildout"):
-                cmd += ' --version={}'.format(buildout.get("versions", "zc.buildout"))
-        return cmd
-
     def bootstrap_if_necessary(self):
         from os.path import join
         from pkg_resources import resource_filename
         from infi.projector.plugins.builtins.repository import skeleton
         buildout_executable_exists = assertions.is_executable_exists(join("bin", "buildout"))
-        bootstrap_py = resource_filename(skeleton.__name__, "bootstrap.py")
-        with open("bootstrap.py", "w") as dst:
-            with open(bootstrap_py) as src:
-                dst.write(src.read())
         if not buildout_executable_exists or self.arguments.get("--force-bootstrap", False) or self.arguments.get("--newest", False):
-            utils.execute_with_python(self._get_bootstrap_command())
+            try:
+                utils.execute_assert_success([utils.get_executable('buildout'), 'bootstrap'])
+            except OSError:  # workaround for OSX
+                utils.execute_assert_success(['buildout', 'bootstrap'])
 
-    def install_sections_by_recipe(self, recipe):
+    def install_sections_by_recipe(self, recipe, stripped=True):
         with utils.open_buildout_configfile() as buildout:
             sections_to_install = [section for section in buildout.sections()
                                    if buildout.has_option(section, "recipe") and
                                       buildout.get(section, "recipe").startswith(recipe)]
         if sections_to_install:
-            utils.execute_with_buildout("install {}".format(' '.join(sections_to_install)))
+            utils.execute_with_buildout("install {}".format(' '.join(sections_to_install)), stripped=stripped)
 
     def submodule_update(self):
         with utils.buildout_parameters_context(['buildout:develop=']):
@@ -168,15 +140,51 @@ class DevEnvPlugin(CommandPlugin):
             if os.path.exists(setuptools_egg_link):
                 os.remove(setuptools_egg_link)
 
+    def _get_pip(self):
+        from pkg_resources import resource_filename
+        from infi.projector.plugins.builtins.repository import skeleton
+        get_pip_py = resource_filename(skeleton.__name__, "get-pip.py")
+        with open("get-pip.py", "w") as dst:
+            with open(get_pip_py) as src:
+                dst.write(src.read())
+
+    def _install_setuptools_and_zc_buildout(self):
+        from os.path import join, exists
+        from os import environ
+
+        with utils.open_buildout_configfile() as buildout:
+            cachedir = buildout.get("buildout", "download-cache")
+        cache_dist = join(cachedir, "dist")
+
+        cmd = []
+        packages = []
+
+        # in case dependencies are frozen, we need to use the frozen version of setuptools and zc.buildout
+        with utils.open_buildout_configfile() as buildout:
+            for package in ['setuptools', 'zc.buildout', 'pip']:
+                if buildout.has_option("versions", package):
+                    packages += ['{}=={}'.format(package, buildout.get("versions", package))]
+                else:
+                    packages += [package]
+
+        env = environ.copy()
+        env['PYTHONPATH'] = ''
+        utils.execute_assert_success([utils.get_isolated_executable('python'), 'get-pip.py'] + packages, env=env)
+        utils.execute_assert_success([utils.get_isolated_executable('pip'), 'install', '--download', cache_dist] + packages, env=env)
+
     def install_isolated_python_if_necessary(self):
+        from os import environ
         if not self.arguments.get("--use-isolated-python", False):
             return
         self._remove_setuptools_egg_link()
         if not assertions.is_isolated_python_exists() or self.arguments.get("--newest", False):
             with utils.buildout_parameters_context(['buildout:develop=', 'buildout:versions=no', 'no:key=value']):
                 utils.execute_with_buildout("install {}".format(self.get_isolated_python_section_name()))
-            self.arguments["--force-bootstrap"] = True
-            utils.execute_with_isolated_python(self._get_bootstrap_command())
+        self._get_pip()
+        self._install_setuptools_and_zc_buildout()
+        env = environ.copy()
+        env['PYTHONPATH'] = ''
+        utils.execute_assert_success([utils.get_isolated_executable('buildout'), 'bootstrap'], env=env)
 
     def build(self):
         if self.arguments.get("--clean", False):
@@ -205,4 +213,5 @@ class DevEnvPlugin(CommandPlugin):
 
     def pack(self):
         assertions.assert_isolated_python_exists()
-        self.install_sections_by_recipe("infi.recipe.application_packager")
+
+        self.install_sections_by_recipe("infi.recipe.application_packager", stripped=False)

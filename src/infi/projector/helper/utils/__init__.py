@@ -57,7 +57,7 @@ def open_buildout_configfile(filepath="buildout.cfg", write_on_exit=False):
 
 def is_running_inside_virtualenv():
     import sys
-    return hasattr(sys, 'real_prefix')
+    return isinstance(getattr(sys, 'real_prefix', None), basestring)
 
 def parse_args(commandline_or_args):
     return commandline_or_args if isinstance(commandline_or_args, list) else commandline_or_args.split()
@@ -83,11 +83,39 @@ def _get_executable_from_shebang_line():  # pragma: no cover
     executable_path = path.normpath(shebang_line[2:])
     return (executable_path + '.exe') if not executable_path.endswith('.exe') else executable_path
 
+
+def get_python_interpreter():
+    import os
+    import sys
+    from ..assertions import is_windows
+    if is_windows():
+        return _get_executable_from_shebang_line()
+    else:
+        return os.path.join(sys.real_prefix, 'bin', 'python') if is_running_inside_virtualenv() else sys.executable
+
+
+def get_executable(filename):
+    import os
+    dirpath, basename = os.path.split(get_python_interpreter())
+    isolated_python_bin = os.path.join('parts', 'python', 'bin')
+    filename_with_ext = (filename + '.exe') if basename.endswith('.exe') else filename
+    # if we are under a buildout project, the scripts won't be inside the isolated python
+    bin_dir = dirpath.replace(isolated_python_bin, 'bin') if \
+              dirpath.endswith(isolated_python_bin) else dirpath
+    if os.name == 'nt' and 'python' not in filename:
+        # if we are write_on_exit windows, the console scripts are under Scripts
+        for base_dir in [bin_dir, os.path.abspath(os.path.join(bin_dir, os.pardir))]:
+            if os.path.exists(os.path.join(base_dir, 'Scripts')):
+                bin_dir = os.path.join(base_dir, 'Scripts')
+    return os.path.join(bin_dir, filename_with_ext)
+
+
 def execute_with_python(commandline_or_args):
+    import os
     import sys
     from ..assertions import is_windows
     args = parse_args(commandline_or_args)
-    executable = [sys.executable if not is_windows() else _get_executable_from_shebang_line()]
+    executable = [get_python_interpreter()]
     if not is_running_inside_virtualenv():
         executable.append('-S')
     try:
@@ -99,24 +127,38 @@ def execute_with_python(commandline_or_args):
         executable.remove('-S')
         execute_assert_success(executable + args)
 
+
+def get_isolated_executable(filename):
+    import os
+    from ..assertions import is_windows
+    return os.path.join('parts', 'python',
+                        'Scripts' if is_windows() and 'python' not in filename else 'bin',
+                        '{}{}'.format(filename, '.exe' if is_windows() else ''))
+
+
 def execute_with_isolated_python(commandline_or_args):
     import os
     from ..assertions import is_windows
     args = parse_args(commandline_or_args)
-    executable = [os.path.join('parts', 'python', 'bin', 'python{}'.format('.exe' if is_windows() else ''))]
+    executable = [get_isolated_executable('python')]
     with open_buildout_configfile() as buildout:
         if buildout.get('buildout', 'relative-paths') in ['True', 'true']:
             [executable] = os.path.abspath(executable[0])
     execute_assert_success(executable + args)
 
-def execute_with_buildout(commandline_or_args, env=None):
+def execute_with_buildout(commandline_or_args, env=None, stripped=True):
     from os import name, path, environ
     _env = environ.copy()
     if env:
         _env.update(env)
     args = parse_args(commandline_or_args)
-    execute_assert_success([path.join('bin', 'buildout{}'.format('.exe' if name == 'nt' else ''))] +
-                            BUILDOUT_PARAMETERS + args, env=_env)
+    python = path.join('bin', 'python{}'.format('.exe' if name == 'nt' else ''))
+    buildout = path.join('bin', 'buildout{}'.format('.exe' if name == 'nt' else ''))
+    buildout_script = path.join('bin', 'buildout{}'.format('-script.py' if name == 'nt' else ''))
+    if path.exists(python) and not stripped:
+        execute_assert_success([python, buildout_script] + BUILDOUT_PARAMETERS + args, env=_env)
+    else:
+        execute_assert_success([buildout] + BUILDOUT_PARAMETERS + args, env=_env)
 
 @contextmanager
 def buildout_parameters_context(parameters):
@@ -191,10 +233,13 @@ def set_freezed_versions_in_install_requires(buildout_cfg, versions_cfg):
     install_requires = to_dict(InstallRequiresPackageSet.from_value(buildout_cfg.get("project", "install_requires")))
     versions = to_dict(set([item.replace('==', ">=") for item in VersionSectionSet.from_value(versions_cfg)]))
     for key, value in versions.items():
-        if key not in install_requires:
-            continue
-        if not install_requires[key]:  # empty list
+        if key in install_requires and not install_requires[key]:  # empty list
             install_requires[key] = value
+        else:
+            for item in install_requires.items():
+                if item[0].lower() == key and not item[1]:
+                    install_requires[item[0]] = value
+                    break
     install_requires = from_dict(install_requires)
     buildout_cfg.set("project", "install_requires", InstallRequiresPackageSet.to_value(install_requires))
 
