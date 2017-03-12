@@ -119,7 +119,7 @@ class VersionPlugin(CommandPlugin):
         with open('setup.py') as fd:
             has_c_extensions = 'ext_modules' in fd.read()
 
-        for distribution in :
+        for distribution in self.arguments.get("--distributions").split(','):
             for pypi in self.arguments.get("--pypi-servers").split(','):
                 if not pypi:
                     continue
