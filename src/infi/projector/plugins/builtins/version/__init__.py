@@ -126,7 +126,7 @@ class VersionPlugin(CommandPlugin):
                 git_checkout(version_tag_with_v)
                 DevEnvPlugin().create_setup_py()
                 setup_cmd = "setup . register -r {pypi} {distribution} upload -r {pypi} {universal_flag}"
-                universal_flag = '--universal' if distribution == 'bdist_wheel' and has_c_extensions
+                universal_flag = '--universal' if distribution == 'bdist_wheel' and has_c_extensions else ''
                 setup_cmd = setup_cmd.format(pypi=pypi, distribution=distribution, universal_flag=universal_flag).strip()
                 execute_with_buildout(setup_cmd, env=dict(LC_ALL="C"))
                 git_checkout("develop")
