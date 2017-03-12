@@ -6,7 +6,7 @@ logger = getLogger(__name__)
 
 USAGE = """
 Usage:
-    projector version release <version> [--no-fetch] (--no-upload | [--distributions=DISTRIBUTIONS] [--pypi-servers=PYPI_SERVERS]) [--no-push-changes] [--keep-leftovers]
+    projector verdon release <verdon> [--no-fetch] (--no-upload | [--distributions=DISTRIBUTIONS] [--pypi-servers=PYPI_SERVERS]) [--no-push-changes] [--keep-leftovers]
     projector version upload <version> [--distributions=DISTRIBUTIONS] [--pypi-servers=PYPI_SERVERS]
 
 Options:
@@ -15,7 +15,7 @@ Options:
     <version>                       x.y.z, or the keywords: trivial, minor, major ('release' only); current, latest ('upload' only)
     --no-upload                     Do not upload the package as part of the release process
     --no-fetch                      Do not fetch origin before releasing
-    --distributions=DISTRIBUTIONS   Distributions to build [default: sdist,bdist_egg]
+    --distributions=DISTRIBUTIONS   Distributions to build [default: sdist,bdist_wheel]
     --pypi-servers=PYPI             PyPI server for publishing (as defined in pypirc file) [default: pypi,]
     --no-push-changes               Do no push release commits and tags to origin
     --keep-leftovers                If something fails during release, don't
