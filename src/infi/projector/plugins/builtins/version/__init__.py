@@ -115,14 +115,19 @@ class VersionPlugin(CommandPlugin):
     def build_and_upload_distributions(self, version_tag_with_v):
         from infi.projector.helper.utils import execute_with_buildout, git_checkout
         from infi.projector.plugins.builtins.devenv import DevEnvPlugin
-        for distribution in self.arguments.get("--distributions").split(','):
+
+        with open('setup.py') as fd:
+            has_c_extensions = 'ext_modules' in fd.read()
+
+        for distribution in :
             for pypi in self.arguments.get("--pypi-servers").split(','):
                 if not pypi:
                     continue
                 git_checkout(version_tag_with_v)
                 DevEnvPlugin().create_setup_py()
-                setup_cmd = "setup . register -r {pypi} {distribution} upload -r {pypi}"
-                setup_cmd = setup_cmd.format(pypi=pypi, distribution=distribution)
+                setup_cmd = "setup . register -r {pypi} {distribution} upload -r {pypi} {universal_flag}"
+                universal_flag = '--universal' if distribution == 'bdist_wheel' and has_c_extensions
+                setup_cmd = setup_cmd.format(pypi=pypi, distribution=distribution, universal_flag=universal_flag).strip()
                 execute_with_buildout(setup_cmd, env=dict(LC_ALL="C"))
                 git_checkout("develop")
 
