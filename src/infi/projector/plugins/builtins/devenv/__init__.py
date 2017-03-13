@@ -173,7 +173,7 @@ class DevEnvPlugin(CommandPlugin):
         env = environ.copy()
         env['PYTHONPATH'] = ''
         utils.execute_assert_success([utils.get_isolated_executable('python'), 'get-pip.py'] + packages, env=env)
-        utils.execute_assert_success([utils.get_isolated_executable('pip'), 'install', '--download', cache_dist] + packages, env=env)
+        utils.execute_assert_success([utils.get_isolated_executable('pip'), 'download', cache_dist] + packages, env=env)
 
     def install_isolated_python_if_necessary(self):
         from os import environ
