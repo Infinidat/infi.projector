@@ -6,7 +6,7 @@ logger = getLogger(__name__)
 
 USAGE = """
 Usage:
-    projector verdon release <verdon> [--no-fetch] (--no-upload | [--distributions=DISTRIBUTIONS] [--pypi-servers=PYPI_SERVERS]) [--no-push-changes] [--keep-leftovers]
+    projector version release <version> [--no-fetch] (--no-upload | [--distributions=DISTRIBUTIONS] [--pypi-servers=PYPI_SERVERS]) [--no-push-changes] [--keep-leftovers]
     projector version upload <version> [--distributions=DISTRIBUTIONS] [--pypi-servers=PYPI_SERVERS]
 
 Options:
