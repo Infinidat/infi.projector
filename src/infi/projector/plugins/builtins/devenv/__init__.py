@@ -8,7 +8,7 @@ logger = getLogger(__name__)
 
 USAGE = """
 Usage:
-    projector devenv build [--clean] [--force-bootstrap] [--no-submodules] [--no-setup-py] [--no-scripts] [--use-isolated-python] [[--newest] | [--offline] | [--prefer-final]]
+    projector devenv build [--clean] [--force-bootstrap] [--no-submodules] [--no-setup-py] [--no-scripts] [--no-wheels] [--use-isolated-python] [[--newest] | [--offline] | [--prefer-final]]
     projector devenv relocate ([--absolute] | [--relative]) [--commit-changes]
     projector devenv pack
 
@@ -20,6 +20,7 @@ Options:
     --force-bootstrap       run buildout bootsrap even if the buildout script already exists
     --no-submodules         do not clone git sub-modules defined in buildout.cfg
     --no-scripts            do not install the dependent packages, nor create the console scripts. just create setup.py
+    --no-wheels             do not use the buildout.wheel extension
     --use-isolated-python   do not use global system python in console scripts, use Infinidat's isolated python builds
     --newest                always check for new package version on PyPI
     --offline               install packages only from download cache (no internet connection)
@@ -99,6 +100,8 @@ class DevEnvPlugin(CommandPlugin):
 
     def create_scripts(self):
         additional_options = ["buildout:prefer-final=true"] if self.arguments.get("--prefer-final") else []
+        if self.arguments.get("--no-wheels"):
+            additional_options += ["buildout:extensions="]
         with utils.buildout_parameters_context(additional_options):
             self.install_sections_by_recipe("infi.recipe.console_scripts")
 
@@ -170,7 +173,7 @@ class DevEnvPlugin(CommandPlugin):
         env = environ.copy()
         env['PYTHONPATH'] = ''
         utils.execute_assert_success([utils.get_isolated_executable('python'), 'get-pip.py'] + packages, env=env)
-        utils.execute_assert_success([utils.get_isolated_executable('pip'), 'install', '--download', cache_dist] + packages, env=env)
+        utils.execute_assert_success([utils.get_isolated_executable('pip'), 'download', cache_dist] + packages, env=env)
 
     def install_isolated_python_if_necessary(self):
         from os import environ
