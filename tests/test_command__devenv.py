@@ -77,7 +77,7 @@ class DevEnvTestCase(TestCase):
             with utils.chdir(PROJECT_ROOT):
                 self.execute_assert_success("{python} setup.py develop".format(python=python))
             with patch.object(sys, "executable", new=python+'.exe' if assertions.is_windows() else python):
-                with patch.object(sys, "real_prefix", new=True, create=True):
+                with patch.object(sys, "real_prefix", new=sys.prefix, create=True):
                     self.test_build_after_init()
 
     def test_build_newest_isolated_python_after_build(self):
