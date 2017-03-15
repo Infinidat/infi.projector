@@ -68,7 +68,7 @@ class DevEnvTestCase(TestCase):
         from urllib import urlretrieve
         with self.temporary_directory_context():
             try:
-                self.execute_assert_success("virtualenv virtualenv-python --no-setuptools")
+                self.execute_assert_success("virtualenv virtualenv-python")
             except ExecutionError:
                 raise SkipTest("Skipping because virtualenv does not work")
             virtualenv_dir = path.abspath(path.join(curdir, 'virtualenv-python'))
