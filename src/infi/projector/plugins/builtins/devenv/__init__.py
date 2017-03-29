@@ -153,7 +153,7 @@ class DevEnvPlugin(CommandPlugin):
 
     def _install_setuptools_and_zc_buildout(self):
         from os.path import join, exists
-        from os import environ
+        from os import environ, remove
 
         with utils.open_buildout_configfile() as buildout:
             cachedir = buildout.get("buildout", "download-cache")
@@ -173,6 +173,7 @@ class DevEnvPlugin(CommandPlugin):
         env = environ.copy()
         env['PYTHONPATH'] = ''
         utils.execute_assert_success([utils.get_isolated_executable('python'), 'get-pip.py'] + packages, env=env)
+        remove('get-pip.py')
         utils.execute_assert_success([utils.get_isolated_executable('pip'), 'download', '--dest', cache_dist] + packages, env=env)
 
     def install_isolated_python_if_necessary(self):
