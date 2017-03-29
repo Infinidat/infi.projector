@@ -19,7 +19,7 @@ Installation
 
 Projector is available on `pypi.python.org`, as `infi.projector`. To install just run:
 
-    easy_install -U infi.projector
+    pip install -U infi.projector
 
 
 Walkthrough
@@ -36,9 +36,7 @@ We will start by creating a new project:
 
 This creates a new skeleton for the project, under a new directory, called `infi.example`. Inside, you'll find the following files:
 
-* `bootstrap.py`. This file is buildout's boot strapper, used to start building the development environment
 * `buildout.cfg`. This project's configuration file. Already includes the project name and description strings.
-* `buildout.in`.  Yet another configuration file, used in production environments.
 * `setup.in`.     A template file for setup.py. Modify when necessary.
 
 Also, you'll notice that the checked out branch is `develop`. That is because we use `gitflow`'s branching model. That means that `master` holds merges for final releases only, and that the development is on `develop` or separate feature branches.
