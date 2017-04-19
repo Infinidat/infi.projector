@@ -62,7 +62,8 @@ class DevEnvPlugin(CommandPlugin):
             return "https://pypi.python.org/simple"
 
     def bootstrap_if_necessary(self):
-        from os.path import join, split, name
+        from os.path import join, split
+        from os import name
         from sys import argv
         from pkg_resources import resource_filename
         from infi.projector.plugins.builtins.repository import skeleton
