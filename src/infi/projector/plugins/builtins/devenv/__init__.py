@@ -62,7 +62,8 @@ class DevEnvPlugin(CommandPlugin):
             return "https://pypi.python.org/simple"
 
     def bootstrap_if_necessary(self):
-        from os.path import join
+        from os.path import join, split, name
+        from sys import argv
         from pkg_resources import resource_filename
         from infi.projector.plugins.builtins.repository import skeleton
         buildout_executable_exists = assertions.is_executable_exists(join("bin", "buildout"))
@@ -71,6 +72,10 @@ class DevEnvPlugin(CommandPlugin):
                 utils.execute_assert_success([utils.get_executable('buildout'), 'bootstrap'])
             except OSError:  # workaround for OSX
                 utils.execute_assert_success(['buildout', 'bootstrap'])
+            except OSError:
+                dirname, basename = split(argv[0])
+                buildout = path.join(dirname, 'buildout.exe' if name == 'nt' else 'buildout')
+                utils.execute_assert_success([buildout, 'bootstrap'])
 
     def install_sections_by_recipe(self, recipe, stripped=True):
         with utils.open_buildout_configfile() as buildout:
