@@ -70,12 +70,14 @@ class DevEnvPlugin(CommandPlugin):
         buildout_executable_exists = assertions.is_executable_exists(join("bin", "buildout"))
         if not buildout_executable_exists or self.arguments.get("--force-bootstrap", False) or self.arguments.get("--newest", False):
             try:
-                utils.execute_assert_success([utils.get_executable('buildout'), 'bootstrap'])
+                return utils.execute_assert_success([utils.get_executable('buildout'), 'bootstrap'])
             except OSError:  # workaround for OSX
+                pass
+            try:
                 utils.execute_assert_success(['buildout', 'bootstrap'])
             except OSError:
                 dirname, basename = split(argv[0])
-                buildout = path.join(dirname, 'buildout.exe' if name == 'nt' else 'buildout')
+                buildout = join(dirname, 'buildout.exe' if name == 'nt' else 'buildout')
                 utils.execute_assert_success([buildout, 'bootstrap'])
 
     def install_sections_by_recipe(self, recipe, stripped=True):
