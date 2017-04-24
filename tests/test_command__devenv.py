@@ -25,8 +25,6 @@ class DevEnvTestCase(TestCase):
             self.assertFalse(path.exists(path.join("parts", "python")))
             self.assert_scripts_were_generated_by_buildout()
             self.projector("devenv build --newest")
-            if name != 'nt':
-                self.projector("devenv build --offline")
 
     def test_pack(self):
         raise SkipTest("pack recipe is in progress")
@@ -70,18 +68,16 @@ class DevEnvTestCase(TestCase):
         from urllib import urlretrieve
         with self.temporary_directory_context():
             try:
-                self.execute_assert_success("virtualenv virtualenv-python --no-setuptools")
+                self.execute_assert_success("virtualenv virtualenv-python")
             except ExecutionError:
                 raise SkipTest("Skipping because virtualenv does not work")
             virtualenv_dir = path.abspath(path.join(curdir, 'virtualenv-python'))
             bin_dir = path.join(virtualenv_dir, 'Scripts' if assertions.is_windows() else 'bin')
             python = path.join(bin_dir, 'python')
-            urlretrieve("http://pypi.infinidat.com/media/dists/ez_setup.py", "ez_setup.py")
-            self.execute_assert_success("{python} ez_setup.py --download-base=http://pypi.infinidat.com/media/dists/".format(python=python))
             with utils.chdir(PROJECT_ROOT):
                 self.execute_assert_success("{python} setup.py develop".format(python=python))
             with patch.object(sys, "executable", new=python+'.exe' if assertions.is_windows() else python):
-                with patch.object(sys, "real_prefix", new=True, create=True):
+                with patch.object(sys, "real_prefix", new=sys.prefix, create=True):
                     self.test_build_after_init()
 
     def test_build_newest_isolated_python_after_build(self):
@@ -112,27 +108,25 @@ class DevEnvTestCase(TestCase):
             self.projector("repository init a.b.c none short long")
             with utils.open_buildout_configfile(write_on_exit=True) as buildout:
                 buildout.add_section("versions")
-                buildout.set("versions", "setuptools", "19.2")
+                buildout.set("versions", "setuptools", "34.3.2")
                 # ipython>4 depends on simplegeneric>0.8, and setuptools 8.1 fails to parse this dependency correctly
                 # this is fixed in setuptools 8.4, so if anyone bumps setuptools, remove the following set:
                 buildout.set("versions", "ipython", "3.2.1")
             self.projector("devenv build --use-isolated-python")
             self.assertTrue(path.exists(path.join("parts", "python")))
             self.assert_scripts_were_generated_by_buildout()
-            self.assert_specific_setuptools_version_is_being_used("19.2")
+            self.assert_specific_setuptools_version_is_being_used("34.3.2")
 
     def test_build_with_frozen_setuptools_and_zc_buildout_versions(self):
         with self.temporary_directory_context() as tempdir:
             self.projector("repository init a.b.c none short long")
             with utils.open_buildout_configfile(write_on_exit=True) as buildout:
                 buildout.add_section("versions")
-                buildout.set("versions", "setuptools", "19.2")
-                buildout.set("versions", "zc.buildout", "2.5.3")
-                # ipython==4.0.1 fails to install with setuptools 2.2
-                # if anyone bumps setuptools, try to remove the following set:
-                buildout.set("versions", "ipython", "4.0.0")
+                buildout.set("versions", "setuptools", "34.3.2")
+                buildout.set("versions", "zc.buildout", "2.9.2")
+                buildout.set("versions", "ipython", "5.3.0")
             self.projector("devenv build --use-isolated-python")
             self.assertTrue(path.exists(path.join("parts", "python")))
             self.assert_scripts_were_generated_by_buildout()
-            self.assert_specific_setuptools_version_is_being_used("19.2")
-            self.assert_specific_zc_buildout_version_is_being_used("2.5.3")
+            self.assert_specific_setuptools_version_is_being_used("34.3.2")
+            self.assert_specific_zc_buildout_version_is_being_used("2.9.2")

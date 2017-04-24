@@ -15,7 +15,7 @@ Options:
     <version>                       x.y.z, or the keywords: trivial, minor, major ('release' only); current, latest ('upload' only)
     --no-upload                     Do not upload the package as part of the release process
     --no-fetch                      Do not fetch origin before releasing
-    --distributions=DISTRIBUTIONS   Distributions to build [default: sdist,bdist_egg]
+    --distributions=DISTRIBUTIONS   Distributions to build [default: sdist,bdist_wheel]
     --pypi-servers=PYPI             PyPI server for publishing (as defined in pypirc file) [default: pypi,]
     --no-push-changes               Do no push release commits and tags to origin
     --keep-leftovers                If something fails during release, don't
@@ -115,14 +115,19 @@ class VersionPlugin(CommandPlugin):
     def build_and_upload_distributions(self, version_tag_with_v):
         from infi.projector.helper.utils import execute_with_buildout, git_checkout
         from infi.projector.plugins.builtins.devenv import DevEnvPlugin
+
+        with open('setup.py') as fd:
+            has_c_extensions = 'ext_modules' in fd.read()
+
         for distribution in self.arguments.get("--distributions").split(','):
             for pypi in self.arguments.get("--pypi-servers").split(','):
                 if not pypi:
                     continue
                 git_checkout(version_tag_with_v)
                 DevEnvPlugin().create_setup_py()
-                setup_cmd = "setup . register -r {pypi} {distribution} upload -r {pypi}"
-                setup_cmd = setup_cmd.format(pypi=pypi, distribution=distribution)
+                setup_cmd = "setup . register -r {pypi} {distribution} upload -r {pypi} {universal_flag}"
+                universal_flag = '--universal' if distribution == 'bdist_wheel' and has_c_extensions else ''
+                setup_cmd = setup_cmd.format(pypi=pypi, distribution=distribution, universal_flag=universal_flag).strip()
                 execute_with_buildout(setup_cmd, env=dict(LC_ALL="C"))
                 git_checkout("develop")
 
