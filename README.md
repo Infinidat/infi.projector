@@ -57,9 +57,6 @@ This will download the platform-specific build from our servers, and use that.
 
 There are other flags for this command, you can read about them by passing `--help`.
 
-Some environment variables may change the behavior of the build process. Specifically, `PROJECTOR_BOOTSTRAP_DOWNLOAD_BASE` and `PROJECTOR_BOOTSTRAP_SETUP_SOURCE` change
-the command-line parameters passed to `bootstrap.py` (`--download-base` and `--setup-source`, respectively).
-
 ### Adding dependencies
 
 Projects handled by `projector` have two types of dependencies:
