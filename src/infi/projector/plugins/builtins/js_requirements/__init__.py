@@ -11,7 +11,7 @@ Usage:
     projector js-requirements list
     projector js-requirements add <requirement> [--commit-changes]
     projector js-requirements remove <requirement> [--commit-changes]
-    projector js-requirements freeze [--newest] [--push-changes] [--commit-changes]
+    projector js-requirements freeze [--push-changes] [--commit-changes]
     projector js-requirements unfreeze [--commit-changes] [--push-changes]
 
 
@@ -19,23 +19,13 @@ Options:
     js-requirement list               Show all js-requirement
     js-requirement add                add a package to the list of project js-requirement
     js-requirement remove             remove a package from project requirement list
-    js-requirement freeze             Creates a js_versions section (base of .package-lock.json, telling buildout to use specific versions
+    js-requirement freeze             Creates a js_versions section (base of .package-lock.json, telling buildout to use specific versions)
     js-requirement unfreeze           Deletes the js_versions section, if it exists
     <requirement>                     requirement to add/remove
 """
 
 
 class JSRequirementsPlugin(CommandPlugin):
-    def __init__(self):
-        super(JSRequirementsPlugin, self).__init__()
-        with open_buildout_configfile(write_on_exit=True) as buildout_cfg:
-            if not buildout_cfg.has_section("js-requirements"):
-                buildout_cfg.add_section("js-requirements")
-                buildout_cfg.set("js-requirements", "recipe", "infi.recipe.js_requirements")
-                buildout_cfg.set("js-requirements", "js-directory", "")
-                buildout_cfg.set("js-requirements", "symlink-to-directory", "static/js")
-                buildout_cfg.set("js-requirements", "javascript-packages", "[]")
-
     def get_docopt_string(self):
         return USAGE
 
@@ -45,16 +35,15 @@ class JSRequirementsPlugin(CommandPlugin):
     def get_methods(self):
         return [self.list, self.add, self.remove, self.freeze, self.unfreeze]
 
-    @assertions.requires_repository
-    def pre_command_assertions(self):
-        pass
-
     def get_package_set(self):
         return RepresentedListSet('js-requirements', 'javascript-packages')
 
     def list(self):
         from pprint import pprint
-        pprint(sorted(list(self.get_package_set().get()), key=lambda s: s.lower()))
+        if self.get_package_set():
+            pprint(sorted(list(self.get_package_set().get()), key=lambda s: s.lower()))
+        else:
+            print('Please initiate js-requirements first by using "add" argument.')
 
     def remove(self):
         package_set = self.get_package_set()
@@ -68,6 +57,14 @@ class JSRequirementsPlugin(CommandPlugin):
             commit_changes_to_buildout(commit_message)
 
     def add(self):
+        with open_buildout_configfile(write_on_exit=True) as buildout_cfg:
+            if not buildout_cfg.has_section("js-requirements"):
+                buildout_cfg.add_section("js-requirements")
+                buildout_cfg.set("js-requirements", "recipe", "infi.recipe.js_requirements")
+                buildout_cfg.set("js-requirements", "js-directory", "")
+                buildout_cfg.set("js-requirements", "symlink-to-directory", "static/js")
+                buildout_cfg.set("js-requirements", "javascript-packages", "[]")
+
         package_set = self.get_package_set()
         requirements = package_set.get()
         requirement = self.arguments.get('<requirement>')
