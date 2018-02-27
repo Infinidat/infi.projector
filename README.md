@@ -102,7 +102,7 @@ Examples:
     porjector js-requirements list
     >>> ['underscore']
     
-The `js-requirements` plugin also support freeze and unfreeze, but first you must run `projector devenv build` after adding dependencies so a `.package-lock.json` file will be created.
+The `js-requirements` plugin also supports freeze and unfreeze functionality, but first you must run `projector devenv build` after adding dependencies so a `.package-lock.json` file will be created.
 
     projector devenv build
     projector js-requirements freeze

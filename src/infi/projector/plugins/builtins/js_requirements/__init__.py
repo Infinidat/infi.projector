@@ -20,7 +20,7 @@ Options:
     js-requirement list               Show all js-requirement
     js-requirement add                add a package to the list of project js-requirement
     js-requirement remove             remove a package from project requirement list
-    js-requirement freeze             Creates a js_versions section (base of .package-lock.json, telling buildout to use specific versions)
+    js-requirement freeze             Creates a js_versions section (based on .package-lock.json, telling buildout to use specific versions)
     js-requirement unfreeze           Deletes the js_versions section, if it exists
     <requirement>                     requirement to add/remove
 """
@@ -54,7 +54,7 @@ class JSRequirementsPlugin(CommandPlugin):
             requirements.remove(requirement)
             package_set.set(requirements)
         if self.arguments.get("--commit-changes", False):
-            commit_message = "remove {} from requirements".format(requirement)
+            commit_message = "remove {} from js-requirements".format(requirement)
             commit_changes_to_buildout(commit_message)
 
     def add(self):
@@ -73,7 +73,7 @@ class JSRequirementsPlugin(CommandPlugin):
             requirements.add(requirement)
             package_set.set(requirements)
         if self.arguments.get("--commit-changes", False):
-            commit_message = "adding {} to requirements".format(requirement)
+            commit_message = "adding {} to js-requirements".format(requirement)
             commit_changes_to_buildout(commit_message)
 
     def freeze(self):
@@ -103,7 +103,7 @@ class JSRequirementsPlugin(CommandPlugin):
         if self.arguments.get("--commit-changes", False):
             repository.add("buildout.cfg")
             repository.add(".package-lock.json")
-            repository.commit("Freezing dependencies")
+            repository.commit("Freezing javascript dependencies")
         push_changes = self.arguments.get("--push-changes", False)
         if push_changes:
             repository._executeGitCommandAssertSuccess("git push")
@@ -119,7 +119,7 @@ class JSRequirementsPlugin(CommandPlugin):
         repository = LocalRepository(curdir)
         if self.arguments.get("--commit-changes", False):
             repository.add("buildout.cfg")
-            repository.commit("Unfreezing dependencies")
+            repository.commit("Unfreezing javascript dependencies")
         push_changes = self.arguments.get("--push-changes", False)
         if push_changes:
             repository._executeGitCommandAssertSuccess("git push")
