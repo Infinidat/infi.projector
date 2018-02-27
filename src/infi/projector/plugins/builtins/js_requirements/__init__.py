@@ -63,7 +63,7 @@ class JSRequirementsPlugin(CommandPlugin):
                 buildout_cfg.add_section("js-requirements")
                 buildout_cfg.set("js-requirements", "recipe", "infi.recipe.js_requirements")
                 buildout_cfg.set("js-requirements", "js-directory", "")
-                buildout_cfg.set("js-requirements", "symlink-to-directory", "static/js")
+                buildout_cfg.set("js-requirements", "symlink-to-directory", "parts/js")
                 buildout_cfg.set("js-requirements", "javascript-packages", "[]")
 
         package_set = self.get_package_set()
@@ -103,9 +103,6 @@ class JSRequirementsPlugin(CommandPlugin):
         if self.arguments.get("--commit-changes", False):
             repository.add("buildout.cfg")
             repository.add(".package-lock.json")
-            symlink_path = buildout_cfg.get("js-requirements", "symlink-to-directory")
-            if symlink_path and os.path.isdir(symlink_path):
-                repository.add(symlink_path)
             repository.commit("Freezing dependencies")
         push_changes = self.arguments.get("--push-changes", False)
         if push_changes:
