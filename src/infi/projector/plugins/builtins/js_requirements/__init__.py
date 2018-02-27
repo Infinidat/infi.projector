@@ -1,3 +1,4 @@
+import os
 from infi.projector.plugins import CommandPlugin
 from infi.projector.helper import assertions
 from infi.projector.helper.utils import commit_changes_to_buildout, open_buildout_configfile
@@ -11,7 +12,7 @@ Usage:
     projector js-requirements list
     projector js-requirements add <requirement> [--commit-changes]
     projector js-requirements remove <requirement> [--commit-changes]
-    projector js-requirements freeze [--push-changes] [--commit-changes]
+    projector js-requirements freeze [--commit-changes] [--push-changes]
     projector js-requirements unfreeze [--commit-changes] [--push-changes]
 
 
@@ -101,6 +102,10 @@ class JSRequirementsPlugin(CommandPlugin):
         repository = LocalRepository(curdir)
         if self.arguments.get("--commit-changes", False):
             repository.add("buildout.cfg")
+            repository.add(".package-lock.json")
+            symlink_path = buildout_cfg.get("js-requirements", "symlink-to-directory")
+            if symlink_path and os.path.isdir(symlink_path):
+                repository.add(symlink_path)
             repository.commit("Freezing dependencies")
         push_changes = self.arguments.get("--push-changes", False)
         if push_changes:

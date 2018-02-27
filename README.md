@@ -81,6 +81,33 @@ What this does is adds the versions of the downloaded dependencies to `buildout.
 
 If you pass the `--with-install-requires` flag, this will also update the dependencies in `install_requires` with a `>=` requirement to the locally installed version.
 
+### Adding Javascript dependencies
+
+Adding a new javascript dependency is similar to adding python dependencies and uses the syntax of `js-requirements add`.
+Make sure to use the single quotes around version specification `'underscore<=2.0.0` and to use the full semantic version (e.g. 3.3.1 and not 3.3 or 3).
+
+The dependencies will be downloaded and extracted from the npm registry.
+
+    projector js-requirements list
+    projector js-requirements add <requirement> [--commit-changes]
+    projector js-requirements remove <requirement> [--commit-changes]
+    projector js-requirements freeze [--commit-changes] [--push-changes]
+    projector js-requirements unfreeze [--commit-changes] [--push-changes]
+
+Examples:
+
+    projector js-requirements add 'jquery>=3.0.0'
+    projector js-requirements add underscore
+    projector js-requirements remove 'jquery>=3.0.0'
+    porjector js-requirements list
+    >>> ['underscore']
+    
+The `js-requirements` plugin also support freeze and unfreeze, but first you must run `projector devenv build` after adding dependencies so a `.package-lock.json` file will be created.
+
+    projector devenv build
+    projector js-requirements freeze
+
+
 ### Console scripts
 
 `projector` provide a simple command-line interface to manage `console_scripts` entry points in setup.py:

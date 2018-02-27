@@ -94,6 +94,10 @@ class DevEnvPlugin(CommandPlugin):
             self.install_sections_by_recipe("gitrecipe")
             self.install_sections_by_recipe("git-recipe")
 
+    def download_js_requirements(self):
+        with utils.buildout_parameters_context(['buildout:develop=']):
+            self.install_sections_by_recipe('infi.recipe.js_requirements')
+
     def create_setup_py(self):
         with utils.buildout_parameters_context(['buildout:develop=']):
             self.install_sections_by_recipe("infi.recipe.template.version")
@@ -213,6 +217,8 @@ class DevEnvPlugin(CommandPlugin):
                 self.create_setup_py()
             if not self.arguments.get("--no-scripts", False):
                 self.create_scripts()
+            if not self.arguments.get("--no-dependencies", False):
+                self.download_js_requirements()
 
     def relocate(self):
         relative_paths = self.arguments.get("--relative", False)
