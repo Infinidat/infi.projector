@@ -27,6 +27,8 @@ Options:
 
 
 class JSRequirementsPlugin(CommandPlugin):
+    DEFAULT_DIRECTORY = "parts/js/"
+
     def get_docopt_string(self):
         return USAGE
 
@@ -41,8 +43,9 @@ class JSRequirementsPlugin(CommandPlugin):
 
     def list(self):
         from pprint import pprint
-        if self.get_package_set():
-            pprint(sorted(list(self.get_package_set().get()), key=lambda s: s.lower()))
+        pkg_set = self.get_package_set()
+        if pkg_set.get():
+            pprint(sorted(list(pkg_set.get()), key=lambda s: s.lower()))
         else:
             print('Please initiate js-requirements first by using "add" argument.')
 
@@ -83,8 +86,9 @@ class JSRequirementsPlugin(CommandPlugin):
 
         # Read/write the buildout.cfg
         with open_buildout_configfile(write_on_exit=True) as buildout_cfg:
+            packages_path = buildout_cfg.get('js-requirements', 'js-directory') or self.DEFAULT_DIRECTORY
             try:
-                with open('.package-lock.json', 'rb') as pljson:
+                with open(os.path.join(packages_path, '.package-lock.json'), 'r') as pljson:
                     selected_versions = json.load(pljson)
                     if buildout_cfg.has_section("js_versions"):
                         buildout_cfg.remove_section("js_versions")
@@ -102,7 +106,6 @@ class JSRequirementsPlugin(CommandPlugin):
         repository = LocalRepository(curdir)
         if self.arguments.get("--commit-changes", False):
             repository.add("buildout.cfg")
-            repository.add(".package-lock.json")
             repository.commit("Freezing javascript dependencies")
         push_changes = self.arguments.get("--push-changes", False)
         if push_changes:
