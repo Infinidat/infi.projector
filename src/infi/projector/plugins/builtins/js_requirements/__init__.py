@@ -86,6 +86,9 @@ class JSRequirementsPlugin(CommandPlugin):
 
         # Read/write the buildout.cfg
         with open_buildout_configfile(write_on_exit=True) as buildout_cfg:
+            if not buildout_cfg.has_section('js-requirements'):
+                print("Missing js-requirements section")
+                return
             packages_path = buildout_cfg.get('js-requirements', 'js-directory') or self.DEFAULT_DIRECTORY
             try:
                 with open(os.path.join(packages_path, '.package-lock.json'), 'r') as pljson:
@@ -115,6 +118,9 @@ class JSRequirementsPlugin(CommandPlugin):
         from gitpy import LocalRepository
         from os import curdir
         with open_buildout_configfile(write_on_exit=True) as buildout_cfg:
+            if not buildout_cfg.has_section('js-requirements'):
+                print("Missing js-requirements section")
+                return
             buildout_cfg.remove_option("buildout", "js_versions")
             buildout_cfg.remove_section("js_versions")
 
