@@ -8,7 +8,7 @@ logger = getLogger(__name__)
 
 USAGE = """
 Usage:
-    projector devenv build [--clean] [--force-bootstrap] [--no-submodules] [--no-setup-py] [--no-scripts] [--no-wheels] [--use-isolated-python] [[--newest] | [--offline] | [--prefer-final]]
+    projector devenv build [--clean] [--force-bootstrap] [--no-submodules] [--no-setup-py] [--no-js-requirements] [--no-scripts] [--no-wheels] [--use-isolated-python] [[--newest] | [--offline] | [--prefer-final]]
     projector devenv relocate ([--absolute] | [--relative]) [--commit-changes]
     projector devenv pack
 
@@ -17,7 +17,7 @@ Options:
     devenv relocate         use this command to switch from relative and absolute paths in the console scripts
     devenv pack             create a package, e.g. deb/rpm/msi
     --clean                 clean build-related files and directories before building
-    --force-bootstrap       run buildout bootsrap even if the buildout script already exists
+    --force-bootstrap       run buildout bootstrap even if the buildout script already exists
     --no-submodules         do not clone git sub-modules defined in buildout.cfg
     --no-scripts            do not install the dependent packages, nor create the console scripts. just create setup.py
     --no-wheels             do not use the buildout.wheel extension
@@ -27,7 +27,9 @@ Options:
     --absolute              change the paths in the development environment to absolute paths
     --relative              change the paths in the development environment to relative paths
     --prefer-final          don't install development versions of dependencies, prefer their latest final versions.
+    --no-js-requirements    don't download and extract js-requirements.
 """
+
 
 class DevEnvPlugin(CommandPlugin):
     def get_docopt_string(self):
@@ -93,6 +95,10 @@ class DevEnvPlugin(CommandPlugin):
             self.install_sections_by_recipe("zerokspot.recipe.git")
             self.install_sections_by_recipe("gitrecipe")
             self.install_sections_by_recipe("git-recipe")
+
+    def download_js_requirements(self):
+        with utils.buildout_parameters_context(['buildout:develop=']):
+            self.install_sections_by_recipe('infi.recipe.js_requirements')
 
     def create_setup_py(self):
         with utils.buildout_parameters_context(['buildout:develop=']):
@@ -213,6 +219,8 @@ class DevEnvPlugin(CommandPlugin):
                 self.create_setup_py()
             if not self.arguments.get("--no-scripts", False):
                 self.create_scripts()
+            if not self.arguments.get("--no-js-requirements", False):
+                self.download_js_requirements()
 
     def relocate(self):
         relative_paths = self.arguments.get("--relative", False)

@@ -105,7 +105,7 @@ class RequirementsPlugin(CommandPlugin):
         if self.arguments.get("--commit-changes", False):
             repository = LocalRepository(curdir)
             repository.add("buildout.cfg")
-            repository.commit("Freezing dependencies")
+            repository.commit("Freezing dependencies", allowEmpty=True)
         push_changes = self.arguments.get("--push-changes", False)
         if push_changes:
             repository._executeGitCommandAssertSuccess("git push")
@@ -118,7 +118,7 @@ class RequirementsPlugin(CommandPlugin):
         if self.arguments.get("--commit-changes", False):
             repository = LocalRepository(curdir)
             repository.add("buildout.cfg")
-            repository.commit("Unfreezing dependencies")
+            repository.commit("Unfreezing dependencies", allowEmpty=True)
         push_changes = self.arguments.get("--push-changes", False)
         if push_changes:
             repository._executeGitCommandAssertSuccess("git push")
