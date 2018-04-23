@@ -292,10 +292,6 @@ def get_dependencies_with_specific_versions(buildout_cfg):
 
 def unfreeze_versions(change_install_requires):
     with open_buildout_configfile(write_on_exit=True) as buildout_cfg:
-        buildout_cfg.remove_option("buildout", "extensions")
-        buildout_cfg.remove_option("buildout", "buildout_versions_file")
-        buildout_cfg.remove_option("buildout", "extends")
-        buildout_cfg.remove_option("buildout", "versions")
         buildout_cfg.remove_section("versions")
 
         dependencies_that_need_to_remain_frozen = get_dependencies_with_specific_versions(buildout_cfg)
