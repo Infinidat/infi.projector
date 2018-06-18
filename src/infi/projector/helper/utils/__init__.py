@@ -230,6 +230,11 @@ def open_tempfile():
         except:
             pass
 
+import re
+
+def normalize(name):
+    return re.sub(r"[-_.]+", "-", name).lower()
+
 def set_freezed_versions_in_install_requires(buildout_cfg, versions_cfg):
     from .package_sets import InstallRequiresPackageSet, VersionSectionSet, from_dict, to_dict
     install_requires = to_dict(InstallRequiresPackageSet.from_value(buildout_cfg.get("project", "install_requires")))
@@ -239,7 +244,7 @@ def set_freezed_versions_in_install_requires(buildout_cfg, versions_cfg):
             install_requires[key] = value
         else:
             for item in install_requires.items():
-                if item[0].lower() == key and not item[1]:
+                if item[0].lower() == normalize(key) and not item[1]:
                     install_requires[item[0]] = value
                     break
     install_requires = from_dict(install_requires)
