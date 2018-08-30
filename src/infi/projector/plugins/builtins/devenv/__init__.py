@@ -125,7 +125,7 @@ class DevEnvPlugin(CommandPlugin):
         from os.path import exists
         from os import remove
         from shutil import rmtree
-        directories_to_clean = ['bin', 'eggs', 'develop-eggs']
+        directories_to_clean = ['bin', 'eggs', 'develop-eggs', 'parts', '.cache']
         files_to_clean = ['setup.py']
         [remove(filename) for filename in files_to_clean if exists(filename)]
         [rmtree(dirname) for dirname in directories_to_clean if exists(dirname)]
