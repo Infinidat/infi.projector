@@ -96,8 +96,8 @@ class VersionTestCase(TestCase):
             self.projector("version release 1.2.3 --no-fetch --no-upload --no-push-changes")
             with patch("infi.projector.helper.utils.execute_with_buildout") as execute_with_buildout:
                 self.projector("version upload 1.2.3")
-            execute_with_buildout.assert_any_call("setup . register -r pypi sdist upload -r pypi", env=dict(LC_ALL="C"))
-            execute_with_buildout.assert_any_call("setup . register -r pypi bdist_wheel upload -r pypi", env=dict(LC_ALL="C"))
+            execute_with_buildout.assert_any_call("setup . sdist upload -r pypi", env=dict(LC_ALL="C"))
+            execute_with_buildout.assert_any_call("setup . bdist_wheel upload -r pypi", env=dict(LC_ALL="C"))
 
     def test_release_with_uncommitted_changes(self):
         from mock import patch
