@@ -175,7 +175,7 @@ class DevEnvPlugin(CommandPlugin):
 
         # in case dependencies are frozen, we need to use the frozen version of setuptools and zc.buildout
         with utils.open_buildout_configfile() as buildout:
-            for package in ['setuptools', 'zc.buildout', 'pip', 'certifi']:
+            for package in ['setuptools', 'zc.buildout', 'pip']:
                 if buildout.has_option("versions", package):
                     packages += ['{}=={}'.format(package, buildout.get("versions", package))]
                 else:
