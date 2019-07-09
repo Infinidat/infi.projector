@@ -184,7 +184,8 @@ class DevEnvPlugin(CommandPlugin):
 
         env = environ.copy()
         env['PYTHONPATH'] = ''
-        utils.execute_assert_success([utils.get_isolated_executable('python'), 'get-pip.py', '--prefix=%s' % join('parts', 'python')] + packages, env=env)
+        for package in packages:
+            utils.execute_assert_success([utils.get_isolated_executable('python'), 'get-pip.py', '--prefix=%s' % join('parts', 'python'), package], env=env)
         remove('get-pip.py')
         utils.execute_assert_success([utils.get_isolated_executable('python'), '-m', 'pip', 'download', '--dest', cache_dist] + packages, env=env)
 
