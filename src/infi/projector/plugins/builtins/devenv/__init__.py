@@ -94,6 +94,7 @@ class DevEnvPlugin(CommandPlugin):
             self.install_sections_by_recipe("zerokspot.recipe.git")
             self.install_sections_by_recipe("gitrecipe")
             self.install_sections_by_recipe("git-recipe")
+            self.install_sections_by_recipe("infi.git-recipe")
 
     def download_js_requirements(self):
         with utils.buildout_parameters_context(['buildout:develop=']):
@@ -183,7 +184,8 @@ class DevEnvPlugin(CommandPlugin):
 
         env = environ.copy()
         env['PYTHONPATH'] = ''
-        utils.execute_assert_success([utils.get_isolated_executable('python'), 'get-pip.py', '--prefix=%s' % join('parts', 'python')] + packages, env=env)
+        for package in packages:
+            utils.execute_assert_success([utils.get_isolated_executable('python'), 'get-pip.py', '--upgrade-strategy=only-if-needed', '--prefix=%s' % join('parts', 'python'), package], env=env)
         remove('get-pip.py')
         utils.execute_assert_success([utils.get_isolated_executable('python'), '-m', 'pip', 'download', '--dest', cache_dist] + packages, env=env)
 
