@@ -4,7 +4,7 @@ from infi.unittest.parameters import iterate
 from contextlib import contextmanager
 from gitpy import LocalRepository
 from os import curdir, name
-from mock import patch
+from mock import patch, call
 from infi.projector.plugins.builtins.version import VersionPlugin
 
 is_windows = name == "nt"
@@ -94,10 +94,15 @@ class VersionTestCase(TestCase):
             self.projector("repository init a.b.c none short long")
             self.projector("devenv build --no-script")
             self.projector("version release 1.2.3 --no-fetch --no-upload --no-push-changes")
-            with patch("infi.projector.helper.utils.execute_with_buildout") as execute_with_buildout:
+            with patch("infi.projector.helper.utils.execute_with_buildout") as execute_with_buildout, \
+                                        patch("infi.execute.execute_assert_success", return_value=0) as execute, \
+                                        patch("tempfile.mkdtemp", return_value="/tmp/foobar"), patch("shutil.rmtree"):
                 self.projector("version upload 1.2.3")
-            execute_with_buildout.assert_any_call("setup . sdist upload -r pypi", env=dict(LC_ALL="C"))
-            execute_with_buildout.assert_any_call("setup . bdist_wheel upload -r pypi", env=dict(LC_ALL="C"))
+            execute_with_buildout.assert_any_call("setup . sdist --dist-dir=/tmp/foobar", env=dict(LC_ALL="C"))
+            execute_with_buildout.assert_any_call("setup . bdist_wheel --dist-dir=/tmp/foobar", env=dict(LC_ALL="C"))
+            self.assertTrue(len(execute.call_args_list), 2)
+            for call_args in execute.call_args_list:
+                self.assertEquals(call_args, call('bin/twine upload --repository pypi /tmp/foobar/*', shell=True))
 
     def test_release_with_uncommitted_changes(self):
         from mock import patch
