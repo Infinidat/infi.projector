@@ -112,9 +112,13 @@ class VersionPlugin(CommandPlugin):
         from infi.execute import execute_assert_success
         return execute_assert_success("git describe --tags", shell=True).get_stdout().splitlines()[0].decode("utf-8")
 
+
     def build_and_upload_distributions(self, version_tag_with_v):
         from infi.projector.helper.utils import execute_with_buildout, git_checkout
         from infi.projector.plugins.builtins.devenv import DevEnvPlugin
+        from os import system
+        from shutil import rmtree
+        from tempfile import mkdtemp
 
         with open('setup.py') as fd:
             has_c_extensions = 'ext_modules' in fd.read()
@@ -125,9 +129,19 @@ class VersionPlugin(CommandPlugin):
                     continue
                 git_checkout(version_tag_with_v)
                 DevEnvPlugin().create_setup_py()
-                setup_cmd = "setup . {distribution} upload -r {pypi} {universal_flag}"
+                setup_cmd = "setup . {distribution} {universal_flag} --dist-dir={temp_dir}"
                 universal_flag = '--universal' if distribution == 'bdist_wheel' and has_c_extensions else ''
-                setup_cmd = setup_cmd.format(pypi=pypi, distribution=distribution, universal_flag=universal_flag).strip()
-                execute_with_buildout(setup_cmd, env=dict(LC_ALL="C"))
-                git_checkout("develop")
-
+                temp_dir = mkdtemp()
+                logger.info("Created temp dir {temp_dir}".format(temp_dir=temp_dir))
+                try:
+                    setup_cmd = setup_cmd.format(pypi=pypi, distribution=distribution, universal_flag=universal_flag,
+                                                 temp_dir=temp_dir).strip()
+                    execute_with_buildout(setup_cmd, env=dict(LC_ALL="C"))
+                    upload_cmd = "twine upload --repository {pypi} {temp_dir}/*"
+                    if system(upload_cmd.format(pypi=pypi, temp_dir=temp_dir)) != 0:
+                        logger.error("An error has occured")
+                        raise SystemExit(1)
+                    git_checkout("develop")
+                finally:
+                    logger.info("Removing temp dir {temp_dir}".format(temp_dir=temp_dir))
+                    rmtree(temp_dir)
