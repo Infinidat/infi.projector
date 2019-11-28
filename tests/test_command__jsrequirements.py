@@ -38,6 +38,7 @@ class JSRequirementsTestCase(TestCase):
             with self.assert_new_commit():
                 self.projector("js-requirements freeze --commit-changes")
             self.assertIn("jquery =", open("buildout.cfg").read())
+            self.assertIn('js_versions = True', open("buildout.cfg").read())
             with self.assert_new_commit():
                 self.projector("js-requirements unfreeze --commit-changes")
             self.assertNotIn("jquery =", open("buildout.cfg").read())
