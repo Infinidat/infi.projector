@@ -56,3 +56,4 @@ buildout.in
 eggs
 parts
 setup.cfg
+.vscode/
