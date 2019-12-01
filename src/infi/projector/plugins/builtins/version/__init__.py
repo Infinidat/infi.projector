@@ -116,7 +116,10 @@ class VersionPlugin(CommandPlugin):
     def build_and_upload_distributions(self, version_tag_with_v):
         from infi.projector.helper.utils import execute_with_buildout, git_checkout
         from infi.projector.plugins.builtins.devenv import DevEnvPlugin
-        from os import system
+        from infi.execute import execute_assert_success
+        from sys import argv
+        import os
+        from os.path import join, dirname
         from shutil import rmtree
         from tempfile import mkdtemp
 
@@ -137,11 +140,17 @@ class VersionPlugin(CommandPlugin):
                     setup_cmd = setup_cmd.format(pypi=pypi, distribution=distribution, universal_flag=universal_flag,
                                                  temp_dir=temp_dir).strip()
                     execute_with_buildout(setup_cmd, env=dict(LC_ALL="C"))
-                    upload_cmd = "twine upload --repository {pypi} {temp_dir}/*"
-                    if system(upload_cmd.format(pypi=pypi, temp_dir=temp_dir)) != 0:
-                        logger.error("An error has occured")
-                        raise SystemExit(1)
-                    git_checkout("develop")
+                    upload_cmd = "twine upload --repository {pypi} {temp_dir}"
+                    # Twine does does not work if it's run with full path or relative path (raises SyntaxError)
+                    prev_cwd = os.getcwd()
+                    twine_dir = join(dirname(argv[0]))
+                    os.chdir(twine_dir)
+                    try:
+                        upload_cmd = upload_cmd.format(pypi=pypi, temp_dir=join(temp_dir, '*'))
+                    finally:
+                        os.chdir(prev_cwd)
+                    execute_assert_success(upload_cmd, shell=True)
                 finally:
+                    git_checkout("develop")
                     logger.info("Removing temp dir {temp_dir}".format(temp_dir=temp_dir))
                     rmtree(temp_dir)
