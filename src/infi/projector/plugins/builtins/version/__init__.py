@@ -118,7 +118,6 @@ class VersionPlugin(CommandPlugin):
         from infi.projector.plugins.builtins.devenv import DevEnvPlugin
         from infi.execute import execute_assert_success
         from sys import argv
-        import os
         from os.path import join, dirname
         from shutil import rmtree
         from tempfile import mkdtemp
