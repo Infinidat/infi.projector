@@ -140,15 +140,9 @@ class VersionPlugin(CommandPlugin):
                     setup_cmd = setup_cmd.format(pypi=pypi, distribution=distribution, universal_flag=universal_flag,
                                                  temp_dir=temp_dir).strip()
                     execute_with_buildout(setup_cmd, env=dict(LC_ALL="C"))
-                    upload_cmd = "twine upload --repository {pypi} {temp_dir}"
-                    # Twine does does not work if it's run with full path or relative path (raises SyntaxError)
-                    prev_cwd = os.getcwd()
-                    twine_dir = join(dirname(argv[0]))
-                    os.chdir(twine_dir)
-                    try:
-                        upload_cmd = upload_cmd.format(pypi=pypi, temp_dir=join(temp_dir, '*'))
-                    finally:
-                        os.chdir(prev_cwd)
+                    upload_cmd = "{twine_path} upload --repository {pypi} {temp_dir}"
+                    twine_path = join(dirname(argv[0]), "twine")
+                    upload_cmd = upload_cmd.format(twine_path=twine_path, pypi=pypi, temp_dir=join(temp_dir, '*'))
                     execute_assert_success(upload_cmd, shell=True)
                 finally:
                     git_checkout("develop")
