@@ -131,8 +131,8 @@ class VersionPlugin(CommandPlugin):
                     continue
                 git_checkout(version_tag_with_v)
                 DevEnvPlugin().create_setup_py()
-                setup_cmd = "setup . {distribution} {universal_flag} --dist-dir={temp_dir}"
-                universal_flag = '--universal' if distribution == 'bdist_wheel' and has_c_extensions else ''
+                setup_cmd = "setup . {distribution}{universal_flag}--dist-dir={temp_dir}"
+                universal_flag = ' --universal ' if distribution == 'bdist_wheel' and has_c_extensions else ' '
                 temp_dir = mkdtemp()
                 logger.info("Created temp dir {temp_dir}".format(temp_dir=temp_dir))
                 try:
