@@ -4,7 +4,7 @@ from infi.unittest.parameters import iterate
 from contextlib import contextmanager
 from gitpy import LocalRepository
 from os import curdir, name
-from mock import patch, call
+from mock import patch
 from infi.projector.plugins.builtins.version import VersionPlugin
 
 is_windows = name == "nt"
