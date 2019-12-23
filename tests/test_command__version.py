@@ -90,14 +90,26 @@ class VersionTestCase(TestCase):
                     self.projector("version release 1.2.3 --no-fetch --no-upload  --no-push-changes")
 
     def test_upload(self):
+        from os import path
+        import tempfile
         with self.temporary_directory_context():
             self.projector("repository init a.b.c none short long")
             self.projector("devenv build --no-script")
             self.projector("version release 1.2.3 --no-fetch --no-upload --no-push-changes")
-            with patch("infi.projector.helper.utils.execute_with_buildout") as execute_with_buildout:
+            tmp_dir =  path.join(tempfile.gettempdir(), 'foobar')
+            with patch("infi.projector.helper.utils.execute_with_buildout") as execute_with_buildout, \
+                                        patch("infi.execute.execute_assert_success", return_value=0) as execute, \
+                                        patch("tempfile.mkdtemp", return_value=tmp_dir), patch("shutil.rmtree"):
                 self.projector("version upload 1.2.3")
-            execute_with_buildout.assert_any_call("setup . sdist upload -r pypi", env=dict(LC_ALL="C"))
-            execute_with_buildout.assert_any_call("setup . bdist_wheel upload -r pypi", env=dict(LC_ALL="C"))
+            execute_with_buildout.assert_any_call("setup . sdist --dist-dir={}".format(tmp_dir), env=dict(LC_ALL="C"))
+            execute_with_buildout.assert_any_call("setup . bdist_wheel --dist-dir={}".format(tmp_dir),
+                                                  env=dict(LC_ALL="C"))
+            self.assertTrue(len(execute.call_args_list), 2)
+            twine_path = path.join('bin', 'twine')
+            for call_args in execute.call_args_list:
+                # Ignore twine's path prefix which may vary
+                self.assertTrue(call_args[0][0].endswith('{} upload --repository pypi {}'.format(
+                                                                                twine_path, path.join(tmp_dir, '*'))))
 
     def test_release_with_uncommitted_changes(self):
         from mock import patch

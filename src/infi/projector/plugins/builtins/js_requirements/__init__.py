@@ -98,11 +98,11 @@ class JSRequirementsPlugin(CommandPlugin):
                     buildout_cfg.add_section("js_versions")
                 for key in sorted(selected_versions.keys(), key=lambda s: s.lower()):
                     buildout_cfg.set("js_versions", key, selected_versions[key])
-                buildout_cfg.set('buildout', 'js_versions', True)
+                buildout_cfg.set('buildout', 'js_versions', 'True')
             except IOError as e:
                 import errno
-                print(e.message)
-                if e.errno == errno.ENOENT:
+                print(str(e))
+                if hasattr(e, 'errno') and e.errno == errno.ENOENT:
                     print('.package-lock.json file is missing, try running projector devenv build to create the file')
 
         # Git operations
