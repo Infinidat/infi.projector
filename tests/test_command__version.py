@@ -154,18 +154,18 @@ class VersionTestCase(TestCase):
             plugin = VersionPlugin()
             plugin.arguments = {"<version>": "major"}
             result = plugin.replace_version_tag()
-            self.assertEquals(result, "3.0")
+            self.assertEqual(result, "3.0")
 
     def test_reset_trivial_when_releasing_major(self):
         with patch.object(VersionPlugin, "get_git_describe", return_value="0.0.5"):
             plugin = VersionPlugin()
             plugin.arguments = {"<version>": "major"}
             result = plugin.replace_version_tag()
-            self.assertEquals(result, "1.0")
+            self.assertEqual(result, "1.0")
 
     def test_reset_trivial_when_releasing_minor(self):
         with patch.object(VersionPlugin, "get_git_describe", return_value="1.5.5"):
             plugin = VersionPlugin()
             plugin.arguments = {"<version>": "minor"}
             result = plugin.replace_version_tag()
-            self.assertEquals(result, "1.6")
+            self.assertEqual(result, "1.6")

@@ -28,7 +28,7 @@ class JSRequirementsTestCase(TestCase):
         repository = LocalRepository(curdir)
         head = repository.getHead().hash
         yield
-        self.assertNotEquals(head, repository.getHead().hash)
+        self.assertNotEqual(head, repository.getHead().hash)
 
     def test_freeze_unfreeze(self):
         with self.temporary_directory_context():

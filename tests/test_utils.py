@@ -29,5 +29,5 @@ class UtilsTestCase(TestCase):
                 with revert_if_failed(False):
                     mess_things_up_and_raise()
             repository = LocalRepository('.')
-            self.assertEquals(2, len(repository.getBranches()))
-            self.assertEquals(1, len(repository.getTags()), repository.getTags())
+            self.assertEqual(2, len(repository.getBranches()))
+            self.assertEqual(1, len(repository.getTags()), repository.getTags())

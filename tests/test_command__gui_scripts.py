@@ -24,7 +24,7 @@ class GuiScriptsTestCase(TestCase):
             get_set.return_value.get.return_value = gui_scripts
             def side_effect(*args, **kwargs):
                 called_gui_scripts, = args
-                self.assertEquals(gui_scripts, called_gui_scripts)
+                self.assertEqual(gui_scripts, called_gui_scripts)
             pprint.side_effect = side_effect
             with self.temporary_directory_context():
                 self.projector("repository init a.b.c none short long")

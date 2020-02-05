@@ -7,7 +7,7 @@ is_windows = name == "nt"
 
 class RepositoryTestCase(TestCase):
     def assert_is_empty(self):
-        self.assertEquals(listdir(curdir), [])
+        self.assertEqual(listdir(curdir), [])
 
     def assert_project_checked_out(self):
         self.assertTrue(path.exists(".git"))

@@ -24,7 +24,7 @@ class ConsoleScriptsTestCase(TestCase):
             get_set.return_value.get.return_value = console_scripts
             def side_effect(*args, **kwargs):
                 called_console_scripts, = args
-                self.assertEquals(console_scripts, called_console_scripts)
+                self.assertEqual(console_scripts, called_console_scripts)
             pprint.side_effect = side_effect
             with self.temporary_directory_context():
                 self.projector("repository init a.b.c none short long")

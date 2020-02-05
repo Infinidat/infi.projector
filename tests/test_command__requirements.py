@@ -34,7 +34,7 @@ class RequirementsTestCase(TestCase):
             get_package_set.return_value.get.return_value = requirements
             def side_effect(*args, **kwargs):
                 called_requirements, = args
-                self.assertEquals(list(requirements), called_requirements)
+                self.assertEqual(list(requirements), called_requirements)
             pprint.side_effect = side_effect
             with self.temporary_directory_context():
                 self.projector("repository init a.b.c none short long")
@@ -48,7 +48,7 @@ class RequirementsTestCase(TestCase):
         repository = LocalRepository(curdir)
         head = repository.getHead().hash
         yield
-        self.assertNotEquals(head, repository.getHead().hash)
+        self.assertNotEqual(head, repository.getHead().hash)
 
     def _clear_development_requirements(self):
         self.projector("requirements remove infi.traceback --commit-changes --development")

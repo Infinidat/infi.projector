@@ -65,7 +65,10 @@ class DevEnvTestCase(TestCase):
 
     def test_build_in_virtualenv(self):
         from infi.execute import ExecutionError
-        from urllib import urlretrieve
+        try:
+            from urllib import urlretrieve
+        except ImportError:
+            from urllib.request import urlretrieve
         with self.temporary_directory_context():
             try:
                 self.execute_assert_success("virtualenv virtualenv-python")
@@ -101,7 +104,7 @@ class DevEnvTestCase(TestCase):
         import os
         executable = path.join("parts", "python", "Scripts" if os.name == 'nt' else "bin", "buildout")
         output = self.execute_assert_success([executable, '--version']).get_stdout().decode()
-        self.assertEquals('buildout version {}'.format(zc_buildout_version), output.strip())
+        self.assertEqual('buildout version {}'.format(zc_buildout_version), output.strip())
 
     def test_build_with_frozen_setuptools_version(self):
         with self.temporary_directory_context():

@@ -19,7 +19,7 @@ class ConfigFileParserTests(TestCase):
                 from infi.projector.commandline_parser import append_default_arguments_from_configuration_files
                 arguments = dict()
                 append_default_arguments_from_configuration_files(arguments)
-                self.assertEquals(arguments, dict())
+                self.assertEqual(arguments, dict())
 
     def test_configfile_no_commanline_section(self):
         with self.temporary_directory_context():
@@ -29,7 +29,7 @@ class ConfigFileParserTests(TestCase):
                 from infi.projector.commandline_parser import append_default_arguments_from_configuration_files
                 arguments = dict()
                 append_default_arguments_from_configuration_files(arguments)
-                self.assertEquals(arguments, dict())
+                self.assertEqual(arguments, dict())
 
     def test_configfile_some_commandline_arguments(self):
         with self.temporary_directory_context():
@@ -40,4 +40,4 @@ class ConfigFileParserTests(TestCase):
                 arguments = dict()
                 append_default_arguments_from_configuration_files(arguments)
                 expected = {'--pypi-servers': 'pypi,local', '--use-isolated-python': True}
-                self.assertEquals(arguments, expected)
+                self.assertEqual(arguments, expected)
