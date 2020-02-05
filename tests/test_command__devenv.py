@@ -94,13 +94,13 @@ class DevEnvTestCase(TestCase):
     def assert_specific_setuptools_version_is_being_used(self, setuptools_version):
         import os
         executable = path.join("parts", "python", "Scripts" if os.name == 'nt' else "bin", "easy_install")
-        output = self.execute_assert_success([executable, '--version']).get_stdout()
+        output = self.execute_assert_success([executable, '--version']).get_stdout().decode()
         self.assertIn('setuptools {} '.format(setuptools_version), output)
 
     def assert_specific_zc_buildout_version_is_being_used(self, zc_buildout_version):
         import os
         executable = path.join("parts", "python", "Scripts" if os.name == 'nt' else "bin", "buildout")
-        output = self.execute_assert_success([executable, '--version']).get_stdout()
+        output = self.execute_assert_success([executable, '--version']).get_stdout().decode()
         self.assertEquals('buildout version {}'.format(zc_buildout_version), output.strip())
 
     def test_build_with_frozen_setuptools_version(self):
