@@ -77,19 +77,19 @@ class RequirementsTestCase(TestCase):
         from os import path
         with self.temporary_directory_context():
             self.projector("repository init a.b.c none short long")
-            self.projector("requirements add Flask==0.9 --commit-changes")
+            self.projector("requirements add Flask==1.0.3 --commit-changes")
             self._clear_development_requirements()
             self.projector("devenv build --use-isolated-python --prefer-final")
             with self.assert_new_commit():
                 self.projector("requirements freeze --with-install-requires --commit-changes --strip-suffix-from-post-releases")
             self.assertIn("[versions]", open("buildout.cfg").read())
-            self.assertIn("Flask==0.9", open("buildout.cfg").read())
+            self.assertIn("Flask==1.0.3", open("buildout.cfg").read())
             self.assertIn("setuptool", open("buildout.cfg").read())
             with self.assert_new_commit():
                 self.projector("requirements unfreeze --commit-changes --with-install-requires")
             self.assertIn("[versions]", open("buildout.cfg").read())
-            self.assertIn("Flask==0.9", open("buildout.cfg").read())
-            self.assertIn("Flask = 0.9", open("buildout.cfg").read())
+            self.assertIn("Flask==1.0.3", open("buildout.cfg").read())
+            self.assertIn("Flask = 1.0.3", open("buildout.cfg").read())
 
     def test_freeze_unfreeze__no_specific_dependencies(self):
         from os import path
@@ -111,7 +111,7 @@ class RequirementsTestCase(TestCase):
     def test_freeze_after_freeze(self):
         with self.temporary_directory_context():
             self.projector("repository init a.b.c none short long")
-            self.projector("requirements add Flask==0.9 --commit-changes")
+            self.projector("requirements add Flask==1.0.3 --commit-changes")
             self.projector("requirements remove infi.traceback --commit-changes --development")
             self.projector("requirements remove infi.unittest --commit-changes --development")
             self.projector("requirements remove ipython --commit-changes --development")
@@ -120,5 +120,5 @@ class RequirementsTestCase(TestCase):
             self.projector("requirements freeze --with-install-requires --commit-changes --strip-suffix-from-post-releases")
             self.projector("requirements freeze --with-install-requires --strip-suffix-from-post-releases")
             self.assertIn("[versions]", open("buildout.cfg").read())
-            self.assertIn("Flask==0.9", open("buildout.cfg").read())
+            self.assertIn("Flask==1.0.3", open("buildout.cfg").read())
             self.assertIn("setuptools", open("buildout.cfg").read())

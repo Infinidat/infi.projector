@@ -111,25 +111,21 @@ class DevEnvTestCase(TestCase):
             self.projector("repository init a.b.c none short long")
             with utils.open_buildout_configfile(write_on_exit=True) as buildout:
                 buildout.add_section("versions")
-                buildout.set("versions", "setuptools", "34.3.2")
-                # ipython>4 depends on simplegeneric>0.8, and setuptools 8.1 fails to parse this dependency correctly
-                # this is fixed in setuptools 8.4, so if anyone bumps setuptools, remove the following set:
-                buildout.set("versions", "ipython", "3.2.1")
+                buildout.set("versions", "setuptools", "40.6.3")
             self.projector("devenv build --use-isolated-python")
             self.assertTrue(path.exists(path.join("parts", "python")))
             self.assert_scripts_were_generated_by_buildout()
-            self.assert_specific_setuptools_version_is_being_used("34.3.2")
+            self.assert_specific_setuptools_version_is_being_used("40.6.3")
 
     def test_build_with_frozen_setuptools_and_zc_buildout_versions(self):
         with self.temporary_directory_context() as tempdir:
             self.projector("repository init a.b.c none short long")
             with utils.open_buildout_configfile(write_on_exit=True) as buildout:
                 buildout.add_section("versions")
-                buildout.set("versions", "setuptools", "34.3.2")
-                buildout.set("versions", "zc.buildout", "2.9.2")
-                buildout.set("versions", "ipython", "5.3.0")
+                buildout.set("versions", "setuptools", "40.6.3")
+                buildout.set("versions", "zc.buildout", "2.11.2")
             self.projector("devenv build --use-isolated-python")
             self.assertTrue(path.exists(path.join("parts", "python")))
             self.assert_scripts_were_generated_by_buildout()
-            self.assert_specific_setuptools_version_is_being_used("34.3.2")
-            self.assert_specific_zc_buildout_version_is_being_used("2.9.2")
+            self.assert_specific_setuptools_version_is_being_used("40.6.3")
+            self.assert_specific_zc_buildout_version_is_being_used("2.11.2")
