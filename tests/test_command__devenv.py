@@ -65,6 +65,7 @@ class DevEnvTestCase(TestCase):
 
     def test_build_in_virtualenv(self):
         from infi.execute import ExecutionError
+        from os import environ
         try:
             from urllib import urlretrieve
         except ImportError:
@@ -78,6 +79,7 @@ class DevEnvTestCase(TestCase):
             bin_dir = path.join(virtualenv_dir, 'Scripts' if assertions.is_windows() else 'bin')
             python = path.join(bin_dir, 'python')
             with utils.chdir(PROJECT_ROOT):
+                environ['LD_LIBRARY_PATH'] = "/root/python/lib"  # HOSTDEV-3334
                 self.execute_assert_success("{python} setup.py develop".format(python=python))
             with patch.object(sys, "executable", new=python+'.exe' if assertions.is_windows() else python):
                 with patch.object(sys, "real_prefix", new=sys.prefix, create=True):
