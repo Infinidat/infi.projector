@@ -1,5 +1,5 @@
 from os import path, name, curdir
-from gitpy import LocalRepository
+from infi.gitpy import LocalRepository
 
 from logging import getLogger
 logger = getLogger(__name__)

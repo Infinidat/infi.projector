@@ -8,7 +8,7 @@ class RequirementsTestCase(TestCase):
     @iterate("package_name", ["distribute", "ipython", "does-not-exist"])
     def test_add_and_remove(self, development_flag, package_name):
         from infi.projector.plugins.builtins.requirements import RequirementsPlugin
-        from gitpy import LocalRepository
+        from infi.gitpy import LocalRepository
         from os import curdir
         plugin = RequirementsPlugin()
         plugin.arguments = {'--development': development_flag}
@@ -43,7 +43,7 @@ class RequirementsTestCase(TestCase):
 
     @contextmanager
     def assert_new_commit(self):
-        from gitpy import LocalRepository
+        from infi.gitpy import LocalRepository
         from os import curdir
         repository = LocalRepository(curdir)
         head = repository.getHead().hash

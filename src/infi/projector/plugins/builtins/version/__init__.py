@@ -58,8 +58,8 @@ class VersionPlugin(CommandPlugin):
         return '.'.join([str(item) for item in version_numbers[:2 if placeholder < 2 else 3]])
 
     def fetch_origin(self):
-        from gitpy import LocalRepository
-        from gitpy.exceptions import GitCommandFailedException
+        from infi.gitpy import LocalRepository
+        from infi.gitpy.exceptions import GitCommandFailedException
         from os import curdir
         repository = LocalRepository(curdir)
         try:
