@@ -75,7 +75,7 @@ class RequirementsPlugin(CommandPlugin):
     def freeze(self):
         from infi.projector.helper.utils import freeze_versions, buildout_parameters_context, open_tempfile
         from infi.projector.plugins.builtins.devenv import DevEnvPlugin
-        from gitpy import LocalRepository
+        from infi.gitpy import LocalRepository
         from os import curdir
         from re import sub, findall, MULTILINE
         plugin = DevEnvPlugin()
@@ -120,7 +120,7 @@ class RequirementsPlugin(CommandPlugin):
 
     def unfreeze(self):
         from infi.projector.helper.utils import unfreeze_versions
-        from gitpy import LocalRepository
+        from infi.gitpy import LocalRepository
         from os import curdir
         unfreeze_versions(self.arguments.get("--with-install-requires", False))
         if self.arguments.get("--commit-changes", False):

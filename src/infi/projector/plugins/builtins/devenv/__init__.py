@@ -156,9 +156,17 @@ class DevEnvPlugin(CommandPlugin):
                 os.remove(setuptools_egg_link)
 
     def _get_pip(self):
+        from sys import version_info
         from pkg_resources import resource_filename
         from infi.projector.plugins.builtins.repository import skeleton
-        get_pip_py = resource_filename(skeleton.__name__, "get-pip.py")
+        version = (version_info.major, version_info.minor)
+        if version > (3, 6):
+            name = "get-pip.py"
+        elif version > (2, 7):
+            name = "get-pip3.py"
+        else:
+            name = "get-pip2.py"
+        get_pip_py = resource_filename(skeleton.__name__, name)
         with open("get-pip.py", "w") as dst:
             with open(get_pip_py) as src:
                 dst.write(src.read())

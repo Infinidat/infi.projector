@@ -13,7 +13,7 @@ class UtilsTestCase(TestCase):
 
     def test_revert_if_failed(self):
         from infi.projector.helper.utils import revert_if_failed
-        from gitpy import LocalRepository
+        from infi.gitpy import LocalRepository
         from os import curdir
         class Messup(Exception):
             pass

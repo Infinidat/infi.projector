@@ -2,7 +2,7 @@ from unittest import SkipTest
 from .test_case import TestCase
 from infi.unittest.parameters import iterate
 from contextlib import contextmanager
-from gitpy import LocalRepository
+from infi.gitpy import LocalRepository
 from os import curdir, name
 from mock import patch
 from infi.projector.plugins.builtins.version import VersionPlugin
@@ -135,7 +135,7 @@ class VersionTestCase(TestCase):
     def test_release_with_push(self):
         from infi.projector.helper.utils import chdir
         from os import path, curdir
-        from gitpy import LocalRepository
+        from infi.gitpy import LocalRepository
         with self.mock_build_and_upload_distributions():
             with self.temporary_directory_context() as origin_location:
                 self.projector("repository init a.b.c none short long")

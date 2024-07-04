@@ -80,7 +80,7 @@ class JSRequirementsPlugin(CommandPlugin):
             commit_changes_to_buildout(commit_message)
 
     def freeze(self):
-        from gitpy import LocalRepository
+        from infi.gitpy import LocalRepository
         from os import curdir
         import json
 
@@ -115,7 +115,7 @@ class JSRequirementsPlugin(CommandPlugin):
             repository._executeGitCommandAssertSuccess("git push")
 
     def unfreeze(self):
-        from gitpy import LocalRepository
+        from infi.gitpy import LocalRepository
         from os import curdir
         with open_buildout_configfile(write_on_exit=True) as buildout_cfg:
             if not buildout_cfg.has_section('js-requirements'):

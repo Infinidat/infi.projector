@@ -68,4 +68,4 @@ class RepositoryTestCase(TestCase):
 
     def test_clone_remote_without_develop_branch(self):
         with self.temporary_directory_context():
-            self.projector("repository clone git://github.com/Infinidat/infi.pyutils.git")
+            self.projector("repository clone https://github.com/Infinidat/infi.pyutils.git")
