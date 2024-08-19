@@ -55,31 +55,33 @@ class DevEnvPlugin(CommandPlugin):
 
     def _get_pypi_index_url(self):
         from os import path
-        pydistutils = configparser.ConfigParser()
-        pydistutils.read([path.expanduser(path.join("~", basename)) for basename in ['.pydistutils.cfg', 'pydistutils.cfg']])
+        from configparser import ConfigParser
+        from os import path, basename
+        pypirc = ConfigParser()
+        pypirc.read([path.expanduser(path.join("~", basename)) for basename in ['.pypirc', 'pypirc.cfg']])
+        
         try:
-            return pydistutils.get("easy_install", "index-url").strip("/")
+            # Attempt to get the index-url from pip's config if available
+            return pypirc.get("global", "index-url").strip("/")
         except (configparser.NoSectionError, configparser.NoOptionError):
-            return "https://pypi.python.org/simple"
+            # Fallback to a default PyPI URL
+            return "https://pypi.org/simple"
 
-    def bootstrap_if_necessary(self):
-        from os.path import join, split
-        from os import name
-        from sys import argv
-        from pkg_resources import resource_filename
-        from infi.projector.plugins.builtins.repository import skeleton
-        buildout_executable_exists = assertions.is_executable_exists(join("bin", "buildout"))
-        if not buildout_executable_exists or self.arguments.get("--force-bootstrap", False) or self.arguments.get("--newest", False):
-            try:
-                return utils.execute_assert_success([utils.get_executable('buildout'), 'bootstrap'])
-            except OSError:  # workaround for OSX
-                pass
-            try:
-                utils.execute_assert_success(['buildout', 'bootstrap'])
-            except OSError:
-                dirname, basename = split(argv[0])
-                buildout = join(dirname, 'buildout.exe' if name == 'nt' else 'buildout')
-                utils.execute_assert_success([buildout, 'bootstrap'])
+def bootstrap_if_necessary(self):
+    from os.path import join
+    from sys import executable
+    from infi.projector.plugins.builtins.repository import skeleton
+
+    # Check if the environment is already bootstrapped by verifying certain dependencies
+    pip_installed = assertions.is_executable_exists(join("bin", "pip"))
+    setuptools_installed = assertions.is_executable_exists(join("bin", "setuptools"))
+
+    if not pip_installed or not setuptools_installed or self.arguments.get("--force-bootstrap", False):
+        logger.info("Bootstrapping environment with pip")
+        
+        # Install or upgrade pip and setuptools
+        utils.execute_assert_success([executable, "-m", "pip", "install", "--upgrade", "setuptools", "pip"])
+
 
     def install_sections_by_recipe(self, recipe, stripped=True):
         with utils.open_buildout_configfile() as buildout:
@@ -172,30 +174,21 @@ class DevEnvPlugin(CommandPlugin):
                 dst.write(src.read())
 
     def _install_setuptools_and_zc_buildout(self):
-        from os.path import join, exists
-        from os import environ, remove
+        from os.path import join
+        from os import environ
 
         with utils.open_buildout_configfile() as buildout:
             cachedir = buildout.get("buildout", "download-cache")
         cache_dist = join(cachedir, "dist")
 
-        cmd = []
-        packages = []
-
-        # in case dependencies are frozen, we need to use the frozen version of setuptools and zc.buildout
-        with utils.open_buildout_configfile() as buildout:
-            for package in ['setuptools', 'zc.buildout', 'pip']:
-                if buildout.has_option("versions", package):
-                    packages += ['{}=={}'.format(package, buildout.get("versions", package))]
-                else:
-                    packages += [package]
+        packages = ['setuptools', 'pip']
 
         env = environ.copy()
         env['PYTHONPATH'] = ''
         for package in packages:
-            utils.execute_assert_success([utils.get_isolated_executable('python'), 'get-pip.py', '--upgrade-strategy=only-if-needed', '--prefix=%s' % join('parts', 'python'), package], env=env)
-        remove('get-pip.py')
+            utils.execute_assert_success([utils.get_isolated_executable('python'), '-m', 'pip', 'install', '--upgrade', package], env=env)
         utils.execute_assert_success([utils.get_isolated_executable('python'), '-m', 'pip', 'download', '--dest', cache_dist] + packages, env=env)
+
 
     def install_isolated_python_if_necessary(self):
         from os import environ

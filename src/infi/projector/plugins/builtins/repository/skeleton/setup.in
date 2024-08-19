@@ -1,4 +1,3 @@
-
 SETUP_INFO = dict(
     name = '${project:name}',
     version = '${infi.recipe.template.version:version}',
@@ -17,6 +16,8 @@ SETUP_INFO = dict(
         "License :: OSI Approved :: BSD License",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.11",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
 
@@ -30,12 +31,9 @@ SETUP_INFO = dict(
 
     entry_points = dict(
         console_scripts = ${project:console_scripts},
-        gui_scripts = ${project:gui_scripts},
-        ),
+        gui_scripts = [],
+        projector_command_plugins = ${project:command_plugins}),
 )
-
-if SETUP_INFO['url'] is None:
-    _ = SETUP_INFO.pop('url')
 
 def setup():
     from setuptools import setup as _setup
@@ -45,4 +43,3 @@ def setup():
 
 if __name__ == '__main__':
     setup()
-

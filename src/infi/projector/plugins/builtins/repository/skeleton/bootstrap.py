@@ -24,7 +24,9 @@ import sys
 import tempfile
 import glob
 import re
-
+from urllib.parse import urlparse
+from urllib.request import urlopen
+import subprocess
 from optparse import OptionParser
 try:
     from importlib import reload
@@ -147,14 +149,14 @@ def _cleanup_setuptools_and_distribute_modules():
 
 to_reload = False
 try:
-    from urlparse import urlparse
+    from urllib.parse import urlparse
 except ImportError:
     from urllib.parse import urlparse
 
 try:
     from urllib.request import urlopen
 except ImportError:
-    from urllib2 import urlopen
+    from urllib.request import urlopen
 
 _cleanup_setuptools_and_distribute_modules()
 _cleanup_setuptools_and_distribute_modules()  # wtf need to run twice
@@ -212,9 +214,7 @@ except ImportError:
 
 ws = pkg_resources.working_set
 
-cmd = [sys.executable, '-c',
-       'from setuptools.command.easy_install import main; main()',
-       '-mZqNxd', tmpeggs]
+cmd = [sys.executable, '-m', 'pip', 'install', '--upgrade', 'zc.buildout']
 
 find_links = os.environ.get(
     'bootstrap-testing-find-links',
@@ -226,50 +226,15 @@ if find_links:
     cmd.extend(['-f', find_links])
 if options.index_url:
     cmd.extend(["-i", options.index_url])
-setuptools_path = ws.find(
-    pkg_resources.Requirement.parse('setuptools')).location
 
 requirement = 'zc.buildout'
 version = options.version
-if version is None and not options.accept_buildout_test_releases:
-    # Figure out the most recent final version of zc.buildout.
-    import setuptools.package_index
-    _final_parts = '*final-', '*final'
 
-    def _final_version(parsed_version):
-        for part in parsed_version:
-            if (part[:1] == '*') and (part not in _final_parts):
-                return False
-        return True
-    kwargs = dict(search_path=[setuptools_path])
-    if options.index_url:
-        kwargs['index_url'] = options.index_url
-    index = setuptools.package_index.PackageIndex(**kwargs)
-    if find_links:
-        index.add_find_links((find_links,))
-    if options.download_base:
-        index.add_find_links((options.download_base,))
-    req = pkg_resources.Requirement.parse(requirement)
-    if index.obtain(req) is not None:
-        best = []
-        bestv = None
-        for dist in index[req.project_name]:
-            distv = dist.parsed_version
-            if _final_version(distv):
-                if bestv is None or distv > bestv:
-                    best = [dist]
-                    bestv = distv
-                elif distv == bestv:
-                    best.append(dist)
-        if best:
-            best.sort()
-            version = best[-1].version
 if version:
     requirement = '=='.join((requirement, version))
 cmd.append(requirement)
 
-import subprocess
-if subprocess.call(cmd, env=dict(os.environ, PYTHONPATH=setuptools_path)) != 0:
+if subprocess.call(cmd) != 0:
     raise Exception(
         "Failed to execute command:\n%s",
         repr(cmd)[1:-1])
@@ -279,17 +244,13 @@ if subprocess.call(cmd, env=dict(os.environ, PYTHONPATH=setuptools_path)) != 0:
 # installing setuptools imported site.py, which added zc.buildout to the WorkingSet if it was previously installed
 # this may raise a VerionConflict here; we just need to resolve the location of the buildout we just installed
 # so we clear the WorkingSet
-_cleanup_old_zc_buildout_modules()
-ws.by_key = {}
-ws.add_entry(setuptools_path)
-ws.add_entry(tmpeggs)
 ws.require(requirement)
 import zc.buildout.buildout
 
 if not [a for a in args if '=' not in a]:
     args.append('bootstrap')
 
-# if -c was provided, we push it back into args for buildout' main function
+# if -c was provided, we push it back into args for buildout's main function
 if options.config_file is not None:
     args[0:0] = ['-c', options.config_file]
 
