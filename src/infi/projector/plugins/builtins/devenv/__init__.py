@@ -3,7 +3,9 @@ from infi.projector.plugins import CommandPlugin
 from infi.projector.helper import assertions, utils
 from infi.projector.helper.utils import configparser
 from logging import getLogger
+import os
 
+from src.infi.projector.helper.utils import _set_buildout_environment
 logger = getLogger(__name__)
 
 USAGE = """
@@ -164,7 +166,9 @@ class DevEnvPlugin(CommandPlugin):
         with open("get-pip.py", "w") as dst:
             with open(get_pip_py) as src:
                 dst.write(src.read())
+    
 
+    
     def _install_setuptools_and_zc_buildout(self):
         from os.path import join, exists
         from os import environ, remove
@@ -184,10 +188,24 @@ class DevEnvPlugin(CommandPlugin):
                 else:
                     packages.append(package)
 
-        env = environ.copy()
+        env = _set_buildout_environment()
         env['PYTHONPATH'] = ''
         python_executable = utils.get_isolated_executable('python')
 
+        # Ensure pip is installed
+        try:
+            logger.info("Ensuring pip is installed")
+            utils.execute_assert_success([
+                python_executable, '-m', 'ensurepip', '--upgrade'
+            ], env=env)
+        except Exception as e:
+            logger.warning(f"Failed to install pip using ensurepip: {e}")
+            logger.info(f"Retrying pip installation using get-pip.py")
+            utils.execute_assert_success([
+                python_executable, 'get-pip.py'
+            ], env=env)
+
+        # Install packages
         for package in packages:
             try:
                 logger.info(f"Installing {package} using primary index {primary_index}")
@@ -208,10 +226,8 @@ class DevEnvPlugin(CommandPlugin):
                     '--index-url', alternative_index
                 ], env=env)
 
-
         if exists('get-pip.py'):
             remove('get-pip.py')
-
 
         logger.info(f"Downloading packages to cache at {cache_dist}")
         utils.execute_assert_success([
@@ -219,7 +235,7 @@ class DevEnvPlugin(CommandPlugin):
             '--dest', cache_dist,
             '--index-url', primary_index,
             '--extra-index-url', alternative_index
-            ] + packages, env=env)
+        ] + packages, env=env)
 
 
     def install_isolated_python_if_necessary(self):
