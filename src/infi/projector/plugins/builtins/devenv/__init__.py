@@ -54,13 +54,7 @@ class DevEnvPlugin(CommandPlugin):
             makedirs(cache_dist)
 
     def _get_pypi_index_url(self):
-        from os import path
-        pydistutils = configparser.ConfigParser()
-        pydistutils.read([path.expanduser(path.join("~", basename)) for basename in ['.pydistutils.cfg', 'pydistutils.cfg']])
-        try:
-            return pydistutils.get("easy_install", "index-url").strip("/")
-        except (configparser.NoSectionError, configparser.NoOptionError):
-            return "https://pypi.python.org/simple"
+        return "https://pypi.infinidat.com/simple"
 
     def bootstrap_if_necessary(self):
         from os.path import join, split
@@ -179,23 +173,54 @@ class DevEnvPlugin(CommandPlugin):
             cachedir = buildout.get("buildout", "download-cache")
         cache_dist = join(cachedir, "dist")
 
-        cmd = []
         packages = []
+        primary_index = self._get_pypi_index_url()
+        alternative_index = "https://pypi.org/simple/"
 
-        # in case dependencies are frozen, we need to use the frozen version of setuptools and zc.buildout
         with utils.open_buildout_configfile() as buildout:
             for package in ['setuptools', 'zc.buildout', 'pip']:
                 if buildout.has_option("versions", package):
-                    packages += ['{}=={}'.format(package, buildout.get("versions", package))]
+                    packages.append(f'{package}=={buildout.get("versions", package)}')
                 else:
-                    packages += [package]
+                    packages.append(package)
 
         env = environ.copy()
         env['PYTHONPATH'] = ''
+        python_executable = utils.get_isolated_executable('python')
+
         for package in packages:
-            utils.execute_assert_success([utils.get_isolated_executable('python'), 'get-pip.py', '--upgrade-strategy=only-if-needed', '--prefix=%s' % join('parts', 'python'), package], env=env)
-        remove('get-pip.py')
-        utils.execute_assert_success([utils.get_isolated_executable('python'), '-m', 'pip', 'download', '--dest', cache_dist] + packages, env=env)
+            try:
+                logger.info(f"Installing {package} using primary index {primary_index}")
+                utils.execute_assert_success([
+                    python_executable, '-m', 'pip', 'install', package,
+                    '--upgrade-strategy=only-if-needed',
+                    '--prefix=%s' % join('parts', 'python'),
+                    '--index-url', primary_index,
+                    '--extra-index-url', alternative_index
+                ], env=env)
+            except Exception as e:
+                logger.warning(f"Failed to install {package} from primary index: {e}")
+                logger.info(f"Retrying {package} installation using alternative index {alternative_index}")
+                utils.execute_assert_success([
+                    python_executable, '-m', 'pip', 'install', package,
+                    '--upgrade-strategy=only-if-needed',
+                    '--prefix=%s' % join('parts', 'python'),
+                    '--index-url', alternative_index
+                ], env=env)
+
+
+        if exists('get-pip.py'):
+            remove('get-pip.py')
+
+
+        logger.info(f"Downloading packages to cache at {cache_dist}")
+        utils.execute_assert_success([
+            python_executable, '-m', 'pip', 'download',
+            '--dest', cache_dist,
+            '--index-url', primary_index,
+            '--extra-index-url', alternative_index
+            ] + packages, env=env)
+
 
     def install_isolated_python_if_necessary(self):
         from os import environ

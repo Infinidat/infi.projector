@@ -1,6 +1,7 @@
 from contextlib import contextmanager
 from logging import getLogger
 import sys
+import os
 import re
 try:
     import configparser
@@ -71,6 +72,16 @@ def execute_assert_success(args, env=None):
     if result.get_returncode() is not None and result.get_returncode() != 0:
         logger.error(result.get_stderr().decode())
         raise PrettyExecutionError(result)
+
+
+def _set_buildout_environment():
+    env = os.environ.copy()
+    project_root = os.getcwd()
+    env["LD_LIBRARY_PATH"] = f"{env.get('LD_LIBRARY_PATH', '')}:{project_root}/parts/python/lib"
+    env["PKG_CONFIG_PATH"] = f"{env.get('PKG_CONFIG_PATH', '')}:{project_root}/parts/python/lib/pkgconfig"
+    env["SODIUM_INSTALL"] = "system"
+    return env
+
 
 def _get_executable_from_shebang_line():  # pragma: no cover
     # The executable wrapper in distribute dynamically loads Python's DLL, which causes sys.executable to be the wrapper
@@ -149,9 +160,10 @@ def execute_with_isolated_python(commandline_or_args):
             [executable] = os.path.abspath(executable[0])
     execute_assert_success(executable + args)
 
+
 def execute_with_buildout(commandline_or_args, env=None, stripped=True):
-    from os import name, path, environ
-    _env = environ.copy()
+    from os import name, path
+    _env = _set_buildout_environment()
     if env:
         _env.update(env)
     args = parse_args(commandline_or_args)
