@@ -2,9 +2,19 @@ from contextlib import contextmanager
 from infi.projector.plugins import CommandPlugin
 from infi.projector.helper import assertions, utils
 from infi.projector.helper.utils import configparser
+from infi.os_info import get_platform_name, get_platform_string
 from logging import getLogger
+from six.moves.urllib.request import urlopen
+import os
 
 logger = getLogger(__name__)
+
+TOOLKIT_PREFIX = 'toolkit'
+TOOLKIT_SUFFIX = 'tar.gz'
+REPO_URL = os.path.join('ftp://repo.lab.il.infinidat.com', 'packages', 'main-stable', 'python', TOOLKIT_PREFIX)
+INFINIDAT_PATH = os.path.join(os.path.sep, 'opt', 'infinidat')
+TOOLKIT_PATH = os.path.join(INFINIDAT_PATH, TOOLKIT_PREFIX)
+BIN_PATH = os.path.join(TOOLKIT_PATH, 'bin')
 
 USAGE = """
 Usage:
@@ -31,6 +41,10 @@ Options:
 
 
 class DevEnvPlugin(CommandPlugin):
+    def __init__(self):
+        self.env = {}
+        self.install_toolkit_if_necessary()
+
     def get_docopt_string(self):
         return USAGE
 
@@ -87,7 +101,7 @@ class DevEnvPlugin(CommandPlugin):
                                    if buildout.has_option(section, "recipe") and
                                       buildout.get(section, "recipe").startswith(recipe)]
         if sections_to_install:
-            utils.execute_with_buildout("install {}".format(' '.join(sections_to_install)), stripped=stripped)
+            utils.execute_with_buildout("install {}".format(' '.join(sections_to_install)), stripped=stripped, env=self.env)
 
     def submodule_update(self):
         with utils.buildout_parameters_context(['buildout:develop=']):
@@ -242,3 +256,100 @@ class DevEnvPlugin(CommandPlugin):
         assertions.assert_isolated_python_exists()
 
         self.install_sections_by_recipe("infi.recipe.application_packager", stripped=False)
+
+    def get_tarball_name(self, platform):
+        request = urlopen(REPO_URL)
+        response = request.read()
+        data = response.decode()
+        lines = data.splitlines()
+        prefix = '%s-' % TOOLKIT_PREFIX
+        suffix = '-%s.%s' % (platform, SUFFIX)
+        versions = []
+        for line in lines:
+            rows = line.split()
+            if not rows:
+                continue
+            name = rows[-1]
+            if not name.startswith(prefix):
+                continue
+            name = name.replace(prefix, '')
+            if not name.endswith(suffix):
+                continue
+            name = name.replace(suffix, '')
+            octets = name.split('.')
+            try:
+                version = [int(octet) for octet in octets]
+            except (ValueError, TypeError)
+                continue
+            versions.append(version)
+        if not versions:
+            return None
+        versions.sort()
+        version = ".".join(versions[-1])
+        tarball_name = '%s%s%s' % (prefix, version, suffix)
+        return tarball_name
+
+    def install_toolkit_if_necessary(self):
+        if not self.arguments.get("--use-isolated-python", False):
+            return None
+        if 'windows' == get_platform_name():
+            return None
+        path = os.environ.get('PATH')
+        if path:
+            paths = [BIN_PATH] + path.split(os.pathsep)
+            path = os.pathsep.join(paths)
+        else:
+            path = BIN_PATH
+        shell = os.path.join(BIN_PATH, 'bash')
+        prefix = os.path.abspath(os.path.join('parts', 'python'))
+        pkg_config_path = os.path.join(prefix, 'lib', 'pkgconfig')
+        env = dict(
+            PATH=path,
+            SHELL=shell,
+            CONFIG_SHELL=shell,
+            OPENSSL_DIR=prefix,
+            PKG_CONFIG_PATH=pkg_config_path,
+            CRYPTOGRAPHY_DONT_BUILD_RUST="1",
+            SODIUM_INSTALL="system",
+            GEVENTSETUP_EMBED="0",
+            GREENLET_TEST_CPP="0",
+            NO_CYTHON_COMPILE="true"
+        }
+        section = self.get_isolated_python_section_name()
+        if not section:
+            logger.debug("No isolated python section found")
+            return None
+        with utils.open_buildout_configfile() as buildout:
+            version = buildout.get(section, "version")
+        if not version:
+            logger.debug("No isolated python version found")
+            return None
+        version = version.lstrip("v")
+        octets = version.split(".")
+        if len(octets) < 2:
+            logger.debug("Unexpected isolated python version %s", version)
+            return None
+        try:
+            octets = [int(octet) for octet in octets]
+        except (ValueError, TypeError) as error
+            logger.debug("Invalid isolated python version %s: %s", version, error)
+            return None
+        major, minor = octets[:2]
+        if (major, minor) < (3, 9):
+            logger.debug("Toolkit is not required for isolated python version %s", version)
+            return None
+        platform = get_platform_string()
+        tarball_name = self.get_tarball_name(platform)
+        if not tarball_name:
+            logger.debug("Toolkit not found for %s platform", platform)
+            return None
+        tarball_path = os.path.join(INFINIDAT_PATH, tarball_name)
+        if os.path.isfile(tarball_path):
+            logger.debug("Toolkit is %s already exists", tarball_path)
+            return env
+        tarball_url = os.path.join(REPO_URL, tarball_name)
+        cmd = "cd '%s' && curl -O '%s'" % (INFINIDAT_PATH, tarball_url)
+        execute_assert_success(cmd, shell=True)
+        cmd = "cd '%s' && gunzip -dc '%s' | tar xf -" % (INFINIDAT_PATH, tarball_name)
+        execute_assert_success(cmd, shell=True)
+        return env
