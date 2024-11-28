@@ -93,7 +93,7 @@ class RepositoryPlugin(CommandPlugin):
 
     def git_init(self):
         from os.path import curdir
-        from gitpy.repository import LocalRepository
+        from infi.gitpy.repository import LocalRepository
         repository = LocalRepository(curdir)
         repository.init()
         repository.addRemote("origin", self.arguments.get('<origin>'))
@@ -153,21 +153,21 @@ class RepositoryPlugin(CommandPlugin):
 
     def commit_all(self):
         from os import curdir
-        from gitpy import LocalRepository
+        from infi.gitpy import LocalRepository
         repository = LocalRepository(curdir)
         repository.addAll()
         repository.commit("added all project files")
 
     def git_checkout_develop(self):
         from os import curdir
-        from gitpy import LocalRepository
+        from infi.gitpy import LocalRepository
         repository = LocalRepository(curdir)
         repository.checkout("develop")
 
     def init_branches(self):
         from infi.execute import execute_assert_success
         from os import curdir
-        from gitpy import LocalRepository
+        from infi.gitpy import LocalRepository
         repository = LocalRepository(curdir)
         branches = [branch.name for branch in repository.getBranches()]
         remotes = repository.getRemotes()
@@ -201,7 +201,7 @@ class RepositoryPlugin(CommandPlugin):
 
     def git_clone(self):
         from os import curdir
-        from gitpy import LocalRepository
+        from infi.gitpy import LocalRepository
         repository = LocalRepository(curdir)
         origin = self.arguments.get("<origin>")
         logger.debug("Cloning {}".format(origin))
@@ -209,8 +209,8 @@ class RepositoryPlugin(CommandPlugin):
 
     def origin_has_develop_branch(self):
         from os import curdir
-        from gitpy import LocalRepository
-        from gitpy.exceptions import NonexistentRefException
+        from infi.gitpy import LocalRepository
+        from infi.gitpy.exceptions import NonexistentRefException
         repository = LocalRepository(curdir)
         try:
             repository.getRemoteByName("origin").getBranchByName("develop")
@@ -231,7 +231,7 @@ class RepositoryPlugin(CommandPlugin):
         from .skeleton import get_files_to_update
         from shutil import copy
         from os import curdir
-        from gitpy import LocalRepository
+        from infi.gitpy import LocalRepository
         repository = LocalRepository(curdir)
         for src, dst in [(filepath, basename(filepath)) for filepath in get_files_to_update()]:
             copy(src, dst)
@@ -241,7 +241,7 @@ class RepositoryPlugin(CommandPlugin):
 
     def remove_deprecated_files(self):
         from os import curdir, path, remove
-        from gitpy import LocalRepository
+        from infi.gitpy import LocalRepository
         repository = LocalRepository(curdir)
         for filename in [filename for filename in ["buildout-git.cfg",
                                                    "buildout-version.cfg",
@@ -286,7 +286,7 @@ class RepositoryPlugin(CommandPlugin):
 
         if self.arguments.get("--commit-changes", False):
             logger.info("Committing changes")
-            from gitpy import LocalRepository
+            from infi.gitpy import LocalRepository
             from os import curdir
             repository = LocalRepository(curdir)
             message = "updated project files from skeleton"

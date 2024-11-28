@@ -8,7 +8,7 @@ class JSRequirementsTestCase(TestCase):
     @iterate("package_name", ["jquery=3.2.1", "underscore", "backbone<3.0.0", "angular2>=0.0.0"])
     def test_add_and_remove(self, package_name):
         from infi.projector.plugins.builtins.js_requirements import JSRequirementsPlugin
-        from gitpy import LocalRepository
+        from infi.gitpy import LocalRepository
         plugin = JSRequirementsPlugin()
         with self.temporary_directory_context() as dir_path:
             self.projector("repository init a.b.c none short long")
@@ -23,12 +23,12 @@ class JSRequirementsTestCase(TestCase):
 
     @contextmanager
     def assert_new_commit(self):
-        from gitpy import LocalRepository
+        from infi.gitpy import LocalRepository
         from os import curdir
         repository = LocalRepository(curdir)
         head = repository.getHead().hash
         yield
-        self.assertNotEquals(head, repository.getHead().hash)
+        self.assertNotEqual(head, repository.getHead().hash)
 
     def test_freeze_unfreeze(self):
         with self.temporary_directory_context():
@@ -61,7 +61,7 @@ class JSRequirementsTestCase(TestCase):
             self.assertIn("jquery<3.2.1", open("buildout.cfg").read())
 
     def test_freeze_after_freeze(self):
-        from gitpy.exceptions import GitCommandFailedException
+        from infi.gitpy.exceptions import GitCommandFailedException
         with self.temporary_directory_context():
             self.projector("repository init a.b.c none short long")
             self.projector("js-requirements add jquery=3.3.1 --commit-changes")

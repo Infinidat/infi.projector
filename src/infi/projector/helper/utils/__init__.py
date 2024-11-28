@@ -69,7 +69,7 @@ def execute_assert_success(args, env=None):
     logger.info("Executing {}".format(' '.join(args)))
     result = execute.execute(args, env=env)
     if result.get_returncode() is not None and result.get_returncode() != 0:
-        logger.error(result.get_stderr())
+        logger.error(result.get_stderr().decode())
         raise PrettyExecutionError(result)
 
 def _get_executable_from_shebang_line():  # pragma: no cover
@@ -181,7 +181,7 @@ def _release_version_in_git(version_tag):
 
 def git_checkout(branch_name_or_tag):
     from os import curdir
-    from gitpy import LocalRepository
+    from infi.gitpy import LocalRepository
     logger.info("checking out '{}'".format(branch_name_or_tag))
     try:
         LocalRepository(curdir).checkout(branch_name_or_tag)
@@ -191,7 +191,7 @@ def git_checkout(branch_name_or_tag):
 
 def commit_changes_to_buildout(message):
     import os
-    from gitpy import LocalRepository
+    from infi.gitpy import LocalRepository
     repository = LocalRepository(os.curdir)
     # workaround https://github.com/msysgit/git/issues/79
     os.system("git status")
@@ -202,14 +202,14 @@ def commit_changes_to_buildout(message):
 
 def commit_changes_to_manifest_in(message):
     from os import curdir
-    from gitpy import LocalRepository
+    from infi.gitpy import LocalRepository
     repository = LocalRepository(curdir)
     repository.add("MANIFEST.in")
     repository.commit("MANIFEST.in: " + message)
 
 def get_latest_version():
     from os import curdir
-    from gitpy import LocalRepository
+    from infi.gitpy import LocalRepository
     from pkg_resources import parse_version
     repository = LocalRepository(curdir)
     version_tags = [tag.name for tag in repository.getTags()
@@ -344,7 +344,7 @@ class RevertIfFailedOperations(object):
 
 @contextmanager
 def revert_if_failed(keep_leftovers):
-    from gitpy import LocalRepository
+    from infi.gitpy import LocalRepository
     from os import curdir
     repository = LocalRepository(curdir)
     ops = RevertIfFailedOperations(repository)

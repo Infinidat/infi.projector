@@ -26,6 +26,11 @@ import glob
 import re
 
 from optparse import OptionParser
+try:
+    from importlib import reload
+except ImportError:
+    # "reload" is builtin in python 2
+    pass
 
 tmpeggs = tempfile.mkdtemp()
 

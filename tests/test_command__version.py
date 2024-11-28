@@ -2,7 +2,7 @@ from unittest import SkipTest
 from .test_case import TestCase
 from infi.unittest.parameters import iterate
 from contextlib import contextmanager
-from gitpy import LocalRepository
+from infi.gitpy import LocalRepository
 from os import curdir, name
 from mock import patch
 from infi.projector.plugins.builtins.version import VersionPlugin
@@ -135,7 +135,7 @@ class VersionTestCase(TestCase):
     def test_release_with_push(self):
         from infi.projector.helper.utils import chdir
         from os import path, curdir
-        from gitpy import LocalRepository
+        from infi.gitpy import LocalRepository
         with self.mock_build_and_upload_distributions():
             with self.temporary_directory_context() as origin_location:
                 self.projector("repository init a.b.c none short long")
@@ -154,18 +154,18 @@ class VersionTestCase(TestCase):
             plugin = VersionPlugin()
             plugin.arguments = {"<version>": "major"}
             result = plugin.replace_version_tag()
-            self.assertEquals(result, "3.0")
+            self.assertEqual(result, "3.0")
 
     def test_reset_trivial_when_releasing_major(self):
         with patch.object(VersionPlugin, "get_git_describe", return_value="0.0.5"):
             plugin = VersionPlugin()
             plugin.arguments = {"<version>": "major"}
             result = plugin.replace_version_tag()
-            self.assertEquals(result, "1.0")
+            self.assertEqual(result, "1.0")
 
     def test_reset_trivial_when_releasing_minor(self):
         with patch.object(VersionPlugin, "get_git_describe", return_value="1.5.5"):
             plugin = VersionPlugin()
             plugin.arguments = {"<version>": "minor"}
             result = plugin.replace_version_tag()
-            self.assertEquals(result, "1.6")
+            self.assertEqual(result, "1.6")

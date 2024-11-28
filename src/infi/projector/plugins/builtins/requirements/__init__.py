@@ -11,7 +11,7 @@ Usage:
     projector requirements list [--development]
     projector requirements add <requirement> [--development] [--commit-changes]
     projector requirements remove <requirement> [--development] [--commit-changes]
-    projector requirements freeze [--with-install-requires] [--newest] [--allow-post-releases | --strip-suffix-from-post-releases] [--push-changes] [--commit-changes]
+    projector requirements freeze [--with-install-requires] [--newest] [--allow-post-releases | --strip-suffix-from-post-releases | --allow-post-for=packages] [--push-changes] [--commit-changes]
     projector requirements unfreeze [--with-install-requires] [--commit-changes] [--push-changes]
 
 
@@ -75,7 +75,7 @@ class RequirementsPlugin(CommandPlugin):
     def freeze(self):
         from infi.projector.helper.utils import freeze_versions, buildout_parameters_context, open_tempfile
         from infi.projector.plugins.builtins.devenv import DevEnvPlugin
-        from gitpy import LocalRepository
+        from infi.gitpy import LocalRepository
         from os import curdir
         from re import sub, findall, MULTILINE
         plugin = DevEnvPlugin()
@@ -88,17 +88,25 @@ class RequirementsPlugin(CommandPlugin):
             with open(tempfile) as fd:
                 content = fd.read()
             post_releases = findall(r'^[^#].* = .*\.post.*', content, MULTILINE)
+            allow_post_for = self.arguments.get('--allow-post-for')
+            if allow_post_for:
+                allow_post_for = [item.lower() for item in allow_post_for.split(',')]
+            else:
+                allow_post_for = []
             if post_releases:
                 if self.arguments.get('--allow-post-releases'):
                     pass
                 elif self.arguments.get('--strip-suffix-from-post-releases'):
                     content = sub(r'\.post\d+', '', content)
                 else:
-                    msg = "freeze found the follwing post-releases, see the dependency tree above:\n{}"
-                    formatted_post_releases = "\n".join(item for item in post_releases)
-                    logger.info(content)
-                    logger.error(msg.format(formatted_post_releases))
-                    raise SystemExit(1)
+                    for package in post_releases:
+                        package = package.split('=')[0].strip().lower()
+                        if package not in allow_post_for:
+                            msg = "freeze found the follwing post-releases, see the dependency tree above:\n{}"
+                            formatted_post_releases = "\n".join(item for item in post_releases)
+                            logger.info(content)
+                            logger.error(msg.format(formatted_post_releases))
+                            raise SystemExit(1)
             with open(tempfile, 'w') as fd:
                 fd.write("[versions]\n" + "\n".join(set(content.splitlines())))
             freeze_versions(tempfile, self.arguments.get("--with-install-requires", False))
@@ -112,7 +120,7 @@ class RequirementsPlugin(CommandPlugin):
 
     def unfreeze(self):
         from infi.projector.helper.utils import unfreeze_versions
-        from gitpy import LocalRepository
+        from infi.gitpy import LocalRepository
         from os import curdir
         unfreeze_versions(self.arguments.get("--with-install-requires", False))
         if self.arguments.get("--commit-changes", False):

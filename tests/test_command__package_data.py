@@ -18,7 +18,7 @@ class PackageDataTestCase(TestCase):
         from mock import patch, Mock
         with patch("pprint.pprint") as pprint:
             def side_effect(*args, **kwargs):
-                self.assertEquals([], args[0])
+                self.assertEqual([], args[0])
             pprint.side_effect = side_effect
             with self.temporary_directory_context():
                 self.projector("repository init a.b.c none short long")
