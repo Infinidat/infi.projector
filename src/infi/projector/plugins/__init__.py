@@ -49,8 +49,8 @@ class PluginRepository(object):
         for entry_point in iter_entry_points(COMMAND_PLUGIN_ENTRY_POINT):
             try:
                 yield entry_point.load()
-            except Exception:
-                logger.error("There was a problem loading plugin from entry point {!r}".format(entry_point))
+            except Exception as error:
+                logger.error("There was a problem loading plugin from entry point %s: %s", entry_point, error)
 
     def get_plugin_clases_from_entry_points(self):
         return list(self._iter_plugin_entry_points())

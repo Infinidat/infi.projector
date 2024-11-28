@@ -2,9 +2,21 @@ from contextlib import contextmanager
 from infi.projector.plugins import CommandPlugin
 from infi.projector.helper import assertions, utils
 from infi.projector.helper.utils import configparser
+from infi.os_info import get_platform_string
 from logging import getLogger
+from six.moves.urllib.request import urlopen, urlretrieve
+import os
+import json
+import tarfile
 
 logger = getLogger(__name__)
+
+TOOLKIT_PREFIX = 'toolkit'
+TOOLKIT_SUFFIX = 'tar.gz'
+REPO_URL = os.path.join('ftp://repo.lab.il.infinidat.com', 'packages', 'main-stable', 'python', TOOLKIT_PREFIX)
+INFINIDAT_PATH = os.path.join(os.path.sep, 'opt', 'infinidat')
+TOOLKIT_PATH = os.path.join(INFINIDAT_PATH, TOOLKIT_PREFIX)
+BIN_PATH = os.path.join(TOOLKIT_PATH, 'bin')
 
 USAGE = """
 Usage:
@@ -42,7 +54,7 @@ class DevEnvPlugin(CommandPlugin):
 
     @assertions.requires_repository
     def pre_command_assertions(self):
-        pass
+        self.env = self.install_toolkit_if_necessary()
 
     def create_cache_directories(self):
         from os import makedirs
@@ -87,7 +99,8 @@ class DevEnvPlugin(CommandPlugin):
                                    if buildout.has_option(section, "recipe") and
                                       buildout.get(section, "recipe").startswith(recipe)]
         if sections_to_install:
-            utils.execute_with_buildout("install {}".format(' '.join(sections_to_install)), stripped=stripped)
+            logger.debug("Installing %s with env %s", sections_to_install, json.dumps(self.env, indent=4))
+            utils.execute_with_buildout("install {}".format(' '.join(sections_to_install)), stripped=stripped, env=self.env)
 
     def submodule_update(self):
         with utils.buildout_parameters_context(['buildout:develop=']):
@@ -242,3 +255,133 @@ class DevEnvPlugin(CommandPlugin):
         assertions.assert_isolated_python_exists()
 
         self.install_sections_by_recipe("infi.recipe.application_packager", stripped=False)
+
+    def get_toolkit_name(self, platform):
+        request = urlopen(REPO_URL)
+        response = request.read()
+        data = response.decode()
+        lines = data.splitlines()
+        prefix = '%s-' % TOOLKIT_PREFIX
+        suffix = '-%s.%s' % (platform, TOOLKIT_SUFFIX)
+        versions = []
+        for line in lines:
+            rows = line.split()
+            if not rows:
+                continue
+            name = rows[-1]
+            if not name.startswith(prefix):
+                continue
+            name = name.replace(prefix, '')
+            if not name.endswith(suffix):
+                continue
+            name = name.replace(suffix, '')
+            octets = name.split('.')
+            try:
+                version = [int(octet) for octet in octets]
+            except (ValueError, TypeError):
+                continue
+            versions.append(version)
+        if not versions:
+            return None
+        versions.sort()
+        octets = versions[-1]
+        octets = [str(octet) for octet in octets]
+        version = '.'.join(octets)
+        toolkit_name = '%s%s%s' % (prefix, version, suffix)
+        return toolkit_name
+
+    def install_toolkit_if_necessary(self):
+        if not (self.arguments.get('--use-isolated-python', False) or assertions.is_isolated_python_exists()):
+            return None
+        platform = get_platform_string()
+        if platform.startswith('windows'):
+            return None
+        section = self.get_isolated_python_section_name()
+        if not section:
+            logger.debug('No isolated python section found')
+            return None
+        with utils.open_buildout_configfile() as buildout:
+            version = buildout.get(section, 'version')
+        if not version:
+            logger.debug('No isolated python version found')
+            return None
+        version = version.lstrip('v')
+        octets = version.split('.')
+        if len(octets) < 2:
+            logger.debug('Unexpected isolated python version %s', version)
+            return None
+        try:
+            octets = [int(octet) for octet in octets]
+        except (ValueError, TypeError) as error:
+            logger.debug('Invalid isolated python version %s: %s', version, error)
+            return None
+        major, minor = octets[:2]
+        if (major, minor) < (3, 9):
+            logger.debug('Toolkit is not required for isolated python version %s', version)
+            return None
+        toolkit_name = self.get_toolkit_name(platform)
+        if not toolkit_name:
+            logger.debug('Toolkit not found for %s platform', platform)
+            return None
+        logger.debug('Found toolkit for %s: %s', platform, toolkit_name)
+        path = os.environ.get('PATH')
+        if path:
+            paths = [BIN_PATH] + path.split(os.pathsep)
+            path = os.pathsep.join(paths)
+        else:
+            path = BIN_PATH
+        shell = os.path.join(BIN_PATH, 'bash')
+        prefix = os.path.abspath(os.path.join('parts', 'python'))
+        pkg_config_path = os.path.join(prefix, 'lib', 'pkgconfig')
+        ssl_cert_file = os.path.join(TOOLKIT_PATH, 'etc', 'ssl', 'certs', 'ca-bundle.crt')
+        env = dict(
+            # set path to use proper compiler and libraries from toolkit
+            PATH=path,
+            # set shell for configure to improve performance on AIX and Solaris
+            # reference: https://www.gnu.org/software/autoconf/manual/autoconf-2.61/autoconf.html
+            SHELL=shell,
+            CONFIG_SHELL=shell,
+            # set location of OpenSSL headers and libraries
+            # reference: https://docs.openssl.org/3.4/man3/OpenSSL_version/#functions
+            OPENSSL_DIR=prefix,
+            # set location of CA certificates
+            # reference: https://docs.openssl.org/3.4/man3/SSL_CTX_load_verify_locations
+            SSL_CERT_FILE=ssl_cert_file,
+            # set custom pkg-config path to use headers and libraries from isolated python directory
+            # reference: https://linux.die.net/man/1/pkg-config
+            PKG_CONFIG_PATH=pkg_config_path,
+            # do not use rust compiler to build python cryptography
+            # reference: https://cryptography.io/en/3.4/faq.html
+            CRYPTOGRAPHY_DONT_BUILD_RUST='1',
+            # use existing libraries from isolated python directory
+            # reference: https://www.gevent.org/development/installing_from_source.html
+            GEVENTSETUP_EMBED='0',
+            # do not build C++ examples
+            # reference: https://github.com/python-greenlet/greenlet/blob/1.1.3/setup.py#L88
+            GREENLET_TEST_CPP='0',
+            # install an uncompiled version of Cython
+            # reference: https://github.com/cython/cython/blob/master/setup.py#L314
+            NO_CYTHON_COMPILE='true',
+            # use existing libraries from isolated python directory
+            # reference: https://pypi.org/project/PyNaCl
+            SODIUM_INSTALL='system'
+        )
+        toolkit_path = os.path.join(INFINIDAT_PATH, toolkit_name)
+        if os.path.isfile(toolkit_path):
+            logger.debug('Toolkit %s already exists', toolkit_path)
+            return env
+        if os.path.exists(INFINIDAT_PATH):
+            if not os.path.isdir(INFINIDAT_PATH):
+                logger.debug('Toolkit destination is not a directory: %s', INFINIDAT_PATH)
+                return None
+        else:
+            logger.debug('Creating toolkit destination directory: %s', INFINIDAT_PATH)
+            os.makedirs(INFINIDAT_PATH)
+        toolkit_url = os.path.join(REPO_URL, toolkit_name)
+        logger.debug('Downloading toolkit from %s to %s', toolkit_url, toolkit_path)
+        urlretrieve(toolkit_url, toolkit_path)
+        logger.debug('Extracting %s to %s', toolkit_name, INFINIDAT_PATH)
+        tar = tarfile.open(toolkit_path, 'r:gz')
+        tar.extractall(INFINIDAT_PATH)
+        tar.close()
+        return env
