@@ -43,6 +43,9 @@ Options:
 
 
 class DevEnvPlugin(CommandPlugin):
+    def __init__(self):
+        self.env = {}
+
     def get_docopt_string(self):
         return USAGE
 
