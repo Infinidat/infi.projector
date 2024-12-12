@@ -69,7 +69,7 @@ def execute_assert_success(args, env=None):
     logger.info("Executing {}".format(' '.join(args)))
     result = execute.execute(args, env=env)
     if result.get_returncode() is not None and result.get_returncode() != 0:
-        logger.error(result.get_stderr().decode())
+        logger.error(result.get_stderr().decode('utf-8'))
         raise PrettyExecutionError(result)
 
 def _get_executable_from_shebang_line():  # pragma: no cover
