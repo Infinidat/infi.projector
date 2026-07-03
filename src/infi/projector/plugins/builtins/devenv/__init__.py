@@ -199,19 +199,27 @@ class DevEnvPlugin(CommandPlugin):
         packages = []
 
         # in case dependencies are frozen, we need to use the frozen version of setuptools and zc.buildout
+        extra_index_args = []
         with utils.open_buildout_configfile() as buildout:
             for package in ['setuptools', 'zc.buildout', 'pip']:
                 if buildout.has_option("versions", package):
                     packages += ['{}=={}'.format(package, buildout.get("versions", package))]
                 else:
                     packages += [package]
+            # Opt-in fallback index for bootstrap-stage packages (setuptools/zc.buildout/pip)
+            # when a pinned version isn't available on the primary configured index.
+            # Backward compatible: no effect unless a project explicitly sets this key.
+            if buildout.has_option("buildout", "bootstrap-extra-index-url"):
+                extra_index_url = buildout.get("buildout", "bootstrap-extra-index-url").strip()
+                if extra_index_url:
+                    extra_index_args = ['--extra-index-url', extra_index_url]
 
         env = environ.copy()
         env['PYTHONPATH'] = ''
         for package in packages:
-            utils.execute_assert_success([utils.get_isolated_executable('python'), 'get-pip.py', '--upgrade-strategy=only-if-needed', '--prefix=%s' % join('parts', 'python'), package], env=env)
+            utils.execute_assert_success([utils.get_isolated_executable('python'), 'get-pip.py', '--upgrade-strategy=only-if-needed', '--prefix=%s' % join('parts', 'python')] + extra_index_args + [package], env=env)
         remove('get-pip.py')
-        utils.execute_assert_success([utils.get_isolated_executable('python'), '-m', 'pip', 'download', '--dest', cache_dist] + packages, env=env)
+        utils.execute_assert_success([utils.get_isolated_executable('python'), '-m', 'pip', 'download', '--dest', cache_dist] + extra_index_args + packages, env=env)
 
     def install_isolated_python_if_necessary(self):
         from os import environ
