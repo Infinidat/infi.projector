@@ -13,7 +13,7 @@ logger = getLogger(__name__)
 
 TOOLKIT_PREFIX = 'toolkit'
 TOOLKIT_SUFFIX = 'tar.gz'
-REPO_URL = os.path.join('ftp://repo.lab.il.infinidat.com', 'packages', 'main-stable', 'python', TOOLKIT_PREFIX)
+REPO_URL = os.path.join('http://repo.lab.il.infinidat.com', 'packages', 'main-stable', 'python', TOOLKIT_PREFIX)
 INFINIDAT_PATH = os.path.join(os.path.sep, 'opt', 'infinidat')
 TOOLKIT_PATH = os.path.join(INFINIDAT_PATH, TOOLKIT_PREFIX)
 BIN_PATH = os.path.join(TOOLKIT_PATH, 'bin')
