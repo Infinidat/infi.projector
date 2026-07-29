@@ -4,19 +4,22 @@ from infi.projector.helper import assertions, utils
 from infi.projector.helper.utils import configparser
 from infi.os_info import get_platform_string
 from logging import getLogger
+from six.moves.urllib.parse import urlparse
 from six.moves.urllib.request import urlopen, urlretrieve
+from six.moves.html_parser import HTMLParser
 import os
 import json
+import posixpath
 import tarfile
 
 logger = getLogger(__name__)
 
 TOOLKIT_PREFIX = 'toolkit'
 TOOLKIT_SUFFIX = 'tar.gz'
-REPO_URL = os.path.join('ftp://repo.lab.il.infinidat.com', 'packages', 'main-stable', 'python', TOOLKIT_PREFIX)
-INFINIDAT_PATH = os.path.join(os.path.sep, 'opt', 'infinidat')
-TOOLKIT_PATH = os.path.join(INFINIDAT_PATH, TOOLKIT_PREFIX)
-BIN_PATH = os.path.join(TOOLKIT_PATH, 'bin')
+REPO_URL = posixpath.join('http://python.infinidat.com', 'packages', 'main-stable', 'python', TOOLKIT_PREFIX)
+INFINIDAT_PATH = posixpath.join(os.path.sep, 'opt', 'infinidat')
+TOOLKIT_PATH = posixpath.join(INFINIDAT_PATH, TOOLKIT_PREFIX)
+BIN_PATH = posixpath.join(TOOLKIT_PATH, 'bin')
 
 USAGE = """
 Usage:
@@ -40,6 +43,35 @@ Options:
     --prefer-final          don't install development versions of dependencies, prefer their latest final versions.
     --no-js-requirements    don't download and extract js-requirements.
 """
+
+class Parser(HTMLParser):
+    def __init__(self, platform):
+        HTMLParser.__init__(self)
+        self.prefix = '%s-' % TOOLKIT_PREFIX
+        self.suffix = '-%s.%s' % (platform, TOOLKIT_SUFFIX)
+        self.versions = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag != 'a':
+            return
+        href = dict(attrs).get('href')
+        if not href:
+            return
+        url = urlparse(href)
+        path = url.path
+        name = posixpath.basename(url.path)
+        if not name.startswith(self.prefix):
+            return
+        name = name.replace(self.prefix, '')
+        if not name.endswith(self.suffix):
+            return
+        name = name.replace(self.suffix, '')
+        octets = name.split('.')
+        try:
+            version = [int(octet) for octet in octets]
+        except (ValueError, TypeError):
+            return
+        self.versions.append(version)
 
 
 class DevEnvPlugin(CommandPlugin):
@@ -269,36 +301,17 @@ class DevEnvPlugin(CommandPlugin):
 
     def get_toolkit_name(self, platform):
         request = urlopen(REPO_URL)
-        response = request.read()
-        data = response.decode()
-        lines = data.splitlines()
-        prefix = '%s-' % TOOLKIT_PREFIX
-        suffix = '-%s.%s' % (platform, TOOLKIT_SUFFIX)
-        versions = []
-        for line in lines:
-            rows = line.split()
-            if not rows:
-                continue
-            name = rows[-1]
-            if not name.startswith(prefix):
-                continue
-            name = name.replace(prefix, '')
-            if not name.endswith(suffix):
-                continue
-            name = name.replace(suffix, '')
-            octets = name.split('.')
-            try:
-                version = [int(octet) for octet in octets]
-            except (ValueError, TypeError):
-                continue
-            versions.append(version)
-        if not versions:
+        html = request.read()
+        if not isinstance(html, str):
+            html = html.decode('utf-8')
+        parser = Parser(platform)
+        parser.feed(html)
+        if not parser.versions:
             return None
-        versions.sort()
-        octets = versions[-1]
-        octets = [str(octet) for octet in octets]
+        version = max(parser.versions)
+        octets = [str(octet) for octet in version]
         version = '.'.join(octets)
-        toolkit_name = '%s%s%s' % (prefix, version, suffix)
+        toolkit_name = '%s-%s-%s.%s' % (TOOLKIT_PREFIX, version, platform, TOOLKIT_SUFFIX)
         return toolkit_name
 
     def install_toolkit_if_necessary(self):
