@@ -126,9 +126,9 @@ class DevEnvTestCase(TestCase):
             with utils.open_buildout_configfile(write_on_exit=True) as buildout:
                 buildout.add_section("versions")
                 buildout.set("versions", "setuptools", "43.0.0")
-                buildout.set("versions", "zc.buildout", "2.11.2")
+                buildout.set("versions", "zc.buildout", "2.13.6")
             self.projector("devenv build --use-isolated-python")
             self.assertTrue(path.exists(path.join("parts", "python")))
             self.assert_scripts_were_generated_by_buildout()
             self.assert_specific_setuptools_version_is_being_used("43.0.0")
-            self.assert_specific_zc_buildout_version_is_being_used("2.11.2")
+            self.assert_specific_zc_buildout_version_is_being_used("2.13.6")
